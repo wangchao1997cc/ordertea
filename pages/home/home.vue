@@ -14,6 +14,7 @@
 	import {
 		mapState,
 		mapMutations
+		1
 	} from "vuex";
 	export default {
 		data() {
