@@ -2,7 +2,6 @@
 	// import {ajaxUserLogin} from './utils/publicApi.js'
 	export default {
 		globalData: {
-			openid: 'text'
 		},
 		onLaunch: async function() {
 		},

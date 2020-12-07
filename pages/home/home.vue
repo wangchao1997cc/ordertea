@@ -8,12 +8,13 @@
 </template>
 
 <script>
+	
 	import {
 		getLocation
 	} from '../../utils/author.js'
 	import {
 		mapState,
-		mapMutations
+		mapMutations,
 	} from "vuex";
 	export default {
 		data() {

@@ -14,6 +14,11 @@ const getNearStoreList = (data, isPlicing, isloading) => {
 	return service('candao.storeStandard.getStoreList', 'post', data , isloading)
 }
 
+//获取地区所对应的门店列表
+const getStoreList = (data, isloading) => {
+	return service('candao.storeStandard.getStoreList', 'post', data, isloading)
+}
+
 //获取默认菜单
 const getDefaultMeun = (data, isloading) => {
 	return service('candao.product.getBrandDefaultMenu', 'post', data, isloading)
@@ -24,9 +29,19 @@ const getProductMenu = (data, isloading) => {
 	return service('candao.product.getProductMenu', 'post', data, isloading)
 }
 
-//获取所有省份
-const getProvice = (data, isloading) => {
-	return service('candao.base.listProvince', 'post', data, isloading)
+//获取开放城市
+const getOpenCityList = (data, isloading) => {
+	return service('candao.storeStandard.getOpenCityList', 'post', data, isloading)
+}
+
+//获取所选省份下的所有城市
+const getCityList = (data, isloading) => {
+	return service('candao.base.listCity', 'post', data, isloading)
+}
+
+//获取所选城市下的所有区域
+const getDistrict = (data, isloading) => {
+	return service('candao.base.listDistrict', 'post', data, isloading)
 }
 
 //normoal请求区域
@@ -45,7 +60,10 @@ const setCache = (data, isPlicing, isloading) => {
 
 
 module.exports = {
-	getProvice:getProvice,
+	getStoreList:getStoreList,
+	getDistrict:getDistrict,
+	getCityList:getCityList,
+	getOpenCityList:getOpenCityList,
 	getProductMenu:getProductMenu,
 	getCityId:getCityId,
 	getWxOpenid: getWxOpenid,

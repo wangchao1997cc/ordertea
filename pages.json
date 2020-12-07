@@ -12,7 +12,6 @@
 				"navigationBarTitleText": "点餐"
 			}
 		},
-		
 		{
 			"path": "pages/home/home",
 			"style": {
@@ -33,6 +32,10 @@
 			}
         }
         
+        ,{
+            "path" : "pages/storelist/storelist",
+            "style" : {}
+        }
     ],
 	"globalStyle": {
 		"navigationBarTextStyle": "black",

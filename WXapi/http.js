@@ -17,7 +17,8 @@ var JSESSIONID = store.state.JSESSIONID;
 export function service(url, method, data, isloading) {
 	let header = {
 		'content-type': method === 'get' ? 'application/x-www-form-urlencoded' : 'application/json',
-		"Cookie": JSESSIONID ? 'JSESSIONID=' + JSESSIONID : '',
+		// "Cookie": JSESSIONID ? 'JSESSIONID=' + JSESSIONID : '',
+		"Cookie":'JSESSIONID=58f04df5-56c9-417b-8f2b-27fd632a2063; path=/; expires=Thu, 10-Dec-2020 05:30:24 GMT'
 	}
 	return request(method, header, url, data, isloading)
 }
@@ -70,7 +71,8 @@ function nrequest(method, header, url, data, isloading) {
 					resolve(e.data);
 					if (!JSESSIONID) {
 						// JSESSIONID = e.header["Set-Cookie"].match(/JSESSIONID=(.*)?;/)[1];
-						JSESSIONID = '08fc5e45-9a32-43d8-bc8c-6cb1562e174d; path=/; expires=Mon, 07-Dec-2020 09:58:40 GMT';  //单页面测试使用
+						// console.log(JSESSIONID)
+						JSESSIONID = '58f04df5-56c9-417b-8f2b-27fd632a2063; path=/; expires=Thu, 10-Dec-2020 05:30:24 GMT';  //单页面测试使用
 						let data = {
 							"JSESSIONID": JSESSIONID
 						};
