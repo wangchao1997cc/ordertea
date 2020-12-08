@@ -1,9 +1,16 @@
 
 //前往选择城市
-export function goChoseCity() {
-	uni.navigateTo({
-		url: `../chosecity/chosecity`
-	})
+export function goChoseCity(bollean) {
+	let url = '../chosecity/chosecity';
+	if(bollean){
+		uni.redirectTo({
+			url:url
+		})
+	}else{
+		uni.navigateTo({
+			url: url
+		})
+	}
 }
 
 const ROUTEPARAMS = 'routeparams';

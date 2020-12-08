@@ -1,17 +1,25 @@
 <template>
 	<view class="classify">
-		<!--顶部搜索-->
-		<!-- <search></search> -->
-		<view class="content">
-			<!-- 左侧导航栏 -->
+		<view class="header">
+			<view class="address-info">
+				<text>{{storeInfo.storeName?storeInfo.storeName:'默认菜单'}}\n</text>
+				<text>{{storeInfo.distance?storeInfo.distance:'正在选择店铺中...'}}</text>
+			</view>
+			<view class="store-control">
+				<switchC></switchC>
+				<text>更多门店信息</text>
+			</view>
+		</view>
+		<view class="menu-cont">
+				<!-- 左侧导航栏 -->
 			<scroll-view scroll-y class="left-aside">
 				<view v-for="(item, index) in products" :key="index" class="f-item b-b" :class="{active: item.uid === currentId}"
 				 @click="tabtap(item)">
 					{{item.name}}
 				</view>
 			</scroll-view>
-			<scroll-view scroll-with-animation @scroll-into-view="currentId"  scroll-y class="right-aside" @scroll="asideScroll" :scroll-top="tabScrollTop"
-			 :style="{height:shopBoxHeight + 'rpx'}" binddragend="touchEnd">
+			<scroll-view scroll-with-animation @scroll-into-view="currentId" scroll-y class="right-aside" @scroll="asideScroll"
+			 :scroll-top="tabScrollTop" :style="{height:shopBoxHeight + 'rpx'}" binddragend="touchEnd">
 				<!-- 对应产品列表 -->
 				<view v-for="(item, index) in products" :key="index" class="s-list" :id="'main-'+item.uid">
 					<view class="">
@@ -31,19 +39,34 @@
 				</view>
 			</scroll-view>
 		</view>
+		<storeDetail :shopinfo="storeInfo" :shopBoxHeight="shopBoxHeight"></storeDetail>
 		<choseStore :nearList="nearList" @switchStore="switchStore" ref="chosestore"></choseStore>
 		<loadpage :loadingState="loadingState"></loadpage>
 	</view>
 </template>
 
 <script>
-	let newload = false;  //页面第一次加载
-	import choseStore from '../../components/choseStore.vue'
-	import loadpage from '../../components/loadingpage.vue'
-	import {ajaxUserLogin} from '../../utils/publicApi.js'
-	import {mapState,mapMutations} from "vuex";
-	import {getLocation, getCityAddress, conversion,} from '../../utils/author.js'
-	import {goChoseCity} from '../../utils/goToPage.js'
+	const app = getApp();
+	let newload = false; //页面第一次加载
+	import choseStore from '../../components/choseStore.vue' //选择店铺
+	import loadpage from '../../components/loadingpage.vue' //loading
+	import switchC from '../../components/switch.vue' //自定义switch
+	import storeDetail from '../../components/storedetail.vue' //店铺的其他信息展示
+	import {
+		ajaxUserLogin
+	} from '../../utils/publicApi.js'
+	import {
+		mapState,
+		mapMutations
+	} from "vuex";
+	import {
+		getLocation,
+		getCityAddress,
+		conversion,
+	} from '../../utils/author.js'
+	import {
+		goChoseCity
+	} from '../../utils/goToPage.js'
 	import api from '../../WXapi/api.js';
 	export default {
 		data() {
@@ -52,26 +75,34 @@
 				tabScrollTop: 0, //滚动条与顶部的距离
 				currentId: 1, //二级分类当前的pid
 				location: {}, //地址
-				products:[],   //商品列表
-				nearList:[],   //附近门店信息
-				loadingState: false,  //展现loading
+				products: [], //商品列表
+				nearList: [], //附近门店信息
+				loadingState: false, //展现loading
+				storeInfo: {}, //选中的店铺信息
 			}
 		},
 
-		async onLoad() {
-			await ajaxUserLogin();   //先进行登录
+		async onLoad(options) {
+			await ajaxUserLogin(); //先进行登录
 			this.init();
 		},
 		components: {
 			choseStore,
-			loadpage
+			loadpage,
+			switchC,
+			storeDetail
 		},
 		computed: {
-			...mapState(['openid', 'bussinessType'])
+			...mapState(['openid', 'bussinessType', 'storeId']),
+
 		},
 		onShow: function onShow() {
-			if(newload) {
+			if (newload) {
 				this.getLocation(); //获取地理位置
+				if (this.storeId) {
+					this.getStoreMenu(this.storeId);
+					this.$store.commit('copy', '');
+				}
 			}
 			if (this.products.length && this.products[0].top) {
 				setTimeout(() => {
@@ -81,10 +112,12 @@
 		},
 		methods: {
 			//确认选择的店铺
-			switchStore(storeId) {
-				this.getStoreMenu(storeId);
+			switchStore(store) {
+				this.storeInfo = store;
+				console.log('选择的店铺', store)
+				this.getStoreMenu(store.storeId);
 			},
-			async getStoreMenu(storeId){
+			async getStoreMenu(storeId) {
 				this.loadingState = false;
 				let that = this;
 				let data = {
@@ -92,13 +125,13 @@
 					sendType: that.bussinessType
 				}
 				let res = await api.getProductMenu(data);
-				if(res && res.status == 1){
+				if (res && res.status == 1) {
 					this.handleShopData(res.data.bigs);
 				}
 			},
 			init() {
 				let that = this;
-				newload = true;  //第二次从onshow刷新地理位置
+				newload = true; //第二次从onshow刷新地理位置
 				that.getLocation(); //获取地理位置
 				that.getCategoryList(); //获取默认的商品列表
 				that.computReftHe(); //计算右边商品列表的高度
@@ -107,7 +140,7 @@
 			computReftHe() {
 				const sysinfo = uni.getSystemInfoSync();
 				let windowHeight = sysinfo.windowHeight;
-				this.shopBoxHeight = windowHeight * (750 / sysinfo.windowWidth) - 116;
+				this.shopBoxHeight = windowHeight * (750 / sysinfo.windowWidth) - 200;
 			},
 			//获取地理位置
 			async getLocation() {
@@ -121,7 +154,7 @@
 					let res = await getCityAddress(lat, log); //获取地理详细信息
 					if (res && res.statu == 1) {
 						that.getCityId(res.result.ad_info.city); //获取城市id
-						that.setCacheData(res.result.address_component.city);  //服务器存储
+						that.setCacheData(res.result.address_component.city); //服务器存储
 					}
 				}
 			},
@@ -134,19 +167,19 @@
 					businessType: that.businessType,
 				}
 				let res = await api.getNearStoreList(data);
-				if(res && res.status == 1){
+				if (res && res.status == 1) {
 					let nearList = res.data.rows;
 					nearList.forEach(item => {
 						item.distance = conversion(item.distance) //换算距离
 					})
-					if(nearList.length > 1){   //如果附近多个店铺则展示选择店铺弹窗
+					if (nearList.length > 1) { //如果附近多个店铺则展示选择店铺弹窗
 						that.$refs.chosestore.showChoseprop();
 						that.nearList = nearList;
-					}else if(nearList.length == 1){ //只有一个则展现这个店铺
+					} else if (nearList.length == 1) { //只有一个则展现这个店铺
 						that.getStoreMenu(nearList[0].storeId)
 					}
-				}else{
-					goChoseCity();  //前往选择省份
+				} else {
+					goChoseCity(); //前往选择省份
 				}
 			},
 
@@ -167,30 +200,27 @@
 					name: cityname
 				}
 				let res = await api.getCityId(data, false);
-				// console.log(res)
 				if (res.status == 1) {
 					let data = {
 						cityid: res.data
 					}
 					this.$store.dispatch('changeFun', data);
-					// console.log(this.$store.state)
 				}
 			},
 			//处理获取到的商铺菜单
-			handleShopData(data){
+			handleShopData(data) {
 				let that = this;
 				that.products = data;
 				that.currentId = data[0].uid;
 				that.loadingState = true;
-				setTimeout(() => {   //页面绘图  延迟加载
+				setTimeout(() => { //页面绘图  延迟加载
 					that.calcSize();
 				}, 150)
 			},
 			//获取默认商品数据
 			async getCategoryList() {
-				
 				let data = {
-					brandId: this.$global.brandIdc,
+					brandId: app.globalData.brandIdc,
 				};
 				let res = await api.getDefaultMeun(data);
 				if (res.status == 1) {
@@ -212,7 +242,7 @@
 				let scrollTop = e.detail.scrollTop;
 				let tabs = that.products.filter(item => item.top <= scrollTop).reverse();
 				if (tabs.length > 0) {
-					if(that.currentId != tabs[0].uid){
+					if (that.currentId != tabs[0].uid) {
 						that.currentId = tabs[0].uid;
 					}
 				}
@@ -238,8 +268,6 @@
 <style lang='scss'>
 	.classify {
 		width: $screen-width;
-		box-sizing: border-box;
-		/* 	overflow: hidden; */
 		background-color: #fff;
 	}
 
@@ -267,14 +295,23 @@
 		}
 	}
 
-	.content {
+	.header {
+		@include rect(100%, 200upx);
+		border: 1upx red solid;
 		display: flex;
+		justify-content: space-between;
+		padding: 30upx;
+		box-sizing: border-box;
 	}
 
 	.left-aside {
 		width: 180upx;
 		background-color: #fff;
 		border-right: 1upx #D4D4D4 solid;
+	}
+
+	.menu-cont {
+		display: flex;
 	}
 
 	.f-item {

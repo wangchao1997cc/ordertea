@@ -8,6 +8,7 @@ import {
 	showModal,
 	showToast
 } from '../utils/utils.js';
+import {goChoseCity} from './goToPage.js'
 
 export const getLocation = () => {
 	return new Promise((resolve, reject) => {
@@ -32,16 +33,19 @@ export const getLocation = () => {
 	})
 }
 
+function toRad(d) {
+	return d * Math.PI / 180;
+}
 //计算经纬度距离
 
 export const etdistance = (lat1, lng1, lat2, lng2) => {
-	var that = this
-	var radLat1 = that.toRad(lat1);
-	var radLat2 = that.toRad(lat2);
-	var a = radLat1 - radLat2;
-	var b = that.toRad(lng1) - that.toRad(lng2);
-	var s = 2 * Math.asin(Math.sqrt(Math.pow(Math.sin(a / 2), 2) + Math.cos(radLat1) * Math.cos(radLat2) * Math.pow(Math.sin(
-		b / 2), 2)));
+	lat1 = toRad(lat1);
+	lat2 = toRad(lat2);
+	var a = lat1 - lat2;
+	var b = toRad(lng1) - toRad(lng2);
+	var s = 2 * Math.asin(Math.sqrt(Math.pow(Math.sin(a / 2), 2) + Math.cos(lat1) * Math.cos(lat2) * Math.pow(Math
+		.sin(
+			b / 2), 2)));
 	s = s * 6378.137 * 1000;
 	// EARTH_RADIUS;
 	s = Math.round(s * 10000) / 10000;
@@ -69,10 +73,8 @@ function openSet() {
 							console.log('打开设置', re)
 						}
 					})
-				} else { //拒绝前往选择城市页面
-					uni.navigateTo({
-						url: 'pages/chosecity/chosecity'
-					})
+				} else { //前往选择城市页面
+					goChoseCity();
 				}
 			}, '如需使用小茶僮点餐，请开启微信小程序的定位授权。', '地理位置未授权', true);
 		}
@@ -83,9 +85,7 @@ function openSet() {
 export function juideFailObtain() {
 	showModal((json) => {
 		//前往选择城市
-		uni.navigateTo({
-			url: 'pages/chosecity/chosecity'
-		})
+		goChoseCity();
 	}, '没有获取到定位信息，请手动选择门店', '温馨提示', false);
 }
 

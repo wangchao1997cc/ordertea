@@ -2,6 +2,9 @@
 	// import {ajaxUserLogin} from './utils/publicApi.js'
 	export default {
 		globalData: {
+			brandId: 456,
+			menuId: 1804,
+			brandIdc: 383
 		},
 		onLaunch: async function() {
 		},

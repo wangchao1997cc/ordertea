@@ -10,7 +10,7 @@
 				<view class="store-address">
 					{{`${item.provinceName}-${item.districtName}-${item.storeAddress}`}}
 				</view>
-				<view class="">
+				<view class="store-name">
 					{{item.distance}}
 				</view>
 			</view>
@@ -28,6 +28,7 @@
 
 <script>
 	import api from '../WXapi/api.js'
+	import {goChoseCity} from '../utils/goToPage.js'
 	import {
 		mapState,
 		mapMutations
@@ -66,7 +67,7 @@
 			//确认选择所选店铺
 			async confirmStore(){
 				this.hiddenChoseStore = true;
-				this.$emit('switchStore', this.nearList[this.currtab].storeId);
+				this.$emit('switchStore', this.nearList[this.currtab]);
 			},
 		}
 	}

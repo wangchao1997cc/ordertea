@@ -12,11 +12,12 @@ const store = new Vuex.Store({
 		openid:'',
 		session_key:'',
 		bussinessType: 2,
+		storeId:'',
     },
     mutations: {
         copy(state,cont){
             //单一的改变某一个变量
-            state.JSESSIONID = cont;
+            state.storeId = cont;
         },
         change(state,contObj){
             //通过传入的变量去改变对应的全局变量

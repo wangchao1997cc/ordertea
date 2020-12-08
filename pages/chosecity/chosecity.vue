@@ -115,7 +115,8 @@
 						cityId: citydata.cityId,
 						cityName: citydata.cityName,
 						districtId: item.districtId,
-						districtName:item.name
+						districtName:item.name,
+						chosecity:true,
 					}
 					goChoseStore(routerParam); //前往选择门店
 				}
