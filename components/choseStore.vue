@@ -1,19 +1,21 @@
 <template>
 	<view class="chose-store" :hidden="hiddenChoseStore">
 		<view class="chose-cont">
-			<view class="store-item" v-for="(item,index) in nearList" :key = "index" @click="choseStore(index)">
-				<view class="ischose" :class="{chosed_store:currtab == index}">
+			<scroll-view class="store-box" scroll-y>
+				<view class="store-item" v-for="(item,index) in nearList" :key = "index" @click="choseStore(index)">
+					<view class="ischose" :class="{chosed_store:currtab == index}">
+					</view>
+					<view class="store-name">
+						{{item.storeName}}
+					</view>
+					<view class="store-address">
+						{{`${item.provinceName}-${item.districtName}-${item.storeAddress}`}}
+					</view>
+					<view class="store-name">
+						{{item.newdistance}}
+					</view>
 				</view>
-				<view class="store-name">
-					{{item.storeName}}
-				</view>
-				<view class="store-address">
-					{{`${item.provinceName}-${item.districtName}-${item.storeAddress}`}}
-				</view>
-				<view class="store-name">
-					{{item.distance}}
-				</view>
-			</view>
+			</scroll-view>
 			<view class="chose-store-footer">
 				<view class="store-footer-item" @click="chosrOther">
 					选择其他门店
@@ -47,7 +49,7 @@
 			}
 		},
 		computed: {
-			...mapState(['bussinessType'])
+			// ...mapState(['businessType'])
 		},
 		methods:{
 			//点击选择店铺
@@ -57,6 +59,7 @@
 				}
 				this.currtab = index;
 			},
+			//展现弹窗
 			showChoseprop(){
 				this.hiddenChoseStore = false;
 			},
@@ -76,11 +79,7 @@
 <style lang="scss">
 	.chose-store{
 		font-size: 28upx;
-		@include rect(100%,100%);
-		position: fixed;
-		top: 0;
-		left: 0;
-		background-color: $bg-mask;
+		@extend %all-mask;
 	}
 	.chose-cont{
 		@include rect(620upx,800upx);
@@ -88,6 +87,9 @@
 		margin: 20% auto;
 		border-radius: 10upx;
 		position: relative;
+	}
+	.store-box{
+		@include rect(100%, 680upx);
 	}
 	.chose-store-footer{
 		position: absolute;

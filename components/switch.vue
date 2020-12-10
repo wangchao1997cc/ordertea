@@ -7,6 +7,7 @@
 </template>
 
 <script>
+	import {goUserAddress} from '../utils/goToPage.js'
 	export default {
 		data() {
 			return {
@@ -18,11 +19,13 @@
 			switchIcon(){
 				let currtab = this.currtab;
 				if(currtab==0){
-					currtab += 1;
+					return goUserAddress('select');
 				}else{
+					this.$store.commit('changebussiness',[2])
 					currtab = 0;
 				}
 				this.currtab = currtab;
+				this.$emit('switchTab',currtab);
 			}
 		}
 	}
@@ -45,7 +48,7 @@
 
 	.toggle {
 		@include rect(75upx, 50upx) border-radius: 40upx;
-		background: rgb(202, 162, 132);
+		background: $main-color;
 		position: absolute;
 		top: 7upx;
 		transition: 0.5s;

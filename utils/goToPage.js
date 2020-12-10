@@ -13,6 +13,14 @@ export function goChoseCity(bollean) {
 	}
 }
 
+//前往地址
+export function goUserAddress(type) {
+	let url = '../address/address?type=' + type;
+	uni.navigateTo({
+		url: url
+	})
+}
+
 const ROUTEPARAMS = 'routeparams';
 
 //本地存储路由数据

@@ -70,9 +70,8 @@ function nrequest(method, header, url, data, isloading) {
 				if (e.statusCode === 200) {
 					resolve(e.data);
 					if (!JSESSIONID) {
-						// JSESSIONID = e.header["Set-Cookie"].match(/JSESSIONID=(.*)?;/)[1];
-						// console.log(JSESSIONID)
-						JSESSIONID = '58f04df5-56c9-417b-8f2b-27fd632a2063; path=/; expires=Thu, 10-Dec-2020 05:30:24 GMT';  //单页面测试使用
+						JSESSIONID = e.header["Set-Cookie"].match(/JSESSIONID=(.*)?;/)[1];
+						// JSESSIONID = '58f04df5-56c9-417b-8f2b-27fd632a2063; path=/; expires=Thu, 10-Dec-2020 05:30:24 GMT';  //单页面测试使用
 						let data = {
 							"JSESSIONID": JSESSIONID
 						};

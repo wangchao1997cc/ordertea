@@ -4,7 +4,8 @@
 		globalData: {
 			brandId: 456,
 			menuId: 1804,
-			brandIdc: 383
+			brandIdc: 383,
+			storeInfo:{},
 		},
 		onLaunch: async function() {
 		},

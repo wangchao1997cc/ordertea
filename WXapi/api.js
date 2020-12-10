@@ -11,12 +11,17 @@ const getCityId = (data, isloading) => {
 
 //获取附近门店列表
 const getNearStoreList = (data, isPlicing, isloading) => {
-	return service('candao.storeStandard.getStoreList', 'post', data , isloading)
-}
+	return service('candao.storeStandard.getNearStoreList', 'post', data , isloading)
+} 
+ 
+ //获取门店列表
+ const getStoreList = (data, isPlicing, isloading) => {
+ 	return service('candao.storeStandard.getStoreList', 'post', data , isloading)
+ }
 
-//获取地区所对应的门店列表
-const getStoreList = (data, isloading) => {
-	return service('candao.storeStandard.getStoreList', 'post', data, isloading)
+//获取最近的一家门店
+const getNearStore = (data, isPlicing, isloading) => {
+	return service('candao.storeStandard.getNearStore', 'post', data , isloading)
 }
 
 //获取默认菜单
@@ -44,6 +49,25 @@ const getDistrict = (data, isloading) => {
 	return service('candao.base.listDistrict', 'post', data, isloading)
 }
 
+//获取用户的地址信息
+const getUserAddress = (data, isloading) => {
+	return service('candao.userAddress.getList', 'post', data, isloading)
+}
+
+//添加地址信息
+const addUserAddress = (data, isloading) => {
+	return service('candao.userAddress.add', 'post', data, isloading)
+}
+
+//修改地址
+const updateAddress = (data, isloading) => {
+	return service('candao.userAddress.update', 'post', data, isloading)
+}
+
+
+
+
+
 //normoal请求区域
 //微信登录
 const getWxOpenid = (data, isPlicing, isloading) => {
@@ -61,6 +85,10 @@ const setCache = (data, isPlicing, isloading) => {
 
 module.exports = {
 	getStoreList:getStoreList,
+	getNearStore:getNearStore,
+	updateAddress:updateAddress,
+	addUserAddress:addUserAddress,
+	getUserAddress:getUserAddress,
 	getDistrict:getDistrict,
 	getCityList:getCityList,
 	getOpenCityList:getOpenCityList,

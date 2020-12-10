@@ -98,7 +98,7 @@ export const getCityAddress = (lat, lon) => {
 			},
 			success: function(data) {
 				if (data.status == 0) {
-					resolve(data)
+					resolve(data.result)
 				} else {
 					juideFailObtain();
 				}

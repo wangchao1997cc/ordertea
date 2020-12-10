@@ -56,7 +56,7 @@
 			}
 		},
 		computed: {
-			...mapState(['bussinessType']),
+			...mapState(['businessType']),
 			maplocation() { //显示的店铺位置
 				let location = [113,23];
 				if (this.storeList.length) {
@@ -68,12 +68,13 @@
 		},
 		onLoad() {
 			let data = getRouteParams();
-			data ? '' : data = {
-				cityId: 11478,
-				cityName: "广州市",
-				districtId: 0,
-				districtName: "全部区域",
-			}
+			// data ? '' : data = {
+			// 	cityId: 11478,
+			// 	cityName: "广州市",
+			// 	districtId: 0,
+			// 	districtName: "全部区域",
+			// }
+			console.log(data)
 			this.address = data;
 			this.getStoreList(data); //获取地区对应的门店列表
 		},
@@ -89,9 +90,11 @@
 			async getStoreList(data) {
 				let location = uni.getStorageSync('location');
 				let that = this;
+				console.log(that.businessType)
+				// console.log(that.$store.state.)
 				let params = {
 					cityId: data.cityId,
-					businessType: [that.bussinessType],
+					businessType: that.businessType,
 					coordinate: [location.longitude, location.latitude],
 					pageNow: that.pageindex,
 					pageSize: 5

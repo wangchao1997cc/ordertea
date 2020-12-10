@@ -6,7 +6,7 @@ export const refreshUserInfo = async callback => {
 	let res = await getUserInfo();
 	if (res.code == 200) {
 		uni.setStorageSync('userinfo', res.data);
-		if(callback){
+		if (callback) {
 			return res
 		}
 	}
@@ -24,16 +24,26 @@ function wxLogin() {
 	})
 }
 
+export const getCityId = async (cityname,isboolean) => {
+	let data = {
+		name: cityname
+	}
+	let res = await api.getCityId(data, isboolean);
+	if (res.status == 1) {
+		return res.data;
+	}
+}
+
 //小程序登录获取openid
 export const ajaxUserLogin = async (takeit) => {
 	let wxCode = await wxLogin();
 	let data = {
-		code:wxCode,
+		code: wxCode,
 	};
 	let res = await api.getWxOpenid(data, true);
 	if (res.status == 1) {
 		delete res.data.errcode;
-		store.commit('change',res.data);
+		store.commit('change', res.data);
 		return res.data;
 	}
 }

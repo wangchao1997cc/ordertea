@@ -89,7 +89,7 @@
 								cityName: item.name,
 							}
 							let json = await api.getDistrict(data, true);
-							if(json.status == 1){
+							if (json.status == 1) {
 								res = json.data;
 							}
 							break;
@@ -111,14 +111,13 @@
 					that.navarr.splice(2, 1, item.name); //导航栏视图更新
 					`?cityId=${that.cityId}&districtId=${item.districtId}`
 					let citydata = that.citydata;
-					let routerParam = {
+					goChoseStore({
 						cityId: citydata.cityId,
 						cityName: citydata.cityName,
 						districtId: item.districtId,
-						districtName:item.name,
-						chosecity:true,
-					}
-					goChoseStore(routerParam); //前往选择门店
+						districtName: item.name,
+						chosecity: true,
+					}); //前往选择门店
 				}
 			},
 		}

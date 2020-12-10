@@ -11,7 +11,7 @@ const store = new Vuex.Store({
 		JSESSIONID:'',
 		openid:'',
 		session_key:'',
-		bussinessType: 2,
+		businessType: [2],
 		storeId:'',
     },
     mutations: {
@@ -19,6 +19,9 @@ const store = new Vuex.Store({
             //单一的改变某一个变量
             state.storeId = cont;
         },
+		changebussiness(state,cont){
+			state.businessType = cont;
+		},
         change(state,contObj){
             //通过传入的变量去改变对应的全局变量
            Object.assign(state,contObj)
