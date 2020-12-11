@@ -105,10 +105,6 @@
 				if(res.status==1){
 					this.addressList = res.data;
 				}
-				console.log(res)
-				// if (res && res.code == 200) {
-				// 	this.addressList = res.data;
-				// }
 			},
 			//修改地址
 			addressEdit(item) {
@@ -162,7 +158,6 @@
 					}else{
 						that.$msg.showToast('该地址无配送门点，请选择其他地址')
 					}
-					// uni.showLoading({})
 				}
 			},
 			//切换地址提示
@@ -176,7 +171,6 @@
 			//跳转menu界面
 			jumpMenu(storeId){
 				app.globalData.storeInfo = this.shopinfo;
-				console.log(storeId)
 				this.$store.commit('copy',storeId);
 				this.$store.commit('changebussiness',[1,3])
 				uni.switchTab({

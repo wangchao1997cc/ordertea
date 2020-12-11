@@ -23,11 +23,10 @@
 			 :scroll-top="tabScrollTop" :style="{height:shopBoxHeight + 'rpx'}" binddragend="touchEnd">
 				<!-- 活动banner -->
 				<swiper class="header_banner" :indicator-dots="true" :autoplay="true" :interval="3000" :duration="1000">
-					<swiper-item>
-						<view class="swiper-item">活动图1</view>
-					</swiper-item>
-					<swiper-item>
-						<view class="swiper-item">活动图2</view>
+					<swiper-item v-for="(item,index) in products.topBannerList" :key="index">
+						<view class="swiper-item">
+							<image :src="item"></image>
+						</view>
 					</swiper-item>
 				</swiper>
 				<!-- 对应产品列表 -->
@@ -37,7 +36,7 @@
 					</view>
 					<view class="t-list">
 						<block v-for="(titem,idx) in item.products" :key="idx">
-							<view class="t-item">
+							<view class="t-item" @click="openOrderMask(titem)">
 								<view class="good-pic">
 									<image :src="titem.logo?titem.logo:'../../static/menu/logo.png'"></image>
 								</view>
@@ -46,7 +45,7 @@
 										{{titem.name}}
 									</view>
 									<view class="goods-desc">
-										{{titem.desc}}发大水的发烧的发烧的发烧发烧发烧发大水
+										{{titem.desc}}
 									</view>
 									<view class="goods-footer">
 										<view class="goods-price">
@@ -56,7 +55,8 @@
 											<view class="juide-text" v-if="titem.isInServiceTime || titem.isSoldOut">
 												{{!titem.isInServiceTime?'餐品不在供应时间':(titem.isSoldOut?'商品已售罄':'')}}
 											</view>
-											<view v-if="titem.type == 1" class="goods-single">
+
+											<view v-if="titem.type == 1 && !titem.isRequirement" class="goods-single">
 												<image v-if="titem.num" src="../../static/sub.png"></image>
 												<view class="num">
 													{{titem.num?titem.num:''}}
@@ -64,7 +64,6 @@
 												<image src="../../static/add.png"></image>
 											</view>
 											<view v-else class="meal">
-												<!-- class="meal" :class="{spec:row.isRequirement}" -->
 												<text>{{titem.isRequirement?'选规格':'选套餐'}}</text>
 											</view>
 										</view>
@@ -78,9 +77,53 @@
 				</view>
 			</scroll-view>
 		</view>
-		<view class="order-masker">
-			<view class="order-info" :style="{height: popHeight+'px'}" :animation="animationData">
+		<view class="order-masker" v-if="allmask">
+			<view class="order-info" :style="{height: popHeight+'px'}" :animation="animationData" :class="{translate:popHeight}">
+				<!-- 高的弹窗 -->
+				<view class="order_info_box">
+					<view class="goods-pic">
+						<view class="close-mask" @click="closePopup">
+							<image src="../../static/cha.png"></image>
+						</view>
+						banner 图
+					</view>
+					<scroll-view scroll-y class="tea_attr">
+						<view class="order-desc">
+							<text>好喝的奶茶\n</text>
+							<text>这里是好喝的奶茶的发烧发烧发烧发烧发哇</text>
+						</view>
+						<view class="arrt-cont">
+							<view class="arrt-item" v-for="(item,index) in specarr" :key="index">
+								<view class="arrt_name">
+									{{item.title}}
+								</view>
+								<view class="arrt_Iitem-cont">
+									<view class="arrt_Iitem" :class="{choose_item:aitem.selected || currtabarr[index][0]==idx}" v-for="(aitem,idx) in item.items" :key="idx" @click="chooseAttr(index,idx)">
+										{{aitem.name}}
+									</view>
+								</view>
+							</view>
+						</view>
+					</scroll-view>
 
+					<view class="order-footer">
+						<view class="num-control">
+							<view class="price">
+								¥99
+							</view>
+							<view class="goods-single">
+								<image src="../../static/sub.png"></image>
+								<view class="num">
+									{{titem.num?titem.num:'1'}}
+								</view>
+								<image src="../../static/add.png"></image>
+							</view>
+						</view>
+						<view class="confirm-btn">
+							加入购物车
+						</view>
+					</view>
+				</view>
 			</view>
 		</view>
 		<storeDetail :shopinfo="storeInfo" :shopBoxHeight="shopBoxHeight" :showdetail="showdetail"></storeDetail>
@@ -118,6 +161,7 @@
 	export default {
 		data() {
 			return {
+				allmask: false,
 				// model: 2, //2为自取模式， 1为外卖模式
 				shopBoxHeight: null,
 				tabScrollTop: 0, //滚动条与顶部的距离
@@ -129,10 +173,12 @@
 				storeInfo: {}, //选中的店铺信息
 				showdetail: true, //展示店铺更多信息
 				useraddress: null, //用户选择的地址信息 
-				popHeight: '',   //弹出层的高度
-				popHeightInfo:{   //弹出层的两种高低
-				},   //弹出层的高度
-				animationData:{},
+				popHeight: '', //弹出层的高度
+				popHeightInfo: { //弹出层的两种高低
+				}, //弹出层的高度
+				animationData: {},
+				specarr: [], //规格属性数据
+				currtabarr:[],
 			}
 		},
 
@@ -207,9 +253,6 @@
 			if (chooseAddress) { //有地址
 				that.useraddress = chooseAddress;
 			}
-			// else{   //无地址   还是自取模式
-			// 		this.$store.commit('changebussiness',[2]);
-			// 	}
 			if (that.products.length && that.products[0].top) {
 				setTimeout(() => {
 					that.calcSize();
@@ -229,6 +272,86 @@
 				this.storeInfo = store;
 				this.getStoreMenu(store.storeId);
 			},
+			//点击商品打开幕布
+			openOrderMask(goods) {
+				let that = this;
+				console.log(goods.isInServiceTime, goods.isSoldOut)
+				// if(goods.isInServiceTime || goods.isSoldOut){   //售罄和不在售时间内
+				// 	return;
+				// }
+				let popHeightInfo = that.popHeightInfo;
+				that.handleData(goods.property);
+				console.log(goods)
+				// console.log(goods.propertys)
+				// console.log(goods.items)	
+				if (goods.type == 1 && !goods.isRequirement) {
+					that.openAnimation(popHeightInfo.low);
+				} else {
+					that.openAnimation(popHeightInfo.hei);
+				}
+			},
+			//选择规格
+			chooseAttr(index,idx){
+				
+				let specarr = this.specarr
+				console.log(this.specarr[index].items[idx])
+				if(index != specarr.length-1){
+					this.currtabarr[index].splice(0,1,idx);
+				}else{
+					this.specarr[index].items[idx].selected = !this.specarr[index].items[idx].selected;
+				}
+			},
+			//处理规格属性
+			handleData(data) {
+				let specarr = [];
+				let currtabarr = [];
+				specarr.push(data.standard);
+				for (let i in data.propertys) {
+					specarr.push(data.propertys[i]);
+				}
+				for(let i=0; i<specarr.length; i++){
+					currtabarr.push([0]);
+				}
+				console.log(currtabarr)
+				this.currtabarr = currtabarr;
+				data.choices.items.forEach(item => {
+					this.$set(item, 'selected', false);
+					// item.selected = false;
+				})
+				specarr.push(data.choices)
+				// this.choices = data.choices;
+				// specarr.push(data.choices);
+				// specarr.forEach((item,index) => {
+				// 	item.items.forEach((aitem,idx) => {
+				// 		if(idx==0 && index!=3){
+				// 			aitem.selected = true
+				// 		}else{
+				// 			aitem.selected = false
+				// 		}
+				// 	})
+				// })console.log(currtabarr)
+				console.log(specarr)
+				this.specarr = specarr;
+			},
+			//展现动画
+			openAnimation(height) {
+				this.allmask = true;
+				uni.hideTabBar({});
+				this.popHeight = height;
+				let animation = this.animation;
+				this.$nextTick(() => { //解决DOM更新异步问题
+					animation.translateY(0).step()
+					this.animationData = animation.export();
+				})
+			},
+			//关闭底部的弹窗
+			closePopup() {
+				uni.showTabBar({})
+				let animation = this.animation;
+				animation.translateY(this.popHeight).step()
+				this.animationData = animation.export();
+				this.allmask = false;
+			},
 			async getStoreMenu(storeId) {
 				this.loadingState = false;
 				let that = this;
@@ -241,24 +364,21 @@
 					this.handleShopData(res.data.bigs);
 				}
 			},
-
 			//计算左边商品分类的高度
 			computReftHe() {
 				const sysinfo = uni.getSystemInfoSync();
 				let windowHeight = sysinfo.windowHeight;
 				this.popHeightInfo = {
-					hei: windowHeight * 0.8,
-					low: windowHeight * 0.5,
+					hei: windowHeight * 1,
+					low: windowHeight * 0.7,
 				};
 				this.shopBoxHeight = windowHeight * (750 / sysinfo.windowWidth) - 200;
-				let animation = uni.createAnimation({   //定义动画
-					duration: 300, 
+				let animation = uni.createAnimation({ //定义动画
+					duration: 300,
 					timingFunction: 'linear',
 					delay: 0
 				})
 				this.animation = animation;
-				// animation.translateY(- this.popHeightInfo).step()
-				// this.animationData = animation.export();
 			},
 			//获取地理位置
 			async getLocation() {
@@ -407,11 +527,7 @@
 			},
 			//当外卖模式下切换店铺
 			switchStore() {
-				if (this.model == 1) {
-					// uni.navigateTo({
-					// 	url: ''
-					// })
-				}
+				if (this.model == 1) {}
 			}
 		}
 	}
@@ -425,6 +541,22 @@
 
 	}
 
+	/* 加减控件 */
+	.goods-single {
+		height: 44upx;
+		line-height: 44upx;
+		display: flex;
+
+		image {
+			@include rect(44upx, 44upx);
+		}
+
+		.num {
+			width: 60upx;
+			text-align: center;
+		}
+	}
+
 	.order-masker {
 		@extend %all-mask;
 
@@ -432,11 +564,137 @@
 			position: absolute;
 			width: 100%;
 			bottom: 0;
-		    transform: translateY(100%); 
-			/* height: 80%; */
-			background-color: $bg-white;
-			border-top-right-radius: 8upx;
-			border-top-left-radius: 8upx;
+			transform: translateY(100%);
+			background-color: #F5F5F5;
+			border-top-right-radius: 20upx;
+			border-top-left-radius: 20upx;
+		}
+
+		/* .translate{
+			transform: translateY(100%);
+		} */
+		.order_info_box {
+			@include rect(100%, 100%);
+			padding: 28upx;
+			box-sizing: border-box;
+			position: relative;
+
+			.goods-pic {
+				@include rect(100%, 400upx);
+				border: 1upx $main-color solid;
+				position: relative;
+
+				.close-mask {
+					position: absolute;
+					right: 0;
+					top: 0;
+					@include rect(90upx, 90upx);
+
+					image {
+						@include rect(50upx, 50upx);
+						margin: 20upx;
+					}
+				}
+			}
+
+			.tea_attr {
+				width: 100%;
+				max-height: 525upx;
+				margin: 25upx auto;
+				border-radius: 20upx;
+				overflow: hidden;
+
+				.arrt-cont {
+					padding: 25upx 40upx;
+					box-sizing: border-box;
+					background-color: $bg-white;
+					border-radius: 20upx;
+
+					.arrt-item {
+						/* height: 60upx; */
+						/* 		@extend %flex-alcent; */
+						line-height: 50upx;
+						display: flex;
+						margin-bottom: 30upx;
+
+						.arrt_name{
+							width: 125upx;
+							font-size: 30upx;
+						}
+						.arrt_Iitem-cont {
+							/* margin-left: 40upx; */
+							width: 510upx;
+							@extend %flex-list;
+
+							.arrt_Iitem {
+
+								font-size: 26upx;
+								@include rect(150upx, 50upx);
+								text-align: center;
+								background-color: #F5F5F5;
+								color: #D6D6D6;
+								border-radius: 50upx;
+								margin-right: 20upx;
+								margin-bottom: 15upx;
+								box-sizing: border-box;
+
+								&.choose_item {
+									border: 1upx $main-color solid;
+									background-color: $bg-white;
+									color: $main-color;
+								}
+
+								&:nth-of-type(3) {
+									margin-right: 0upx;
+								}
+							}
+						}
+					}
+				}
+			}
+
+			.order-desc {
+				width: 100%;
+				padding: 20upx 30upx;
+				box-sizing: border-box;
+				@include lineAny(2);
+				background-color: $bg-white;
+				border-radius: 20upx;
+				margin-bottom: 25upx;
+
+				text {
+					&:last-child {
+						font-size: $font-sm;
+						color: $text-grey;
+					}
+				}
+			}
+
+			.order-footer {
+				width: 694upx;
+				position: absolute;
+				bottom: 50upx;
+				left: 28upx;
+
+				.num-control {
+					@include rect(100%, 100upx);
+					background-color: $bg-white;
+					border-radius: 20upx;
+					@extend %flex-alcent;
+					justify-content: space-between;
+					@include box-padding(30upx);
+					line-height: 100upx;
+				}
+
+				.confirm-btn {
+					@include rect(100%, 100upx);
+					background-color: $main-color;
+					color: $bg-white;
+					@include text-allcenter(100upx);
+					margin-top: 25upx;
+					border-radius: 20upx;
+				}
+			}
 		}
 	}
 
@@ -541,6 +799,10 @@
 			height: 280upx;
 			border: 1upx $main-color solid;
 			box-sizing: border-box;
+
+			image {
+				@include rect(100%, 100%);
+			}
 		}
 
 		.class_tit {
@@ -614,20 +876,7 @@
 						font-size: $font-sm;
 					}
 
-					.goods-single {
-						height: 44upx;
-						line-height: 44upx;
-						display: flex;
 
-						image {
-							@include rect(44upx, 44upx);
-						}
-
-						.num {
-							width: 60upx;
-							text-align: center;
-						}
-					}
 
 					.meal {
 						height: 44upx;
