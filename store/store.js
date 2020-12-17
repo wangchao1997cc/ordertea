@@ -13,12 +13,17 @@ const store = new Vuex.Store({
 		session_key:'',
 		businessType: [2],
 		storeId:'',
+		isLogin:false,
     },
     mutations: {
         copy(state,cont){
             //单一的改变某一个变量
             state.storeId = cont;
         },
+		//改变登录状态
+		changeLogin(state,cont){
+			state.isLogin = cont;
+		},
 		changebussiness(state,cont){
 			state.businessType = cont;
 		},

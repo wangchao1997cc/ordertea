@@ -1,14 +1,72 @@
 <template>
 	<view class="content">
-		<!-- <image class="logo" src="/static/logo.png"></image> -->
-		<view class="text-area">
-			{{cityid}}
+		<navbar :config="config"></navbar>
+		<view class="head-info">
+
+		</view>
+		<view class="home-cont">
+			<view class="app-model">
+				<view class="">
+					自取
+				</view>
+				<view class="">
+					外卖
+				</view>
+			</view>
+			<view class="blance-box">
+				<view class="blance-l">
+					<view>
+						<image></image>
+						我的余额：0
+					</view>
+					<view>
+						点击进行充值，享取优惠
+						<image src="../../static/07_icon_right.png"></image>
+					</view>
+				</view>
+				<image class="blance-icon"></image>
+			</view>
+			<view class="integral">
+				<view class="integral-item" v-for="(item,index) in integralarr" :key="index">
+					<view class="intehead_info">
+						<image></image>
+						<view class="">
+							<text>{{item.tit}}\n</text>
+							<text>{{item.value}}</text>
+						</view>
+					</view>
+					<view class="active" v-if="index==4">
+						<view class="active-juide">
+							<image></image>
+							<text>6 </text>
+							<text>/ 7</text>
+						</view>
+						<sildermine :config="sliderConfig"></sildermine>
+						<view class="active-desc">
+							再集4杯可获得好礼
+							<image src="../../static/homepage/right.png"></image>
+						</view>
+					</view>
+					<image class="bg-pic">
+
+					</image>
+				</view>
+			</view>
+			<view class="adver">
+				<view class="adver-tit">
+					新鲜事
+				</view>
+				<view class="adver-item">
+					<image></image>
+				</view>
+			</view>
 		</view>
 	</view>
 </template>
 
 <script>
-	
+	import navbar from '../../components/nav.vue'
+	import sildermine from '../../components/minesilder.vue'
 	import {
 		getLocation
 	} from '../../utils/author.js'
@@ -16,24 +74,74 @@
 		mapState,
 		mapMutations,
 	} from "vuex";
+	import {refreshUserInfo,ajaxUserLogin} from '../../utils/publicApi.js'
 	export default {
 		data() {
 			return {
-				title: 'Hello'
+				progressbar: '60%',
+				title: 'Hello',
+				sliderConfig:{
+					progresswidth:'272upx',
+					progressbar: '50%',
+				},
+				config: {
+					slideHeight: 400,
+					hiddentit: false,
+					color: '#343434',
+					bgcolor: 'white',
+				},
+				integralarr: [{
+						icon: '',
+						tit: '我的积分',
+						value: '288',
+						bg: '',
+					},
+					{
+						icon: '',
+						tit: '积分商城',
+						value: '	更多好物',
+						bg: '',
+					}, {
+						icon: '',
+						tit: '赚取积分',
+						value: '玩转积分',
+						bg: '',
+					},
+					{
+						icon: '',
+						tit: '我的优惠卷',
+						value: '288',
+						bg: '',
+					},
+					{
+						icon: '',
+						tit: '集点卡',
+						value: '',
+						bg: '',
+					},
+				]
 			}
 		},
-		onLoad() {
+		components:{
+			navbar,
+			sildermine
+		},
+		async onLoad() {
+			if(!this.JSESSIONID){
+				await ajaxUserLogin(); //先进行登录
+			}
 			this.init(); //归纳函数
 		},
-		onShow() {
-			console.log(this.state)
-			this.getLocation(); //获取地理位置信息
-		},
 		computed: {
-			...mapState(['cityid'])
+			...mapState(['cityid','JSESSIONID','isLogin'])
 		},
 		methods: {
-			init() {},
+			init() {
+				this.getUserInfo();
+			},
+			getUserInfo(){
+				refreshUserInfo();
+			},
 			async getLocation() {
 				let location = await getLocation();
 			},
@@ -41,30 +149,178 @@
 	}
 </script>
 
-<style>
+<style lang="scss">
 	.content {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
+		width: $screen-width;
+		color: $uni-text-color;
+		font-size: $font-md;
 	}
 
-	.logo {
-		height: 200rpx;
-		width: 200rpx;
-		margin-top: 200rpx;
-		margin-left: auto;
-		margin-right: auto;
-		margin-bottom: 50rpx;
+	.head-info {
+		@include rect(100%, 640upx);
+		background-color: $main-color;
+
 	}
 
-	.text-area {
-		display: flex;
-		justify-content: center;
+	.home-cont {
+		width: 100%;
+		@include box-padding(26upx);
+		margin-top: -80upx;
+
+		.app-model {
+			@include rect(100%, 345upx);
+			background-color: $bg-white;
+			border-radius: $radius-md;
+			@extend %flex-alcent;
+
+			view {
+				@include rect(50%, 258upx);
+
+				&:first-child {
+					border-right: 1upx $line-color solid;
+				}
+			}
+		}
 	}
 
-	.title {
-		font-size: 36rpx;
-		color: #8f8f94;
+	.blance-box {
+		@include rect(100%, 160upx);
+		background-color: $bg-white;
+		margin: 20upx 0;
+		@extend %flex-alcent;
+		border-radius: $radius-md;
+		justify-content: space-between;
+
+		.blance-l {
+			margin-left: 36upx;
+
+			view {
+				@extend %flex-alcent;
+
+				image {
+					@include rect(32upx, 32upx) margin-right: 25upx;
+					border: 1upx $main-color solid;
+				}
+
+				&:last-child {
+					color: $text-grey;
+					font-size: 24upx;
+					margin-top: 15upx;
+
+					image {
+						@include rect(9upx, 18upx);
+						margin-left: 24upx;
+					}
+				}
+			}
+		}
+
+		.blance-icon {
+			@include rect(52upx, 52upx);
+			margin-right: 50upx;
+			border: 1upx $main-color solid;
+		}
+	}
+
+	.integral {
+		width: 100%;
+		@extend %flex-list;
+
+		.integral-item {
+			@include rect(220upx, 268upx);
+			margin: 0 19upx 19upx 0;
+			background-color: $bg-white;
+			border-radius: $radius-md;
+			position: relative;
+
+			&:nth-of-type(3) {
+				margin: 0;
+			}
+
+			&:last-child {
+				width: 458upx;
+				margin: 0;
+			}
+
+			.intehead_info {
+				width: 100%;
+				margin: 36upx 0 0 24upx;
+				display: flex;
+
+				image {
+					@include rect(32upx, 32upx);
+					border: 1upx $main-color solid;
+					margin-right: 16upx;
+				}
+
+			}
+
+			.active {
+				width: 272upx;
+				margin: 40upx 0 0 30upx;
+
+				.active-juide {
+					height: 44upx;
+					display: flex;
+					align-items: flex-end;
+					margin-bottom: 30upx;
+					text{
+						line-height: 44upx;
+						font-size: 41upx;
+						
+						&:last-child{
+							line-height: 30upx;
+							font-size: 21upx;
+						}
+					}
+					image {
+						@include rect(27upx, 44upx);
+						border: 1upx $main-color solid;
+						margin-right: 14upx;
+					}
+				}
+				.active-desc{
+					width: 100%;
+					margin-top: 10upx;
+					font-size: 24upx;
+					@extend %flex-alcent;
+					color: #A3A3A3;
+					image{
+						@include rect(6upx,13upx);
+						margin-left: 12upx;
+					}
+				}
+			}
+
+			.bg-pic {
+				position: absolute;
+				@include rect(93upx, 107upx);
+				bottom: 0;
+				right: 0;
+				border: 1upx $main-color solid;
+			}
+		}
+	}
+	.adver{
+		width: 100%;
+		background-color: $bg-white;
+		padding: 1upx 35upx;
+		box-sizing: border-box;
+		border-radius: $radius-md;
+		.adver-tit{
+			font-size: $font-lg;
+			font-weight: 700;
+			margin: 40upx auto;
+		}
+		.adver-item{
+			@include rect(628upx,220upx);
+			border-radius: 8upx;
+			overflow: hidden;
+			margin-bottom: 28upx;
+			image{
+				@include rect(100%,100%);
+				border: 1upx $main-color solid;
+			}
+		}
 	}
 </style>

@@ -18,6 +18,8 @@
 .disnone{
 	display: none;
 }
+
+$color-red:#F15621;
 $color-primary: #FF3578;
 $color-success: #4cd964;
 $color-warning: #f0ad4e;
@@ -38,10 +40,10 @@ $disabled:#e2e2e2;
 $grey-line:rgba(229,229,229,1);
 
 /* 文字基本颜色 */
-$main-color: #b6d842;
+$main-color: #A8D732;
 $text-black:#1A1A1A;
 $text-dark:#666666;
-$text-grey:#757575;
+$text-grey:#b2b2b2;
 $text-white:#fff;
 $uni-text-color:#333333;//基本色
 $uni-text-color-inverse:#fff;//反色
@@ -53,6 +55,7 @@ $font-color-base: #606266;
 $font-color-light: #909399;
 $font-color-disabled: #C0C4CC;
 $font-color-spec: #4399fc;
+$line-color: #dcdcdc;
 
 /* 背景颜色 */
 $bg-white:#ffffff;
@@ -81,7 +84,7 @@ $img-lg:80upx;
 /* Border Radius */
 $radius-xs: 4upx;
 $radius-sm: 8upx;
-$radius-md: 20upx;
+$radius-md: 14upx;
 $radius-lg: 200upx;
 $radius-circle: 50%;
 
@@ -206,15 +209,15 @@ $uni-font-size-paragraph:30upx;
 //总宽
 $screen-width:750upx;
 //清除button默认样式
-%clear-button{
-	margin: 0;
-	padding: 0;
-	outline: none; //消除默认点击蓝色边框效果
-	background: $bg-white;
-	&::after {
-		border: none;
-	}
-}
+// %clear-button{
+// 	margin: 0;
+// 	padding: 0;
+// 	outline: none; //消除默认点击蓝色边框效果
+// 	background: $bg-white;
+// 	&::after {
+// 		border: none;
+// 	}
+// }
 	//圆形box
 %defin-radius {
 	border-radius: 50%;

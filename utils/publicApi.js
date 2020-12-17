@@ -3,17 +3,38 @@ import store from '../store/store.js'
 
 //刷新用户信息
 export const refreshUserInfo = async callback => {
-	let res = await getUserInfo();
-	if (res.code == 200) {
-		uni.setStorageSync('userinfo', res.data);
-		if (callback) {
-			return res
+	let res = await api.getUserInfo();
+	if (res && res.status == 1) {
+		if(res.data.phone){
+			store.commit('changeLogin',true);
 		}
+		if (callback) {
+			return res.data;
+		}
+		uni.setStorageSync('userinfo', res.data);
 	}
 }
 
+//用户注册
+export const userRegister = async data => {
+	let res = await api.vUserLogin(data);
+	if (res && res.code == 200) {
+		uni.setStorageSync('memberinfo',res.data[0]);
+		
+	}
+}
+
+export const getBannerList = async callback => {
+	let res = await api.getBannerList({});
+	if (res.status == 1) {
+		return res.data
+	}
+}
+
+
+
 //wx登录
-function wxLogin() {
+export function wxLogin() {
 	return new Promise((resolve, reject) => {
 		uni.login({
 			success: params => {
@@ -41,6 +62,7 @@ export const ajaxUserLogin = async (takeit) => {
 		code: wxCode,
 	};
 	let res = await api.getWxOpenid(data, true);
+	console.log(res)
 	if (res.status == 1) {
 		delete res.data.errcode;
 		store.commit('change', res.data);

@@ -8,6 +8,14 @@
 			}
 		},
 		{
+			"path": "pages/home/home",
+			"style": {
+				"navigationBarTitleText": "首页",
+				"navigationStyle": "custom",
+				"navigationBarTextStyle": "white"
+			}
+		},
+		{
 			"path": "pages/address/address",
 			"style": {
 				"navigationBarTitleText": "地址管理"
@@ -23,14 +31,7 @@
 				"navigationBarTitleText": "点餐"
 			}
 		},
-		{
-			"path": "pages/home/home",
-			"style": {
-				"navigationBarTitleText": "首页"
-			}
-		}
-	    
-        ,{
+	    {
             "path" : "pages/order/order",
             "style" : {
 				"navigationBarTitleText": "订单"
@@ -58,8 +59,8 @@
 	"globalStyle": {
 		"navigationBarTextStyle": "black",
 		"navigationBarTitleText": "",
-		"navigationBarBackgroundColor": "#F8F8F8",
-		"backgroundColor": "#F8F8F8"
+		"navigationBarBackgroundColor": "#FFFFFF",
+		"backgroundColor": "#FFFFFF"
 	},
 	"tabBar": {
 		"color": "#9A9A9A",

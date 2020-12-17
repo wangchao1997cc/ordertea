@@ -68,12 +68,6 @@
 		},
 		onLoad() {
 			let data = getRouteParams();
-			// data ? '' : data = {
-			// 	cityId: 11478,
-			// 	cityName: "广州市",
-			// 	districtId: 0,
-			// 	districtName: "全部区域",
-			// }
 			console.log(data)
 			this.address = data;
 			this.getStoreList(data); //获取地区对应的门店列表
@@ -90,8 +84,6 @@
 			async getStoreList(data) {
 				let location = uni.getStorageSync('location');
 				let that = this;
-				console.log(that.businessType)
-				// console.log(that.$store.state.)
 				let params = {
 					cityId: data.cityId,
 					businessType: that.businessType,
@@ -99,6 +91,8 @@
 					pageNow: that.pageindex,
 					pageSize: 5
 				}
+				
+				
 				data.districtId ? params.districtId = data.districtId : '';
 				let res = await api.getStoreList(params);
 				if (res.status == 1) {

@@ -1,5 +1,5 @@
 import {
-	service,normoal
+	service,normoal,service_v
 } from './http.js';
 const key = '&key=93ba9db2f9f4f0e4';
 
@@ -64,9 +64,20 @@ const updateAddress = (data, isloading) => {
 	return service('candao.userAddress.update', 'post', data, isloading)
 }
 
+//删除地址
+const deleteAdress = (data, isloading) => {
+	return service('candao.userAddress.delete', 'post', data, isloading)
+}
 
+//获取广告banner  
+const getBannerList = (data, isloading) => {
+	return service('candao.storeOwn.getWeChatAppSetting', 'post', data, isloading)
+}
 
-
+//获取用户信息 
+const getUserInfo = (data, isloading) => {
+	return service('candao.user.getBaseInfo', 'post', data, isloading)
+}
 
 //normoal请求区域
 //微信登录
@@ -79,11 +90,28 @@ const setCache = (data, isPlicing, isloading) => {
 	return normoal('Cache?actionId=1', 'post', data, isPlicing, isloading)
 }
 
+//用户手机号登录
+const phoneLogin = (data, isPlicing, isloading) => {
+	return normoal('LocalAction?method=autoLogin' + key, 'post', data, isPlicing, isloading)
+}
+
+
+//v_4.3接口地方  service_v
+//用户注册
+const vUserLogin = (data, isloading) => {
+	return service_v('v4_3/card/register','post', data, isloading)
+}
+
 
 
 
 
 module.exports = {
+	deleteAdress:deleteAdress,
+	vUserLogin:vUserLogin,
+	phoneLogin:phoneLogin,
+	getUserInfo:getUserInfo,
+	getBannerList:getBannerList,
 	getStoreList:getStoreList,
 	getNearStore:getNearStore,
 	updateAddress:updateAddress,

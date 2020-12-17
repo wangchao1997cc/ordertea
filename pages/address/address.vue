@@ -3,29 +3,13 @@
 		<view class="list">
 			<view class="row-box" v-for="(item,index) in addressList" :key="index" @tap="select(item)">
 				<view class="name-tel">
-					<text>姓名：{{item.receiverName}}</text>
-					<text>{{item.receiverPhone}}</text>
+					<view>{{item.receiverAddress}}</view>
+					<view @click.stop="prentEvent">
+						<image @click="addressEdit(item)" src="../../static/06_icon_编辑.png"></image>
+					</view>
 				</view>
 				<view class="address-desc">
-					<text>{{item.receiverAddress}}</text>
-				</view>
-				<view class="address-foot" @click.stop="stopDefault">
-					<view class="foot-l" :class="{on:item.isDefault}" @click="setupDefault(item)">
-						<view class="ad-chose">
-							<!-- <image v-if="item.defaultAddress" src="../../static/shopcar_chose.png"></image> -->
-						</view>
-						{{item.defaultAddress?'已设为默认地址':'设为默认地址'}}
-					</view>
-					<view class="foot-r">
-						<view @click="addressEdit(item)">
-							<!-- <image src="../../static/address_update.png"></image> -->
-							<text>编辑</text>
-						</view>
-						<view @click="deleteAddress(item.addrId,index)">
-							<!-- <image src="../../static/delete-icon.png"></image> -->
-							<text>删除</text>
-						</view>
-					</view>
+					<text>{{`${item.receiverName} ${item.receiverPhone}`}}</text>
 				</view>
 			</view>
 		</view>
@@ -80,7 +64,10 @@
 		// 	nodata
 		// },
 		methods: {
-
+			//阻止默认事件
+			prentEvent(){
+				return;
+			},
 			//设为默认地址
 			setupDefault(item) {
 				if (item.defaultAddress) {
@@ -211,16 +198,20 @@
 
 	.add-btn {
 		position: fixed;
-		bottom: 0;
-		width: 100%;
-		height: 100upx;
+		bottom: 70upx;
+		left: 26upx;
+		width: 698upx;
+		height: 88upx;
 		justify-content: center;
 		align-items: center;
+		border-radius: 44upx;
+		overflow: hidden;
+
 
 		.btn {
 			flex: 1;
 			height: 100%;
-			background: linear-gradient(-90deg, rgba(255, 78, 81, 1), rgba(253, 119, 120, 1));
+			background: $main-color;
 			color: #fff;
 			justify-content: center;
 			align-items: center;
@@ -239,92 +230,41 @@
 
 	.list {
 		flex: 1;
-		// padding-top: 10upx;
 		flex-wrap: wrap;
 
 
-
 		.row-box {
-			@include rect(690upx, 280upx);
+			@include rect(698upx, 145upx);
 			background: #FFFFFF;
 			box-shadow: 5px 4px 6px 0px rgba(0, 0, 0, 0.1);
 			border-radius: 10px;
 			flex-wrap: wrap;
-			padding: 30upx;
+			padding: 30upx 40upx;
 			box-sizing: border-box;
 			font-size: 30upx;
 			margin: 30upx auto 0 auto;
 
 			.name-tel {
+				color: #000000;
+				font-size: $font-md;
 				@include rect(100%, 30upx) @extend %flex-alcent;
 				justify-content: space-between;
+				view:first-child{
+					width: 550upx;
+					@include lineOnly();
+				}
+				image{
+					@include rect(30upx,30upx);
+					margin-right: 7upx;
+				}
 			}
 
 			.address-desc {
 				min-height: 76upx;
 				line-height: 38upx;
-				color: #666666;
-				font-size: 28upx;
-				margin: 30upx 0;
-			}
-
-			.address-foot {
-				padding-top: 30upx;
-				box-sizing: border-box;
-				@include rect(100%, 60upx);
-				border-top: 1px solid #D7D7D7;
-				line-height: 30upx;
-
-				.foot-l {
-					width: 300upx;
-					font-size: 28upx;
-					color: #999999;
-					align-items: center;
-
-					.ad-chose {
-						border: 2upx #AAAAAA solid;
-						@include rect(32upx, 32upx);
-						border-radius: 50%;
-						margin-right: 20upx;
-						box-sizing: border-box;
-
-						image {
-							@include rect(32upx, 32upx);
-						}
-					}
-
-					&.on {
-						color: $main-color;
-
-						.ad-chose {
-							border: none;
-						}
-					}
-				}
-
-				.foot-r {
-					flex: 1;
-					justify-content: flex-end;
-					font-size: 26upx;
-					color: #999999;
-
-					view {
-						margin-left: 60upx;
-
-						image {
-							@include rect(23upx, 28upx);
-							margin-right: 20upx;
-						}
-
-						&:first-child {
-							image {
-								@include rect(28upx, 28upx);
-							}
-						}
-					}
-				}
-
-				// justify-content: space-between;
+				color:#87888B;
+				font-size: 24upx;
+				margin: 18upx 0;
 			}
 		}
 	}

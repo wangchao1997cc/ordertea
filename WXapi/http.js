@@ -1,24 +1,22 @@
 //定义环境 请求封装
 const base_url_m = 'https://qc.can-dao.com:7776/'; //测试环境
+const baseurl_v43 = 'https://api.vi-ni.com/openapi/' //测试环境	
+// const baseurl_v43 = 'https://api.v-ka.com/openapi/'    //生产环境
 const default_value_f = 'Action?' + 'key=93ba9db2f9f4f0e4'
 const default_value_s = 'SecretAction?' + 'key=93ba9db2f9f4f0e4'
 import store from '../store/store.js';
+const app = getApp();
+const key = 'jdhajshdjf871238767o';
+
 
 
 var JSESSIONID = store.state.JSESSIONID;
-
-// let againData = null;
-// let requestNUms = 1; //请求次数限制
-// let header = {
-// 	"Cookie":  JSESSIONID? JSESSIONID:'',
-// }
 
 //使用 data.actionName   请求的方式
 export function service(url, method, data, isloading) {
 	let header = {
 		'content-type': method === 'get' ? 'application/x-www-form-urlencoded' : 'application/json',
-		// "Cookie": JSESSIONID ? 'JSESSIONID=' + JSESSIONID : '',
-		"Cookie":'JSESSIONID=58f04df5-56c9-417b-8f2b-27fd632a2063; path=/; expires=Thu, 10-Dec-2020 05:30:24 GMT'
+		"Cookie": JSESSIONID ? 'JSESSIONID=' + JSESSIONID : '',
 	}
 	return request(method, header, url, data, isloading)
 }
@@ -32,9 +30,53 @@ export function normoal(url, method, data, isPlicing, isloading) {
 	}
 	let header = {
 		'content-type': method === 'get' ? 'application/x-www-form-urlencoded' : 'application/json',
-		"Cookie": JSESSIONID ? JSESSIONID : '',
+		"Cookie": JSESSIONID ? 'JSESSIONID=' + JSESSIONID : '',
 	}
+	url = base_url_m + url;
 	return nrequest(method, header, url, data, isloading)
+}
+
+
+//v_4.3接口请求
+import md5 from 'blueimp-md5'
+// const sign = md5('1.0.9asdf1234')
+
+const timestmpParams = {
+	method: 'get',
+	header: {
+	},
+	url: baseurl_v43 + 'v4_3/getCurrentTimeMilli',
+}
+export async function service_v(url, method, data, isloading) {
+	let timestamp = await nrequest(timestmpParams.method, timestmpParams.header, timestmpParams.url, timestmpParams.data);
+	const header = {
+		// "content-type": method === 'get' ? 'application/x-www-form-urlencoded' : 'application/json',
+		"brandId": app.globalData.brandId,
+		"clientId": app.globalData.clientId,
+		"timestamp":timestamp.data,
+	}
+	let storeCode = app.globalData.storeInfo.extraStoreId;
+	if(storeCode){
+		header.storeCode = storeCode;
+	}
+	let md5Params = Object.assign({},header);
+	header.key = key;
+	Object.assign(md5Params,data);
+	md5Params = handleSingn(md5Params);
+	url = baseurl_v43 + url;
+	header.sign = md5Params;
+	return nrequest(method, header, url, data, isloading)
+}
+//处理   md5 sign参数
+function handleSingn(data){
+	let newData = {};
+	Object.keys(data).sort().map(key => {
+	   newData[key] = data[key]
+	})
+	newData.key = key;
+	newData = jsonToUrlForm(newData);
+	newData = md5(newData.substr(1));
+	return newData.toUpperCase();
 }
 
 /**
@@ -45,11 +87,6 @@ function jsonToUrlForm(paramJson) {
 	for (var key in paramJson) {
 		var value = paramJson[key];
 		formString += "&" + key + "=" + value;
-		// if (formString == "") {
-		// 	formString += "?" + key + "=" + value;
-		// } else {
-		// 	formString += "&" + key + "=" + value;
-		// }
 	}
 	return formString;
 }
@@ -61,7 +98,7 @@ function nrequest(method, header, url, data, isloading) {
 	return new Promise((resolve, reject) => {
 		uni.request({
 			header: header,
-			url: base_url_m + url,
+			url: url,
 			data: data,
 			method: method,
 			dataType: 'json',
@@ -70,8 +107,8 @@ function nrequest(method, header, url, data, isloading) {
 				if (e.statusCode === 200) {
 					resolve(e.data);
 					if (!JSESSIONID) {
+						console.log(111)
 						JSESSIONID = e.header["Set-Cookie"].match(/JSESSIONID=(.*)?;/)[1];
-						// JSESSIONID = '58f04df5-56c9-417b-8f2b-27fd632a2063; path=/; expires=Thu, 10-Dec-2020 05:30:24 GMT';  //单页面测试使用
 						let data = {
 							"JSESSIONID": JSESSIONID
 						};
@@ -88,12 +125,11 @@ function nrequest(method, header, url, data, isloading) {
 
 
 function request(method, header, url, data, isloading) {
-	// if (requestNUms > 3) return;
 	if (isloading) uni.showLoading({
 		mask: true
 	});
 	return new Promise((resolve, reject) => {
-		if(data){
+		if (data) {
 			let way = data.way;
 			delete data.way;
 		}
@@ -110,9 +146,7 @@ function request(method, header, url, data, isloading) {
 				if (isloading) uni.hideLoading();
 				if (e.statusCode === 200) {
 					resolve(e.data);
-				} else {
-					// resolve(e.data);
-				}
+				} else {}
 			},
 			fail(e) {
 				reject(e)
@@ -120,28 +154,3 @@ function request(method, header, url, data, isloading) {
 		})
 	})
 }
-//wx登录
-// function wxLogin() {
-// 	return new Promise((resolve, reject) => {
-// 		uni.login({
-// 			success: params => {
-// 				let wxCode = params.code;
-// 				resolve(wxCode)
-// 			}
-// 		});
-// 	})
-// }
-
-//用户登录
-// async function ajaxUserLogin() {
-// 	requestNUms += 1;
-// 	let wxCode = await wxLogin();
-// 	let res = await service('/api/free/login/login/jsCodeAndInvite', 'post', {
-// 		"jsCode": wxCode
-// 	})
-// 	if (res && res.code == 200) {
-// 		uni.setStorageSync('mToken', res.data.mToken);
-// 		againData.header['mtoken'] = res.data.mToken;
-// 		return await request(againData.method, againData.header, againData.url, againData.data, againData.isloading);
-// 	}
-// }

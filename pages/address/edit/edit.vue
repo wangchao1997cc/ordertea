@@ -53,16 +53,18 @@
 				</view>
 			</view> -->
 		</view>
-		<view class="save" @tap="save">
-			<view class="btn">
-				保存地址
+		<view class="save">
+			<view v-if="editType" class="btn" @click="deleteAddress">
+				删除
+			</view>
+			<view class="btn" @tap="save">
+				保存
 			</view>
 		</view>
 	</view>
 </template>
 
 <script>
-	// import adpicker from '../../../components/addressPicker.vue';
 	import api from '../../../WXapi/api.js';
 	import {
 		getCityId
@@ -124,6 +126,22 @@
 					}
 				})
 			},
+			//删除地址
+			deleteAddress(id, idx) {
+				let that = this;
+				that.$msg.showModal(async (juide) => {
+					if (juide == 1) {
+						let data = {
+							addressId:this.useraddress.aid
+						}
+						let res = await api.deleteAdress(data);
+						if (res && res.status == 1) {
+							that.$msg.showToast('删除成功');
+							uni.navigateBack({})
+						}
+					}
+				}, '确定要删除该地址吗')
+			},
 			//选择器确定
 			// entryAre(val) {
 			// 	let that = this;
@@ -181,23 +199,27 @@
 		view {
 			display: flex;
 		}
-
-		margin-top: 100upx;
-		width: 100%;
-		height: 120upx;
+		margin: 100upx auto;
+		width: 90%;
+		height: 88upx;
 		display: flex;
 		justify-content: center;
 		align-items: center;
 
 		.btn {
-			box-shadow: 0upx 5upx 10upx #FF5856;
-			width: 80%;
-			height: 80upx;
-			border-radius: 6upx;
-			background: linear-gradient(-90deg, rgba(255, 78, 81, 1), rgba(253, 119, 120, 1));
-			color: #fff;
+			flex: 1;
+			border: 1upx $main-color solid;
+			border-radius: 44upx;
+			color: $main-color;
 			justify-content: center;
 			align-items: center;
+			margin: 0 20upx;
+			height: 88upx;
+			
+			&:last-child{
+				background-color: $main-color;
+				color: $bg-white;
+			}
 
 			.icon {
 				height: 80upx;
@@ -214,12 +236,8 @@
 	.content {
 		display: flex;
 		flex-wrap: wrap;
-		// view{
-		// 	display: flex;
-		// }
+		color: $uni-text-color;
 		font-size: 28upx;
-
-
 		.row {
 			width: 100%;
 			@include box-padding(30upx);

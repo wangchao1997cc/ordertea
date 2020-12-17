@@ -33,35 +33,35 @@
 
 <style lang="scss">
 	.switch {
-		@include rect(160upx, 64upx);
-		border-radius: 40upx;
+		@include rect(174upx, 64upx);
+		border-radius: 32upx;
 		background: rgb(244, 244, 244);
 		@extend %flex-alcent;
 		justify-content: space-between;
 		position: relative;
-		font-size: 26upx;
-		@include box-padding(18upx);
+		font-size: 22upx;
+		@include box-padding(23upx);
 		line-height: 64upx;
-		color: #aaaaaa;
-		font-weight: 100;
+		color: #B4B7B9;
 	}
 
 	.toggle {
-		@include rect(75upx, 50upx) border-radius: 40upx;
+		@include rect(86upx, 54upx);
+		border-radius: 27upx;
 		background: $main-color;
 		position: absolute;
-		top: 7upx;
+		top: 5upx;
 		transition: 0.5s;
-		left: 8upx;
+		left: 5upx;
 		text-align: center;
 	}
-	.switch>text{
+	.switch > text{
 		z-index: 9;
 	}
 	.switch > .on{
 		color: $bg-white;
 	}
 	.switch > .active{
-		left: 77upx;
+		left: 82upx;
 	}
 </style>

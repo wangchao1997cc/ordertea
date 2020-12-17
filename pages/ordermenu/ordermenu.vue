@@ -1,13 +1,37 @@
 <template>
 	<view class="classify">
-		<view class="header">
+		<view class="header-control">
 			<view class="address-info">
 				<text @click="jumpaddress">{{headerInfo}}\n</text>
-				<text @click="switchStore">{{headerinfo_t}}</text>
+				<text>{{headerinfo_t}}</text>
 			</view>
 			<view class="store-control">
 				<switchC></switchC>
-				<text @click="checkDetail">{{showdetail?'更多门店信息':'收起'}}</text>
+				<view class="check-juide" @click="checkDetail">
+					{{showdetail?'更多门店信息':'收起'}}
+					<image src="../../static/07_icon_right.png"></image>
+				</view>
+			</view>
+		</view>
+		<view class="header" v-if="showdetail">
+			<view class="active-goods">
+				<view>
+					活动商品：A商品5折
+				</view>
+				<view>
+					<text>查看详情 ></text>
+				</view>
+			</view>
+			<view class="make-busy">
+				<view class="busy-cont">
+					<view class="busy-l">
+						<sildermine :config="sliderConfig"></sildermine>
+						<text>前面还有<text>8</text>笔订单，预计还要20分钟</text>
+					</view>
+					<view class="busy-r">
+						切换门店
+					</view>
+				</view>
 			</view>
 		</view>
 		<view class="menu-cont" v-if="showdetail">
@@ -22,11 +46,9 @@
 			<scroll-view scroll-with-animation @scroll-into-view="currentId" scroll-y class="right-aside" @scroll="asideScroll"
 			 :scroll-top="tabScrollTop" :style="{height:shopBoxHeight + 'rpx'}" binddragend="touchEnd">
 				<!-- 活动banner -->
-				<swiper class="header_banner" :indicator-dots="true" :autoplay="true" :interval="3000" :duration="1000">
-					<swiper-item v-for="(item,index) in products.topBannerList" :key="index">
-						<view class="swiper-item">
-							<image :src="item"></image>
-						</view>
+				<swiper class="header_banner" :indicator-dots="true" :autoplay="true" :circular="true" :interval="3000" :duration="1000">
+					<swiper-item v-for="(item,index) in bannerList" :key="index">
+						<image :src="item.picUrl"></image>
 					</swiper-item>
 				</swiper>
 				<!-- 对应产品列表 -->
@@ -36,7 +58,7 @@
 					</view>
 					<view class="t-list">
 						<block v-for="(titem,idx) in item.products" :key="idx">
-							<view class="t-item" @click="openOrderMask(titem)">
+							<view class="t-item" @click="openOrderMask(titem,index,idx)">
 								<view class="good-pic">
 									<image :src="titem.logo?titem.logo:'../../static/menu/logo.png'"></image>
 								</view>
@@ -55,13 +77,14 @@
 											<view class="juide-text" v-if="titem.isInServiceTime || titem.isSoldOut">
 												{{!titem.isInServiceTime?'餐品不在供应时间':(titem.isSoldOut?'商品已售罄':'')}}
 											</view>
-
-											<view v-if="titem.type == 1 && !titem.isRequirement" class="goods-single">
-												<image v-if="titem.num" src="../../static/sub.png"></image>
-												<view class="num">
-													{{titem.num?titem.num:''}}
+											<view @click.stop="prentEvents" v-if="titem.type == 1 && !titem.isRequirement">
+												<view class="goods-single">
+													<image v-if="titem.nums" src="../../static/sub.png" @click="reduceTap(1,titem)"></image>
+													<view class="num">
+														{{titem.nums?titem.nums:''}}
+													</view>
+													<image src="../../static/add.png" @click="addTap(1,titem,index,idx)"></image>
 												</view>
-												<image src="../../static/add.png"></image>
 											</view>
 											<view v-else class="meal">
 												<text>{{titem.isRequirement?'选规格':'选套餐'}}</text>
@@ -77,70 +100,131 @@
 				</view>
 			</scroll-view>
 		</view>
-		<view class="order-masker" v-if="allmask">
-			<view class="order-info" :style="{height: popHeight+'px'}" :animation="animationData" :class="{translate:popHeight}">
-				<!-- 高的弹窗 -->
-				<view class="order_info_box">
+		<view class="order-masker" v-if="allmask" @click="closeAllMask">
+			<view class="order-info" :animation="animationData" @click.stop="prentEvents">
+				<!-- 商品介绍规格参数等 -->
+				<view class="order_info_box" :hidden="maskarr.orderDescMask">
 					<view class="goods-pic">
-						<view class="close-mask" @click="closePopup">
+						<image :src="chooseGoods.logo?chooseGoods.logo:'../../static/menu/logo.png'"></image>
+						<view class="close-mask" @click="closeAllMask">
 							<image src="../../static/cha.png"></image>
 						</view>
-						banner 图
 					</view>
 					<scroll-view scroll-y class="tea_attr">
 						<view class="order-desc">
-							<text>好喝的奶茶\n</text>
-							<text>这里是好喝的奶茶的发烧发烧发烧发烧发哇</text>
+							<text>{{chooseGoods.name}}\n</text>
+							<text>{{chooseGoods.desc}}发的发烧地方撒的发烧发烧发撒发烧发发发发烧发烧发烧发</text>
 						</view>
-						<view class="arrt-cont">
+						<view class="arrt-cont" v-if="chooseGoods.isRequirement">
 							<view class="arrt-item" v-for="(item,index) in specarr" :key="index">
 								<view class="arrt_name">
 									{{item.title}}
 								</view>
 								<view class="arrt_Iitem-cont">
-									<view class="arrt_Iitem" :class="{choose_item:aitem.selected || currtabarr[index][0]==idx}" v-for="(aitem,idx) in item.items" :key="idx" @click="chooseAttr(index,idx)">
+									<view class="arrt_Iitem" :class="{choose_item:aitem.selected || currtabarr[index] == idx}" v-for="(aitem,idx) in item.items"
+									 :key="idx" @click="chooseAttr(index,idx)">
 										{{aitem.name}}
 									</view>
 								</view>
 							</view>
 						</view>
 					</scroll-view>
-
 					<view class="order-footer">
 						<view class="num-control">
 							<view class="price">
-								¥99
+								¥{{chooseGoods.price}}
 							</view>
 							<view class="goods-single">
-								<image src="../../static/sub.png"></image>
+								<image src="../../static/sub.png" @click="reduceTap(2)"></image>
 								<view class="num">
-									{{titem.num?titem.num:'1'}}
+									{{nums}}
 								</view>
-								<image src="../../static/add.png"></image>
+								<image src="../../static/add.png" @click="addTap(2)"></image>
 							</view>
 						</view>
-						<view class="confirm-btn">
+						<view class="confirm-btn" @click="addShopCar()">
 							加入购物车
 						</view>
 					</view>
 				</view>
+				<!-- 购物车 -->
+				<view class="shopcar-cont" :hidden="maskarr.shopCarCont">
+					<view class="head_juide" >
+						<view @click="clearShopCar">
+							<image src="../../static/clear.png"></image>
+							<text>
+								清空购物车
+							</text>
+						</view>
+						<image @click="closeAllMask"  class="close-icon" src="../../static/cha.png"></image>
+					</view>
+					<scroll-view scroll-y class="scroll-shopcar" :style="{maxHeight:popHeightInfo.low+'px'}">
+						<view class="shopcar-item" v-for="(item,index) in shopcar" :key="index">
+							<view class="shopcar-item-pic">
+								<image :src="item.logo"></image>
+							</view>
+							<view class="shop-item-cont">
+								<view class="item-name">
+									{{item.name}}
+								</view>
+								<view class="item-desc">
+									<text>{{item.descinfo?item.descinfo:''}}</text>
+								</view>
+								<view class="item-price-control">
+									<text>¥ {{item.price}}</text>
+									<view class="goods-single">
+										<image src="../../static/sub.png" @click="reduceTap(3,item)"></image>
+										<view class="num">
+											{{item.nums}}
+										</view>
+										<image src="../../static/add.png" @click="addTap(3,item)"></image>
+									</view>
+								</view>
+							</view>
+						</view>
+					</scroll-view>
+					<view class="mealfee">
+						餐盒费：¥{{priceArr.lunchboxfee}}
+					</view>
+					<view class="blank"></view>
+				</view>
+			</view>
+		</view>
+		<view class="chopcar-tab" v-if="shopcar.length && maskarr.shopCarShow">
+			<view class="tab-l">
+				<view class="shop-car-icon" @click="openAnimation(2)">
+					<view class="nums-juide">
+						{{shopcar.length}}
+					</view>
+				</view>
+				<view class="total-price">
+					¥{{priceArr.totalPrice}}
+				</view>
+			</view>
+			<view class="tab-r">
+				选好了
 			</view>
 		</view>
 		<storeDetail :shopinfo="storeInfo" :shopBoxHeight="shopBoxHeight" :showdetail="showdetail"></storeDetail>
 		<choseStore :nearList="nearList" @switchStore="switchStore" ref="chosestore"></choseStore>
 		<loadpage :loadingState="loadingState"></loadpage>
+		<author ref="authorM"></author>
 	</view>
 </template>
 
 <script>
 	const app = getApp();
 	let newload = false; //页面第一次加载
+	import author from '../../components/author.vue'
 	import choseStore from '../../components/choseStore.vue' //选择店铺
 	import loadpage from '../../components/loadingpage.vue' //loading
 	import switchC from '../../components/switch.vue' //自定义switch
 	import storeDetail from '../../components/storedetail.vue' //店铺的其他信息展示
+	import sildermine from '../../components/minesilder.vue' //进度条
 	import {
-		ajaxUserLogin
+		ajaxUserLogin,
+		getBannerList,
+		refreshUserInfo
 	} from '../../utils/publicApi.js'
 	import {
 		mapState,
@@ -158,10 +242,17 @@
 		goUserAddress
 	} from '../../utils/goToPage.js'
 	import api from '../../WXapi/api.js';
+	import {
+		accMul,
+		subtr,
+		accAdd
+	} from '../../utils/utils.js';
 	export default {
 		data() {
 			return {
+				bannerList: [], //轮播图广告
 				allmask: false,
+				nums: '1', //mask 中的nums
 				// model: 2, //2为自取模式， 1为外卖模式
 				shopBoxHeight: null,
 				tabScrollTop: 0, //滚动条与顶部的距离
@@ -173,33 +264,43 @@
 				storeInfo: {}, //选中的店铺信息
 				showdetail: true, //展示店铺更多信息
 				useraddress: null, //用户选择的地址信息 
-				popHeight: '', //弹出层的高度
+				popHeight: 'auto', //弹出层的高度
 				popHeightInfo: { //弹出层的两种高低
 				}, //弹出层的高度
-				animationData: {},
-				specarr: [], //规格属性数据
-				currtabarr:[],
+				animationData: {}, //动画
+				currtabarr: [], //规格属性隐藏
+				chooseGoods: {}, //当前选择的商品
+				specarr: [], //规格属性数组
+				shopcar: [], //购物车数组
+				chosegoodsindex: null,
+				// totalPrice: 0, //购物车总价格
+				maskarr: {
+					orderDescMask: true,
+					shopCarCont: true,
+					shopCarShow: true,
+				},
+				sliderConfig: {
+					progresswidth: '320upx',
+					progressbar: '50%',
+				},
 			}
 		},
-
-		async onLoad(options) {
-			// uni.hideTabBar({})
-			await ajaxUserLogin(); //先进行登录
-			this.init();
-		},
+		
 		components: {
 			choseStore,
 			loadpage,
 			switchC,
-			storeDetail
+			storeDetail,
+			author,
+			sildermine
 		},
 		computed: {
-			...mapState(['openid', 'businessType', 'storeId']),
+			...mapState(['openid', 'businessType', 'storeId', 'JSESSIONID', 'isLogin']),
 			headerInfo() {
 				let name = '默认店铺';
 				if (this.model == 2) {
 					this.storeInfo.storeName ? name = this.storeInfo.storeName : '';
-				} else {
+				} else if (this.useraddress) {
 					name = this.useraddress.receiverAddress + this.useraddress.appendReceiverAddress;
 				}
 				return name;
@@ -218,6 +319,7 @@
 				}
 				return name
 			},
+			//外卖还是自取
 			model() {
 				let name = 2;
 				switch (this.businessType[0]) {
@@ -229,7 +331,27 @@
 						break;
 				}
 				return name;
-			}
+			},
+			//商品总价格
+			priceArr() {
+				let totalPrice = 0;
+				let lunchboxfee = 0;
+				let shopcar = this.shopcar;
+				if (shopcar.length) {
+					shopcar.forEach(item => {
+						totalPrice = accAdd(totalPrice, accMul(item.price, item.nums));
+						if (item.mealFee) {
+							lunchboxfee = accAdd(lunchboxfee, accMul(item.mealFee, item.nums));
+						}
+					})
+					totalPrice = accAdd(totalPrice, lunchboxfee);
+				}
+				return {
+					totalPrice: totalPrice,
+					lunchboxfee: lunchboxfee,
+				};
+			},
+			//包装费价格
 		},
 		watch: {
 			storeInfo(val) {
@@ -237,6 +359,12 @@
 					app.globalData.storeInfo = val;
 				}
 			}
+		},
+		async onLoad(options) {
+			if (!this.JSESSIONID) {
+				await ajaxUserLogin(); //先进行登录
+			}
+			this.init();
 		},
 		onShow: function onShow() {
 			let that = this;
@@ -262,10 +390,166 @@
 		methods: {
 			init() {
 				let that = this;
-				newload = true; //第二次从onshow刷新地理位置
+				that.juideUserInfo(); //判断用户是否登录
 				that.getLocation(); //获取地理位置
 				that.getCategoryList(); //获取默认的商品列表
 				that.computReftHe(); //计算右边商品列表的高度
+				that.getBannerList(); //获取轮播图广告
+			},
+			async juideUserInfo() {
+				if (!this.isLogin) {
+					let userinfo = await refreshUserInfo(true);
+					if (!userinfo || !userinfo.phone) {
+						this.$refs.authorM.showPop();
+					}
+					// this.$refs.authorM.showPop();
+				}
+			},
+			//获取轮播图广告
+			async getBannerList() {
+				let res = await getBannerList();
+				if (res) {
+					this.bannerList = res.topBannerList;
+				}
+			},
+			//清空购物车
+			clearShopCar() {
+				let shopcar = this.shopcar;
+				shopcar.forEach(item => {
+					this.products[item.index].products[item.idx].nums = null;
+				})
+				this.shopcar = [];
+				this.closeAllMask();
+			},
+			//添加按钮
+			addTap(type, goods, index, idx) {
+				switch (type) {
+					case 1:
+						if (!goods.nums) {
+							this.$set(goods, 'nums', 1);
+							goods.idx = idx;
+							goods.index = index;
+						} else {
+							goods.nums++;
+						}
+						this.addShopCar(goods);
+						break;
+					case 2:
+						this.nums++;
+						break;
+					case 3:
+						goods.nums++;
+						this.products[goods.index].products[goods.idx].nums = goods.nums; //同步餐单上的商品数据
+				}
+			},
+			//减按钮
+			reduceTap(type, goods) {
+				switch (type) {
+					case 1:
+						if (goods.nums == 1) {
+							this.deleteShopCar(goods);
+						}
+						goods.nums--;
+						for (let i in this.shopcar) {
+							if (this.shopcar[i].uid == goods.uid) {
+								this.shopcar[i].nums--;
+							}
+						}
+						break;
+					case 2:
+						if (this.nums == 1) {
+							return;
+						}
+						this.nums--;
+						break;
+					case 3:
+						if (goods.nums == 1) {
+							this.deleteShopCar(goods);
+						}
+						goods.nums--;
+						this.products[goods.index].products[goods.idx].nums = goods.nums; //同步餐单上的商品数据
+				}
+			},
+
+			//删除购物车的商品
+			deleteShopCar(goods) {
+				let shopcar = this.shopcar;
+				for (let i in shopcar) {
+					if (shopcar[i].uid == goods.uid) {
+						shopcar.splice(i, 1)
+					}
+				}
+				if (!shopcar.length) {
+
+					this.closeAllMask();
+				}
+			},
+			//添加购物车商品
+			addShopCar(goods) {
+				let that = this;
+				if (!goods) {
+					that.$set(that.chooseGoods, 'nums', that.nums);
+					goods = that.chooseGoods;
+				} else {}
+				let shopcar = this.shopcar;
+				let currtabarr = that.currtabarr;
+				let shopitem = { //定义购物车单个变量
+					uid: goods.uid,
+					name: goods.name,
+					price: goods.price,
+					nums: goods.nums,
+					logo: goods.logo ? goods.logo : '../../static/menu/logo.png',
+					idx: goods.idx,
+					index: goods.index,
+				}
+				if (goods.property) { // 如果是选规格   将选中规格参数添加到购物车变量中
+					let property = [];
+					for (let i in that.specarr) {
+						if (i != that.specarr.length - 1) {
+							property.push(that.specarr[i].items[currtabarr[i]])
+						} else {
+							that.specarr[i].items.forEach(item => {
+								if (item.selected) {
+									property.push(item)
+								}
+							})
+						}
+					}
+					let descinfo = '';
+					property.forEach(item => {
+						descinfo += item.name + ', '
+					})
+					descinfo = descinfo.substring(0, descinfo.length - 2);
+					shopitem.descinfo = descinfo;
+					shopitem.property = property;
+				}
+				let ishave = false;
+				if (shopcar.length) {
+					shopcar.forEach(item => {
+						if (item.uid == shopitem.uid) { //购物车内相同的商品数量直接++
+							if (item.property) {
+								if (JSON.stringify(item.property) == JSON.stringify(shopitem.property)) {
+									ishave = true;
+									item.nums++;
+								}
+							} else {
+								ishave = true;
+								item.nums++;
+							}
+						}
+					})
+				}
+				if (!ishave) {
+					shopcar.unshift(shopitem)
+				}
+				if (that.allmask) {
+					that.closeAllMask();
+					that.maskarr.shopCarShow = true;
+				}
+			},
+			//防止冒泡
+			prentEvents() {
+				return;
 			},
 			//确认选择的店铺
 			switchStore(store) {
@@ -273,31 +557,28 @@
 				this.getStoreMenu(store.storeId);
 			},
 			//点击商品打开幕布
-			openOrderMask(goods) {
+			openOrderMask(goods,index,idx) {
 				let that = this;
-				console.log(goods.isInServiceTime, goods.isSoldOut)
 				// if(goods.isInServiceTime || goods.isSoldOut){   //售罄和不在售时间内
 				// 	return;
 				// }
-				let popHeightInfo = that.popHeightInfo;
-				that.handleData(goods.property);
-				console.log(goods)
-				// console.log(goods.propertys)
-				// console.log(goods.items)	
-				if (goods.type == 1 && !goods.isRequirement) {
-					that.openAnimation(popHeightInfo.low);
-				} else {
-					that.openAnimation(popHeightInfo.hei);
+				// let popHeightInfo = that.popHeightInfo;
+				that.chooseGoods = goods;
+				that.chooseGoods.idx = idx;
+				that.chooseGoods.index = index;
+				that.nums = 1;
+				if (goods.type == 1 && goods.isRequirement) {
+					that.handleData(goods.property);
 				}
+				that.maskarr.shopCarShow = false;
+				that.openAnimation(1);
 			},
 			//选择规格
-			chooseAttr(index,idx){
-				
+			chooseAttr(index, idx) {
 				let specarr = this.specarr
-				console.log(this.specarr[index].items[idx])
-				if(index != specarr.length-1){
-					this.currtabarr[index].splice(0,1,idx);
-				}else{
+				if (index != specarr.length - 1) {
+					this.currtabarr.splice(index, 1, idx);
+				} else {
 					this.specarr[index].items[idx].selected = !this.specarr[index].items[idx].selected;
 				}
 			},
@@ -309,48 +590,46 @@
 				for (let i in data.propertys) {
 					specarr.push(data.propertys[i]);
 				}
-				for(let i=0; i<specarr.length; i++){
-					currtabarr.push([0]);
+				for (let i = 0; i < specarr.length; i++) {
+					currtabarr.push(0);
 				}
-				console.log(currtabarr)
 				this.currtabarr = currtabarr;
 				data.choices.items.forEach(item => {
 					this.$set(item, 'selected', false);
-					// item.selected = false;
 				})
 				specarr.push(data.choices)
-				// this.choices = data.choices;
-				// specarr.push(data.choices);
-				// specarr.forEach((item,index) => {
-				// 	item.items.forEach((aitem,idx) => {
-				// 		if(idx==0 && index!=3){
-				// 			aitem.selected = true
-				// 		}else{
-				// 			aitem.selected = false
-				// 		}
-				// 	})
-				// })console.log(currtabarr)
-				console.log(specarr)
 				this.specarr = specarr;
 			},
 			//展现动画
-			openAnimation(height) {
-				this.allmask = true;
-				uni.hideTabBar({});
-				this.popHeight = height;
-				let animation = this.animation;
-				this.$nextTick(() => { //解决DOM更新异步问题
+			openAnimation(type) {
+				let that = this;
+				that.allmask = true;
+				if (type == 1) {
+					that.maskarr.orderDescMask = false;
+					uni.hideTabBar({});
+				} else if (type == 2) {
+					if (that.maskarr.shopCarCont) {
+						that.maskarr.shopCarCont = false;
+					} else {
+						return this.closeAllMask()
+					}
+				}
+				
+				let animation = that.animation;
+				that.$nextTick(() => { //解决DOM更新异步问题
 					animation.translateY(0).step()
-					this.animationData = animation.export();
+					that.animationData = animation.export();
 				})
 			},
-			//关闭底部的弹窗
-			closePopup() {
-				uni.showTabBar({})
-				let animation = this.animation;
-				animation.translateY(this.popHeight).step()
-				this.animationData = animation.export();
+			//关闭所有的幕布
+			closeAllMask() {
 				this.allmask = false;
+				this.maskarr.orderDescMask = true;
+				this.maskarr.shopCarCont = true;
+				this.maskarr.shopCarShow = true;
+				let animation = this.animation;
+				this.animationData = animation.export();
+				uni.showTabBar({})
 			},
 			async getStoreMenu(storeId) {
 				this.loadingState = false;
@@ -406,6 +685,7 @@
 					pageSize: 10
 				}
 				let res = await api.getNearStoreList(data);
+				newload = true; //第二次从onshow刷新地理位置
 				if (res && res.status == 1) {
 					let nearList = res.data.rows;
 					nearList.forEach(item => {
@@ -526,9 +806,9 @@
 				this.showdetail = !this.showdetail;
 			},
 			//当外卖模式下切换店铺
-			switchStore() {
-				if (this.model == 1) {}
-			}
+			// switchStore() {
+			// 	if (this.model == 1) {}
+			// }
 		}
 	}
 </script>
@@ -536,8 +816,61 @@
 <style lang='scss'>
 	.classify {
 		width: $screen-width;
-		background-color: #fff;
 		color: $uni-text-color;
+	}
+
+	.chopcar-tab {
+		@include rect(678upx, 112upx);
+		border-radius: 56upx;
+		position: fixed;
+		bottom: 15upx;
+		left: 40upx;
+		z-index: 201;
+		background-color: $bg-white;
+		display: flex;
+		justify-content: space-between;
+		box-shadow: 0px 8upx 21upx 0px rgba(19, 19, 20, 0.08);
+
+		/* box-shadow: ; */
+		.tab-l {
+			@extend %flex-alcent;
+			margin-left: 60upx;
+			height: 100%;
+
+			.shop-car-icon {
+				@include rect(50upx, 50upx);
+				border: 1upx $main-color solid;
+				position: relative;
+
+				.nums-juide {
+					position: absolute;
+					@include rect(32upx, 32upx);
+					border-radius: 16upx;
+					background-color: $color-red;
+					right: -10upx;
+					top: -10upx;
+					@include text-allcenter(32upx);
+					color: $text-white;
+					font-size: 22upx;
+				}
+			}
+
+			.total-price {
+				color: red;
+				font-size: 34upx;
+				margin-left: 38upx;
+			}
+		}
+
+		.tab-r {
+			@include rect(167upx, 100%);
+			border-top-right-radius: 55upx;
+			border-bottom-right-radius: 55upx;
+			background-color: $main-color;
+			color: $text-white;
+			@include text-allcenter(112upx);
+			font-size: 32upx;
+		}
 
 	}
 
@@ -547,6 +880,7 @@
 		line-height: 44upx;
 		display: flex;
 
+
 		image {
 			@include rect(44upx, 44upx);
 		}
@@ -555,6 +889,10 @@
 			width: 60upx;
 			text-align: center;
 		}
+	}
+
+	.single-line {
+		border-top: 1upx #e0e0e0 solid;
 	}
 
 	.order-masker {
@@ -568,6 +906,7 @@
 			background-color: #F5F5F5;
 			border-top-right-radius: 20upx;
 			border-top-left-radius: 20upx;
+			overflow: hidden;
 		}
 
 		/* .translate{
@@ -575,15 +914,18 @@
 		} */
 		.order_info_box {
 			@include rect(100%, 100%);
-			padding: 28upx;
+			padding: 25upx;
 			box-sizing: border-box;
 			position: relative;
 
 			.goods-pic {
-				@include rect(100%, 400upx);
+				@include rect(100%, 372upx);
 				border: 1upx $main-color solid;
 				position: relative;
-
+				image{
+					@include rect(100%,100%)
+					border-radius: $radius-md;
+				}
 				.close-mask {
 					position: absolute;
 					right: 0;
@@ -600,43 +942,50 @@
 			.tea_attr {
 				width: 100%;
 				max-height: 525upx;
-				margin: 25upx auto;
-				border-radius: 20upx;
+				/* margin: 25upx auto 260upx auto; */
+				padding: 1upx 0;
+				box-sizing: border-box;
+				border-radius: $radius-md;
 				overflow: hidden;
 
 				.arrt-cont {
-					padding: 25upx 40upx;
+					margin-top: 22upx;
+					padding: 20upx 40upx;
 					box-sizing: border-box;
 					background-color: $bg-white;
-					border-radius: 20upx;
+					border-radius: $radius-md;
+
 
 					.arrt-item {
 						/* height: 60upx; */
 						/* 		@extend %flex-alcent; */
 						line-height: 50upx;
 						display: flex;
-						margin-bottom: 30upx;
+						margin-bottom: 20upx;
 
-						.arrt_name{
-							width: 125upx;
-							font-size: 30upx;
+						.arrt_name {
+							width: 100upx;
+							font-size: $font-md;
+							line-height: 58upx;
+							/* font-size: upx; */
 						}
+
 						.arrt_Iitem-cont {
 							/* margin-left: 40upx; */
 							width: 510upx;
 							@extend %flex-list;
-
+							
 							.arrt_Iitem {
-
 								font-size: 26upx;
-								@include rect(150upx, 50upx);
+								@include rect(155upx, 58upx);
 								text-align: center;
 								background-color: #F5F5F5;
-								color: #D6D6D6;
+								color: #616161;
 								border-radius: 50upx;
-								margin-right: 20upx;
+								margin-right: 24upx;
 								margin-bottom: 15upx;
 								box-sizing: border-box;
+								line-height: 58upx;
 
 								&.choose_item {
 									border: 1upx $main-color solid;
@@ -657,33 +1006,37 @@
 				width: 100%;
 				padding: 20upx 30upx;
 				box-sizing: border-box;
-				@include lineAny(2);
 				background-color: $bg-white;
-				border-radius: 20upx;
-				margin-bottom: 25upx;
+				border-radius: $radius-md;
+				margin-top: 22upx;
+				font-size: 32upx;
 
 				text {
 					&:last-child {
-						font-size: $font-sm;
+						font-size: 24upx;
 						color: $text-grey;
+						line-height: 40upx;
 					}
 				}
 			}
 
 			.order-footer {
 				width: 694upx;
-				position: absolute;
-				bottom: 50upx;
-				left: 28upx;
+				margin-top: 22upx;
 
 				.num-control {
-					@include rect(100%, 100upx);
+					@include rect(100%, 104upx);
 					background-color: $bg-white;
-					border-radius: 20upx;
+					border-radius: $radius-md;
 					@extend %flex-alcent;
 					justify-content: space-between;
-					@include box-padding(30upx);
+					padding: 0 40upx 0 32upx;
+					box-sizing: border-box;
 					line-height: 100upx;
+					.price{
+						color: $color-red;
+						font-size: 32upx;
+					}
 				}
 
 				.confirm-btn {
@@ -691,10 +1044,11 @@
 					background-color: $main-color;
 					color: $bg-white;
 					@include text-allcenter(100upx);
-					margin-top: 25upx;
-					border-radius: 20upx;
+					margin-top: 20upx;
+					border-radius: 50upx;
 				}
 			}
+
 		}
 	}
 
@@ -722,19 +1076,111 @@
 			border: 1upx solid #888;
 		}
 	}
-
-	.header {
-		@include rect(100%, 200upx);
-		display: flex;
+	.header-control {
+		@extend %flex-alcent;
+		@include box-padding(28upx);
+		@include rect(100%, 110upx);
 		justify-content: space-between;
-		padding: 30upx;
-		box-sizing: border-box;
+		background-color: $bg-white;
+	
+		.address-info {
+			text {
+				font-size: 32upx;
+	
+				&:last-child {
+					font-size: $font-sm;
+					color: #A0A4A7;
+				}
+			}
+		}
+	
+		.store-control {
+			height: 100%;
+			text-align: center;
+	
+			.check-juide {
+				margin-top: 6upx;
+				font-size: 20upx;
+				color: #a0a0a0;
+				justify-content: center;
+				@extend %flex-alcent;
+	
+				image {
+					@include rect(9upx, 18upx);
+					transform: rotate(90deg);
+					margin-left: 12upx;
+				}
+			}
+	
+		}
 	}
 
+	.header {
+		width: 100%;
+		box-sizing: border-box;
+
+
+		
+
+		.active-goods {
+			@include rect(100%, 85upx);
+			@include box-padding(28upx);
+			@extend %flex-alcent;
+			justify-content: space-between;
+
+			view {
+				font-size: $font-sm;
+
+				&:last-child {
+					@extend %flex-alcent;
+					color: $main-color;
+				}
+			}
+		}
+
+		.make-busy {
+			@include rect(100%, 124upx);
+			background-color: $bg-white;
+			padding-top: 1upx;
+
+			.busy-cont {
+				@include rect(697upx, 85upx);
+				box-shadow: 0px 4upx 21upx 0px rgba(19, 19, 20, 0.08);
+				border-radius: 13upx;
+				margin: 20upx auto;
+				@extend %flex-alcent;
+				justify-content: space-between;
+
+				.busy-l {
+					width: 320upx;
+					margin-left: 34upx;
+					font-size: 20upx;
+					color: #A3A3A3;
+
+					text {
+						text {
+							color: $color-red;
+						}
+					}
+				}
+
+				.busy-r {
+					@include rect(134upx, 50upx);
+					border: 1upx $main-color solid;
+					margin-right: 26upx;
+					border-radius: 50upx;
+					@include text-allcenter(50upx) color: $main-color;
+					font-size: 24upx;
+				}
+
+			}
+		}
+	}
+
+
 	.left-aside {
-		width: 180upx;
-		background-color: #fff;
-		border-right: 1upx #D4D4D4 solid;
+		width: 212upx;
+		background-color: #f5f5f5;
 	}
 
 	.menu-cont {
@@ -748,7 +1194,7 @@
 		width: 100%;
 		height: 100upx;
 		font-size: 28upx;
-		color: $font-color-base;
+		color: #595757;
 		position: relative;
 
 		/* &:after{
@@ -774,8 +1220,8 @@
 		}
 
 		&.active {
-			color: $base-color;
-			background: #f8f8f8;
+			color: $uni-text-color;
+			background: #FFFFFF;
 
 			&:before {
 				transition: all .3s;
@@ -787,7 +1233,9 @@
 	.right-aside {
 		flex: 1;
 		overflow: hidden;
-		@include box-padding(20upx);
+		padding: 0 46upx 0 20upx;
+		box-sizing: border-box;
+		background-color: $bg-white;
 
 		.blank {
 			width: 100%;
@@ -796,20 +1244,28 @@
 
 		.header_banner {
 			width: 100%;
-			height: 280upx;
-			border: 1upx $main-color solid;
+			height: 246upx;
 			box-sizing: border-box;
+			border-radius: $radius-md;
+			overflow: hidden;
+			margin-bottom: 58upx;
+
+			swiper-item {
+				@include rect(100%, 100%);
+			}
 
 			image {
 				@include rect(100%, 100%);
 			}
 		}
 
-		.class_tit {
-			font-size: 24upx;
-			margin: 15upx 0;
-			color: $uni-text-color-grey;
-		}
+
+	}
+
+	.class_tit {
+		margin-bottom: 58upx;
+		font-size: 24upx;
+		color: $uni-text-color-grey;
 	}
 
 	.t-list {
@@ -817,20 +1273,22 @@
 		justify-content: space-between;
 		flex-wrap: wrap;
 		width: 100%;
-		background: #fff;
 	}
 
 	.t-item {
+		/* border: 1upx red solid; */
 		width: 100%;
-		height: 200upx;
+		height: 140upx;
 		box-sizing: border-box;
 		display: flex;
 		font-size: 26upx;
-		/* color: #666; */
-		margin: 22upx auto;
+		margin-bottom: 73upx;
 
 		.good-pic {
-			@include rect(200upx, 200upx);
+			@include rect(140upx, 140upx);
+			border: 1upx $main-color solid;
+			border-radius: 8upx;
+			overflow: hidden;
 
 			image {
 				@include rect(100%, 100%);
@@ -839,7 +1297,7 @@
 
 		.goods-info {
 			height: 100%;
-			margin-left: 20upx;
+			margin-left: 28upx;
 			width: 306upx;
 
 			.goods-name {
@@ -850,11 +1308,11 @@
 
 			.goods-desc {
 				width: 100%;
-				margin: 20upx 0;
-				height: 70upx;
-				@include lineAny(2);
-				font-size: $font-sm;
-				color: $text-grey;
+				height: 34upx;
+				margin: 8upx 0;
+				@include lineOnly();
+				font-size: 22upx;
+				color: #A1A1A1;
 			}
 
 			.goods-footer {
@@ -865,9 +1323,10 @@
 				line-height: 44upx;
 
 				.goods-price {
+					
 					font-size: 32upx;
 					font-weight: 700;
-					color: red;
+					color: $color-red;
 				}
 
 				.btn-r {
@@ -905,5 +1364,101 @@
 			font-size: 28upx;
 			color: #333333;
 		}
+	}
+
+	.shopcar-cont {
+		width: 100%;
+		background-color: $bg-white;
+		padding-bottom: 160upx;
+
+
+		.head_juide {
+			@include rect(100%, 129upx);
+			background-color: #f5f5f5;
+			@extend %flex-alcent;
+			justify-content: space-between;	
+			.close-icon{
+				@include rect(55upx,55upx);
+				margin-right: 36upx;
+			}
+			view{
+				margin-left: 28upx;
+				image {
+					@include rect(32upx, 32upx);
+					margin-right: 10upx;
+				}
+				
+				text {
+					color:#767273;
+					margin-right: 28upx;
+					line-height: 60upx;
+				}
+			}
+			
+		}
+
+		.scroll-shopcar {
+			width: 694upx;
+			margin: 0 auto;
+			background-color: $bg-white;
+			/* max-height: 800upx; */
+		}
+
+		.mealfee {
+			margin-left: 30upx;
+			font-size: $font-md;
+			margin-top: 30upx;
+			color: #666666;
+		}
+
+		.shopcar-item {
+			padding: 30upx 0;
+			/* padding: 30upx 28upx; */
+			box-sizing: border-box;
+			display: flex;
+			border-bottom: 1upx #e0e0e0 solid;
+
+			.shopcar-item-pic {
+				@include rect(150upx, 150upx);
+
+				/* border: 1upx $main-color solid; */
+				image {
+					@include rect(100%, 100%);
+				}
+			}
+
+
+			.shop-item-cont {
+				width: 510upx;
+				margin-left: 25upx;
+
+				.item-name {
+					font-size: 30upx;
+				}
+
+				.item-desc {
+					margin-top: 10upx;
+					@include rect(65%, 50upx);
+					font-size: 20upx;
+					color: #AAAAAA;
+					@include lineAny(2);
+					/* border: 1upx red solid; */
+				}
+
+				.item-price-control {
+					@include rect(100%, 50upx);
+					margin-top: 4upx;
+					display: flex;
+					align-items: flex-end;
+					justify-content: space-between;
+
+					text {
+						font-size: 26upx;
+					}
+				}
+			}
+		}
+
+		/* @include rect(100%,400upx); */
 	}
 </style>
