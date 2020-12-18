@@ -14,16 +14,22 @@
 			</view>
 		</view>
 		<view class="header" v-if="showdetail">
-			<view class="active-goods">
-				<view>
-					活动商品：A商品5折
-				</view>
-				<view>
-					<text>查看详情 ></text>
-				</view>
-			</view>
+			
+			
 			<view class="make-busy">
-				<view class="busy-cont">
+				<swiper v-if="activelist.length" class="active-s" :autoplay="true" :interval="5000" :duration="1000" :circular="true">
+					<swiper-item v-for="(item,index) in activelist" :key="index">
+						<view class="active-goods">
+							<view>
+								{{item.title}}
+							</view>
+							<view>
+								<text>查看详情 ></text>
+							</view>
+						</view>
+					</swiper-item>
+				</swiper>
+				<view class="busy-cont" >
 					<view class="busy-l">
 						<sildermine :config="sliderConfig"></sildermine>
 						<text>前面还有<text>8</text>笔订单，预计还要20分钟</text>
@@ -34,6 +40,7 @@
 				</view>
 			</view>
 		</view>
+
 		<view class="menu-cont" v-if="showdetail">
 			<!-- 左侧导航栏 -->
 			<scroll-view scroll-y class="left-aside">
@@ -250,6 +257,7 @@
 	export default {
 		data() {
 			return {
+				activelist:[],   //活动list
 				bannerList: [], //轮播图广告
 				allmask: false,
 				nums: '1', //mask 中的nums
@@ -274,12 +282,12 @@
 				shopcar: [], //购物车数组
 				chosegoodsindex: null,
 				// totalPrice: 0, //购物车总价格
-				maskarr: {
-					orderDescMask: true,
-					shopCarCont: true,
-					shopCarShow: true,
+				maskarr: {    
+					orderDescMask: true,   //点击商品规格信息等弹窗
+					shopCarCont: true,    //购物车弹窗
+					shopCarShow: true,    //底部购物车导航弹窗
 				},
-				sliderConfig: {
+				sliderConfig: {    //进度条参数
 					progresswidth: '320upx',
 					progressbar: '50%',
 				},
@@ -396,13 +404,23 @@
 				that.computReftHe(); //计算右边商品列表的高度
 				that.getBannerList(); //获取轮播图广告
 			},
+			async getActivity(){
+				let memberinfo = uni.getStorageSync('memberinfo');
+				let data = {
+					cardId: memberinfo.id
+				};
+				let res = await api.getActivity(data);
+				console.log(res)
+				if(res && res.code==200){
+					this.activelist = res.data;
+				}
+			},
 			async juideUserInfo() {
 				if (!this.isLogin) {
 					let userinfo = await refreshUserInfo(true);
 					if (!userinfo || !userinfo.phone) {
 						this.$refs.authorM.showPop();
 					}
-					// this.$refs.authorM.showPop();
 				}
 			},
 			//获取轮播图广告
@@ -555,6 +573,8 @@
 			switchStore(store) {
 				this.storeInfo = store;
 				this.getStoreMenu(store.storeId);
+			   
+				// that.getActive(store.);
 			},
 			//点击商品打开幕布
 			openOrderMask(goods,index,idx) {
@@ -641,6 +661,7 @@
 				let res = await api.getProductMenu(data);
 				if (res && res.status == 1) {
 					this.handleShopData(res.data.bigs);
+					this.getActivity();   //获取活动信息
 				}
 			},
 			//计算左边商品分类的高度
@@ -692,7 +713,7 @@
 						item.newdistance = conversion(item.distance) //换算距离
 					})
 					if (nearList.length > 1) { //如果附近多个店铺则展示选择店铺弹窗
-						that.$refs.chosestore.showChoseprop();
+						// that.$refs.chosestore.showChoseprop();
 					} else if (nearList.length == 1) { //只有一个则展现这个店铺
 						that.storeInfo = nearList[0];
 						that.getStoreMenu(nearList[0].storeId);
@@ -898,17 +919,7 @@
 	.order-masker {
 		@extend %all-mask;
 
-		.order-info {
-			position: absolute;
-			width: 100%;
-			bottom: 0;
-			transform: translateY(100%);
-			background-color: #F5F5F5;
-			border-top-right-radius: 20upx;
-			border-top-left-radius: 20upx;
-			overflow: hidden;
-		}
-
+		
 		/* .translate{
 			transform: translateY(100%);
 		} */
@@ -1118,12 +1129,16 @@
 	.header {
 		width: 100%;
 		box-sizing: border-box;
-
-
 		
-
-		.active-goods {
+		.active-s{
+			background-color: #f5f5f5;
 			@include rect(100%, 85upx);
+			swiper-item{
+				@include rect(100%,100%);
+			}
+		}
+		.active-goods {
+			@include rect(100%,100%);
 			@include box-padding(28upx);
 			@extend %flex-alcent;
 			justify-content: space-between;
@@ -1139,9 +1154,10 @@
 		}
 
 		.make-busy {
-			@include rect(100%, 124upx);
+			width: 100%;
 			background-color: $bg-white;
 			padding-top: 1upx;
+			padding-bottom: 20upx;
 
 			.busy-cont {
 				@include rect(697upx, 85upx);
@@ -1372,30 +1388,7 @@
 		padding-bottom: 160upx;
 
 
-		.head_juide {
-			@include rect(100%, 129upx);
-			background-color: #f5f5f5;
-			@extend %flex-alcent;
-			justify-content: space-between;	
-			.close-icon{
-				@include rect(55upx,55upx);
-				margin-right: 36upx;
-			}
-			view{
-				margin-left: 28upx;
-				image {
-					@include rect(32upx, 32upx);
-					margin-right: 10upx;
-				}
-				
-				text {
-					color:#767273;
-					margin-right: 28upx;
-					line-height: 60upx;
-				}
-			}
-			
-		}
+		
 
 		.scroll-shopcar {
 			width: 694upx;
@@ -1461,4 +1454,41 @@
 
 		/* @include rect(100%,400upx); */
 	}
+	.order-info {
+		position: absolute;
+		width: 100%;
+		bottom: 0;
+		transform: translateY(100%);
+		background-color: #F5F5F5;
+		border-top-right-radius: 20upx;
+		border-top-left-radius: 20upx;
+		overflow: hidden;
+	}
+	
+	.head_juide {
+		@include rect(100%, 129upx);
+		@extend %flex-alcent;
+		justify-content: space-between;	
+		
+		.close-icon{
+			@include rect(55upx,55upx);
+			margin-right: 36upx;
+		}
+		
+		view{
+			margin-left: 28upx;
+			image {
+				@include rect(32upx, 32upx);
+				margin-right: 10upx;
+			}
+			
+			text {
+				color:#767273;
+				margin-right: 28upx;
+				line-height: 60upx;
+			}
+		}
+		
+	}
+	
 </style>

@@ -7,39 +7,19 @@
 		</view>
 		<map id="store-map" show-location :longitude="maplocation[0]" :latitude="maplocation[1]" :markers="markers"></map>
 		<view class="store-cont">
-			<view class="store-item" v-for="(item,index) in storeList" @click="choseStore(index)" :key="index">
-				<view class="store-info">
-					<text>{{item.storeName}} \n</text>
-					<text>距离你{{item.distance}}\n</text>
-					<text>{{item.storeAddress}}\</text>
-					<view class="buss-time">
-						营业时间：
-						<block v-for="(time_item,idx) in item.businessTimes" :key="idx">
-							<text>{{`${time_item.beginTime}-${time_item.endTime}`}}\n</text>
-						</block>
-					</view>
-				</view>
-				<view class="store-control">
-					<view class="placeorder-btn" @click="jumpSoreMenu(item)">
-						去下单
-					</view>
-					<view class="tel-address">
-						<image src="../../static/phone.png" @click="callPhone(item.phoneNumberList[0])"></image>
-						<image src="../../static/address.png" @click="jumpMap(item)"></image>
-					</view>
-				</view>
-			</view>
+			<store :type="true" :nearList="storeList"></store>
 		</view>
 	</view>
 </template>
 
 <script>
 	import {
-		etdistance
+		conversion
 	} from '../../utils/author.js'
 	import {
 		getRouteParams,goChoseCity
 	} from '../../utils/goToPage.js'
+	import store from '../../components/store.vue'
 	import {
 		mapState,
 		mapMutations
@@ -65,6 +45,9 @@
 				}
 				return location;
 			},
+		},
+		components:{
+			store
 		},
 		onLoad() {
 			let data = getRouteParams();
@@ -98,7 +81,7 @@
 				if (res.status == 1) {
 					let storeList = res.data.rows;
 					storeList.forEach(item => {  //换算距离
-						item.distance = etdistance(params.coordinate[1], params.coordinate[0], item.coordinate[1], item.coordinate[0]) 
+						item.distance = item.newdistance = conversion(item.distance) //换算距离
 					})
 					that.storeList = storeList;
 					that.handleMarkers(storeList);   //处理地图标记点
@@ -135,29 +118,6 @@
 				}
 				this.markers = markers;
 			},
-			//拨打电话
-			callPhone(tel) {
-				uni.makePhoneCall({
-					phoneNumber: tel
-				})
-			},
-			//跳转地图导航
-			jumpMap(item) {
-				uni.openLocation({
-					latitude: item.coordinate[1], // 纬度，范围为-90~90，负数表示南纬
-					longitude: item.coordinate[0], // 经度，范围为-180~180，负数表示西经
-					scale: 15, // 缩放比例
-					name: item.storeName,
-					address: item.storeAddress
-				})
-			},
-			//前往此店铺的点餐页
-			jumpSoreMenu(item) {
-				this.$store.commit('copy', item.storeId);
-				uni.switchTab({
-					url: '../ordermenu/ordermenu'
-				})
-			},
 			//跳转选择城市
 			choseCity() {
 				if(this.address.chosecity){
@@ -178,10 +138,12 @@
 		color: $uni-text-color;
 
 		.region {
-			height: 130upx;
+			height: 107upx;
 			@extend %flex-alcent;
 			font-size: 32upx;
-			margin-left: 30upx;
+			padding-left: 32upx;
+			box-sizing: border-box;
+			background-color: $bg-white;
 
 			image {
 				@include rect(17upx, 24upx);

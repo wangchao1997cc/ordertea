@@ -1,5 +1,7 @@
 import {
-	service,normoal,service_v
+	service,
+	normoal,
+	service_v
 } from './http.js';
 const key = '&key=93ba9db2f9f4f0e4';
 
@@ -11,17 +13,17 @@ const getCityId = (data, isloading) => {
 
 //获取附近门店列表
 const getNearStoreList = (data, isPlicing, isloading) => {
-	return service('candao.storeStandard.getNearStoreList', 'post', data , isloading)
-} 
- 
- //获取门店列表
- const getStoreList = (data, isPlicing, isloading) => {
- 	return service('candao.storeStandard.getStoreList', 'post', data , isloading)
- }
+	return service('candao.storeStandard.getNearStoreList', 'post', data, isloading)
+}
+
+//获取门店列表
+const getStoreList = (data, isPlicing, isloading) => {
+	return service('candao.storeStandard.getStoreList', 'post', data, isloading)
+}
 
 //获取最近的一家门店
 const getNearStore = (data, isPlicing, isloading) => {
-	return service('candao.storeStandard.getNearStore', 'post', data , isloading)
+	return service('candao.storeStandard.getNearStore', 'post', data, isloading)
 }
 
 //获取默认菜单
@@ -82,7 +84,7 @@ const getUserInfo = (data, isloading) => {
 //normoal请求区域
 //微信登录
 const getWxOpenid = (data, isPlicing, isloading) => {
-	return normoal('LocalAction?method=getOpenId'+ key, 'post', data, isPlicing, isloading)
+	return normoal('LocalAction?method=getOpenId' + key, 'post', data, isPlicing, isloading)
 }
 
 //设置缓存
@@ -99,7 +101,29 @@ const phoneLogin = (data, isPlicing, isloading) => {
 //v_4.3接口地方  service_v
 //用户注册
 const vUserLogin = (data, isloading) => {
-	return service_v('v4_3/card/register','post', data, isloading)
+	return service_v('v4_3/card/register', 'post', data, isloading)
+}
+
+//用户注册
+const getMemberInfo = (data, isloading) => {
+	let backurl;
+	if (data) {
+		backurl = handerGetParams(data);
+	}
+	return service_v('v4_3/card/by' + backurl, 'get', data, isloading)
+}
+
+function handerGetParams(data) {
+	let string = ''
+	for (let i in data) {
+		string += '/' + data[i];
+	}
+	return string
+}
+
+//品牌优惠活动
+const getActivity = (data, isloading) => {
+	return service_v('v4_3/find/markting/activity', 'post', data, isloading)
 }
 
 
@@ -107,23 +131,25 @@ const vUserLogin = (data, isloading) => {
 
 
 module.exports = {
-	deleteAdress:deleteAdress,
-	vUserLogin:vUserLogin,
-	phoneLogin:phoneLogin,
-	getUserInfo:getUserInfo,
-	getBannerList:getBannerList,
-	getStoreList:getStoreList,
-	getNearStore:getNearStore,
-	updateAddress:updateAddress,
-	addUserAddress:addUserAddress,
-	getUserAddress:getUserAddress,
-	getDistrict:getDistrict,
-	getCityList:getCityList,
-	getOpenCityList:getOpenCityList,
-	getProductMenu:getProductMenu,
-	getCityId:getCityId,
+	getMemberInfo: getMemberInfo,
+	getActivity: getActivity,
+	deleteAdress: deleteAdress,
+	vUserLogin: vUserLogin,
+	phoneLogin: phoneLogin,
+	getUserInfo: getUserInfo,
+	getBannerList: getBannerList,
+	getStoreList: getStoreList,
+	getNearStore: getNearStore,
+	updateAddress: updateAddress,
+	addUserAddress: addUserAddress,
+	getUserAddress: getUserAddress,
+	getDistrict: getDistrict,
+	getCityList: getCityList,
+	getOpenCityList: getOpenCityList,
+	getProductMenu: getProductMenu,
+	getCityId: getCityId,
 	getWxOpenid: getWxOpenid,
-	setCache:setCache,
-	getNearStoreList:getNearStoreList,
-	getDefaultMeun:getDefaultMeun
+	setCache: setCache,
+	getNearStoreList: getNearStoreList,
+	getDefaultMeun: getDefaultMeun
 }

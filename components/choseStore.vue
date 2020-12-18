@@ -1,27 +1,20 @@
 <template>
-	<view class="chose-store" :hidden="hiddenChoseStore">
-		<view class="chose-cont">
+	<view class="chose-store" v-if="hiddenChoseStore">
+		<view class="order-info" :animation="animationData">
+			<view class="chose-store-head">
+				选择门店
+				<!-- <image  src="../static/cha.png"></image> -->
+			</view>
 			<scroll-view class="store-box" scroll-y>
-				<view class="store-item" v-for="(item,index) in nearList" :key = "index" @click="choseStore(index)">
-					<view class="ischose" :class="{chosed_store:currtab == index}">
-					</view>
-					<view class="store-name">
-						{{item.storeName}}
-					</view>
-					<view class="store-address">
-						{{`${item.provinceName}-${item.districtName}-${item.storeAddress}`}}
-					</view>
-					<view class="store-name">
-						{{item.newdistance}}
-					</view>
-				</view>
+				<store @choseStore="choseStore" :nearList="nearList"></store>
 			</scroll-view>
 			<view class="chose-store-footer">
-				<view class="store-footer-item" @click="chosrOther">
-					选择其他门店
-				</view>
+
 				<view class="store-footer-item" @click="confirmStore">
 					确定
+				</view>
+				<view class="store-footer-item" @click="chosrOther">
+					选择其他门店
 				</view>
 			</view>
 		</view>
@@ -30,7 +23,10 @@
 
 <script>
 	import api from '../WXapi/api.js'
-	import {goChoseCity} from '../utils/goToPage.js'
+	import store from './store.vue'
+	import {
+		goChoseCity
+	} from '../utils/goToPage.js'
 	import {
 		mapState,
 		mapMutations
@@ -38,86 +34,147 @@
 	export default {
 		data() {
 			return {
-				currtab:0,
-				hiddenChoseStore:true,
+				storeInfo:{},   //选中的店铺
+				hiddenChoseStore: false,
+				animationData: {},
 			};
 		},
-		props:{
+		components: {
+			store
+		},
+		props: {
 			nearList: {
-				type:Array,
-				default:() => []
+				type: Array,
+				default: () => []
 			}
 		},
 		computed: {
 			// ...mapState(['businessType'])
 		},
-		methods:{
-			//点击选择店铺
-			choseStore(index){
-				if(this.currtab == index){
-					return
-				}
-				this.currtab = index;
+		mounted() {
+			let that = this;
+			let animation = uni.createAnimation({ //定义动画
+				duration: 300,
+				timingFunction: 'linear',
+				delay: 0
+			})
+			that.animation = animation;
+			that.$nextTick(() => { //解决DOM更新异步问题
+				animation.translateY(0).step()
+				that.animationData = animation.export();
+			})
+		},
+		watch:{
+			nearList(){
+				this.storeInfo = this.nearList[0];
+			}
+		},
+		methods: {
+			choseStore(val){
+				this.storeInfo = val;
 			},
+			openAnimation() {
+				let that = this;
+				let animation = that.animation;
+				that.$nextTick(() => { //解决DOM更新异步问题
+					animation.translateY(0).step()
+					that.animationData = animation.export();
+				})
+			},
+			
 			//展现弹窗
-			showChoseprop(){
+			showChoseprop() {
+				uni.hideTabBar({})
+				this.hiddenChoseStore = true;
+			},
+			//关闭弹窗
+			closeChoseprop() {
+				uni.showTabBar({})
+				let animation = this.animation;
+				this.animationData = animation.export();
 				this.hiddenChoseStore = false;
 			},
 			//前往选择城市
-			chosrOther(){
+			chosrOther() {
 				goChoseCity();
 			},
 			//确认选择所选店铺
-			async confirmStore(){
-				this.hiddenChoseStore = true;
-				this.$emit('switchStore', this.nearList[this.currtab]);
+			async confirmStore() {
+				this.closeChoseprop();
+				this.$emit('switchStore', this.storeInfo);
 			},
 		}
 	}
 </script>
 
 <style lang="scss">
-	.chose-store{
+	.chose-store {
 		font-size: 28upx;
 		@extend %all-mask;
 	}
-	.chose-cont{
-		@include rect(620upx,800upx);
-		background-color: $bg-white;
-		margin: 20% auto;
-		border-radius: 10upx;
+
+	.chose-store>.order-info {
+		background: #F8F8FA;
+	}
+
+	.chose-store-head {
+		@include rect(100%, 129upx);
+		@include text-allcenter(129upx);
+		font-size: 35upx;
+		font-weight: 700;
 		position: relative;
+		border-bottom: 1upx #C0BFBF solid;
 	}
-	.store-box{
-		@include rect(100%, 680upx);
-	}
-	.chose-store-footer{
+
+	.chose-store-head>image {
 		position: absolute;
-		@include rect(100%,120upx);
+		@include rect(55upx, 55upx);
+		top: 37upx;
+		right: 33upx;
+	}
+
+	.store-box {
+		width: 100%;
+		max-height: 700upx;
+	}
+
+	.chose-store-footer {
+		margin: 10upx auto;
+		width: 698upx;
+	}
+
+	.store-footer-item {
+		flex: 1;
+		height: 88upx;
+		@include text-allcenter(88upx);
+		font-size: 32upx;
+		margin-top: 10upx
+	}
+
+	.store-footer-item:first-child {
+		background-color: $main-color;
+		color: $text-white;
+		border-radius: 44upx;
+	}
+
+	.store-item {
+		@include rect(100%, 160upx);
 		@extend %flex-alcent;
-		bottom: 0upx;
 	}
-	.store-footer-item{
-		flex:1;
-		@include text-allcenter(200upx)
-	}
-	.store-item{
-		@include rect(100%,160upx);
-		@extend %flex-alcent;
-	}
-	.store-item>view{
+
+	.store-item>view {
 		margin-right: 10upx;
 	}
-		
-	.ischose{
-		@include rect(20upx,20upx);
+
+	.ischose {
+		@include rect(20upx, 20upx);
 		border: 1upx red solid;
 		border-radius: 50%;
 	}
-	.chosed_store{
+
+	.chosed_store {
 		background-color: red;
 	}
-	.store-name{
-		
-	}
+
+	.store-name {}
 </style>

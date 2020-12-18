@@ -6,7 +6,8 @@ export const refreshUserInfo = async callback => {
 	let res = await api.getUserInfo();
 	if (res && res.status == 1) {
 		if(res.data.phone){
-			store.commit('changeLogin',true);
+			store.commit('changeLogin', res.data.phone);
+			getMemberInfo();
 		}
 		if (callback) {
 			return res.data;
@@ -14,6 +15,20 @@ export const refreshUserInfo = async callback => {
 		uni.setStorageSync('userinfo', res.data);
 	}
 }
+
+
+//获取会员用户信息
+export const getMemberInfo = async callback => {
+	let data = {
+		mobile:store.state.isLogin,
+	}
+	let res = await api.getMemberInfo(data);
+	console.log(res)
+	if (res && res.status == 1) {
+		uni.setStorageSync('memberinfo',res.data[0]);
+	}
+}
+	
 
 //用户注册
 export const userRegister = async data => {
