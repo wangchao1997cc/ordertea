@@ -14,8 +14,6 @@
 			</view>
 		</view>
 		<view class="header" v-if="showdetail">
-			
-			
 			<view class="make-busy">
 				<swiper v-if="activelist.length" class="active-s" :autoplay="true" :interval="5000" :duration="1000" :circular="true">
 					<swiper-item v-for="(item,index) in activelist" :key="index">
@@ -29,7 +27,7 @@
 						</view>
 					</swiper-item>
 				</swiper>
-				<view class="busy-cont" >
+				<view class="busy-cont">
 					<view class="busy-l">
 						<sildermine :config="sliderConfig"></sildermine>
 						<text>前面还有<text>8</text>笔订单，预计还要20分钟</text>
@@ -78,7 +76,8 @@
 									</view>
 									<view class="goods-footer">
 										<view class="goods-price">
-											<text>¥{{titem.price}}</text>
+											<text>¥{{titem.activePrice?titem.activePrice:titem.price}}</text>
+											<text class="oldprice" v-if="titem.activePrice">¥{{titem.price}}</text>
 										</view>
 										<view class="btn-r">
 											<view class="juide-text" v-if="titem.isInServiceTime || titem.isSoldOut">
@@ -156,14 +155,14 @@
 				</view>
 				<!-- 购物车 -->
 				<view class="shopcar-cont" :hidden="maskarr.shopCarCont">
-					<view class="head_juide" >
+					<view class="head_juide">
 						<view @click="clearShopCar">
 							<image src="../../static/clear.png"></image>
 							<text>
 								清空购物车
 							</text>
 						</view>
-						<image @click="closeAllMask"  class="close-icon" src="../../static/cha.png"></image>
+						<image @click="closeAllMask" class="close-icon" src="../../static/cha.png"></image>
 					</view>
 					<scroll-view scroll-y class="scroll-shopcar" :style="{maxHeight:popHeightInfo.low+'px'}">
 						<view class="shopcar-item" v-for="(item,index) in shopcar" :key="index">
@@ -192,6 +191,9 @@
 					</scroll-view>
 					<view class="mealfee">
 						餐盒费：¥{{priceArr.lunchboxfee}}
+					</view>
+					<view class="mealfee" v-if="isfullprice">
+						<text>{{isfullprice.ruleDetail}}</text>- ¥{{isfullprice.discount}}
 					</view>
 					<view class="blank"></view>
 				</view>
@@ -254,10 +256,19 @@
 		subtr,
 		accAdd
 	} from '../../utils/utils.js';
+	//排序函数
+	function compare(key) {
+		return function(value1, value2) {
+			console.log(value1[key])
+			var val1 = value1[key];
+			var val2 = value2[key];
+			return val2 - val1;
+		}
+	}
 	export default {
 		data() {
 			return {
-				activelist:[],   //活动list
+				activelist: [], //活动list
 				bannerList: [], //轮播图广告
 				allmask: false,
 				nums: '1', //mask 中的nums
@@ -281,19 +292,20 @@
 				specarr: [], //规格属性数组
 				shopcar: [], //购物车数组
 				chosegoodsindex: null,
+				isfullprice:null,    //是否达成满减价格
 				// totalPrice: 0, //购物车总价格
-				maskarr: {    
-					orderDescMask: true,   //点击商品规格信息等弹窗
-					shopCarCont: true,    //购物车弹窗
-					shopCarShow: true,    //底部购物车导航弹窗
+				maskarr: {
+					orderDescMask: true, //点击商品规格信息等弹窗
+					shopCarCont: true, //购物车弹窗
+					shopCarShow: true, //底部购物车导航弹窗
 				},
-				sliderConfig: {    //进度条参数
+				sliderConfig: { //进度条参数
 					progresswidth: '320upx',
 					progressbar: '50%',
 				},
 			}
 		},
-		
+
 		components: {
 			choseStore,
 			loadpage,
@@ -354,6 +366,24 @@
 					})
 					totalPrice = accAdd(totalPrice, lunchboxfee);
 				}
+				let activelist = this.activelist;
+				let  isfullprice = null;
+				if (activelist) {
+					let fullarr = [];
+					activelist.forEach(item => {
+						if (item.type == 3) { //满减
+							let moneyOff = item.moneyOff.sort(compare('moneyCondition'));
+							for (let i in moneyOff) {
+								if (totalPrice > moneyOff[i].moneyCondition) {
+									isfullprice = moneyOff[i];
+									totalPrice = subtr(totalPrice,moneyOff[i].discount);
+									break;
+								}
+							}
+						}
+					})
+				}
+				this.isfullprice = isfullprice;
 				return {
 					totalPrice: totalPrice,
 					lunchboxfee: lunchboxfee,
@@ -396,23 +426,48 @@
 			}
 		},
 		methods: {
-			init() {
+
+			async init() {
 				let that = this;
 				that.juideUserInfo(); //判断用户是否登录
 				that.getLocation(); //获取地理位置
-				that.getCategoryList(); //获取默认的商品列表
 				that.computReftHe(); //计算右边商品列表的高度
 				that.getBannerList(); //获取轮播图广告
 			},
-			async getActivity(){
+			//品牌活动优惠
+			async getActivity(menus) {
 				let memberinfo = uni.getStorageSync('memberinfo');
 				let data = {
 					cardId: memberinfo.id
 				};
 				let res = await api.getActivity(data);
-				console.log(res)
-				if(res && res.code==200){
+				console.log('活动', res);
+				if (res && res.code == 200) {
+					res.data.forEach((item) => {
+						if (item.type == 5) {
+							item.productsBonus.bonusProducts.forEach(aitem => { //计算商品的折扣价格
+								menus.forEach(bitem => {
+									bitem.products.forEach(citem => {
+										if (citem.uid == aitem.productPosId) {
+											switch (aitem.discountType) {
+												case 0:
+													citem.activePrice = Math.round(parseFloat(accMul(citem.price, aitem.value)) * 100) / 100;
+													break;
+												case 1:
+													citem.activePrice = subtr(citem.price, aitem.value);
+													break;
+												case 2:
+													citem.activePrice = aitem.value;
+													break;
+											}
+										}
+									})
+								})
+							})
+						}
+					})
 					this.activelist = res.data;
+					return menus;
 				}
 			},
 			async juideUserInfo() {
@@ -504,17 +559,18 @@
 			},
 			//添加购物车商品
 			addShopCar(goods) {
+
 				let that = this;
 				if (!goods) {
 					that.$set(that.chooseGoods, 'nums', that.nums);
 					goods = that.chooseGoods;
-				} else {}
+				}
 				let shopcar = this.shopcar;
 				let currtabarr = that.currtabarr;
 				let shopitem = { //定义购物车单个变量
 					uid: goods.uid,
 					name: goods.name,
-					price: goods.price,
+					price: goods.activePrice ? goods.activePrice : goods.price,
 					nums: goods.nums,
 					logo: goods.logo ? goods.logo : '../../static/menu/logo.png',
 					idx: goods.idx,
@@ -553,6 +609,7 @@
 							} else {
 								ishave = true;
 								item.nums++;
+								that.products[goods.index].products[goods.idx].nums = item.nums;
 							}
 						}
 					})
@@ -573,16 +630,13 @@
 			switchStore(store) {
 				this.storeInfo = store;
 				this.getStoreMenu(store.storeId);
-			   
-				// that.getActive(store.);
 			},
 			//点击商品打开幕布
-			openOrderMask(goods,index,idx) {
+			openOrderMask(goods, index, idx) {
 				let that = this;
 				// if(goods.isInServiceTime || goods.isSoldOut){   //售罄和不在售时间内
 				// 	return;
 				// }
-				// let popHeightInfo = that.popHeightInfo;
 				that.chooseGoods = goods;
 				that.chooseGoods.idx = idx;
 				that.chooseGoods.index = index;
@@ -634,7 +688,7 @@
 						return this.closeAllMask()
 					}
 				}
-				
+
 				let animation = that.animation;
 				that.$nextTick(() => { //解决DOM更新异步问题
 					animation.translateY(0).step()
@@ -661,7 +715,6 @@
 				let res = await api.getProductMenu(data);
 				if (res && res.status == 1) {
 					this.handleShopData(res.data.bigs);
-					this.getActivity();   //获取活动信息
 				}
 			},
 			//计算左边商品分类的高度
@@ -692,6 +745,8 @@
 					let res = await getCityAddress(lat, log); //获取地理详细信息
 					// that.getCityId(res.result.ad_info.city); //获取城市id
 					// that.setCacheData(res.result.address_component.city); //服务器存储
+				} else {
+					that.getCategoryList(); //获取默认的商品列表
 				}
 			},
 			// 获取当前附近的门店
@@ -713,7 +768,7 @@
 						item.newdistance = conversion(item.distance) //换算距离
 					})
 					if (nearList.length > 1) { //如果附近多个店铺则展示选择店铺弹窗
-						// that.$refs.chosestore.showChoseprop();
+						that.$refs.chosestore.showChoseprop();
 					} else if (nearList.length == 1) { //只有一个则展现这个店铺
 						that.storeInfo = nearList[0];
 						that.getStoreMenu(nearList[0].storeId);
@@ -770,8 +825,9 @@
 			// 	}
 			// },
 			//处理获取到的商铺菜单
-			handleShopData(data) {
+			async handleShopData(data) {
 				let that = this;
+				data = await this.getActivity(data); //获取活动信息
 				that.products = data;
 				that.currentId = data[0].uid;
 				that.loadingState = true;
@@ -779,12 +835,17 @@
 					that.calcSize();
 				}, 150)
 			},
+			//处理特价商品
+			handleSpecPrice(item) {
+
+			},
 			//获取默认商品数据
 			async getCategoryList() {
 				let data = {
 					brandId: app.globalData.brandIdc,
 				};
 				let res = await api.getDefaultMeun(data);
+				console.log('默认数据', res.data.brandId)
 				if (res.status == 1) {
 					this.handleShopData(res.data.bigs)
 				}
@@ -919,7 +980,7 @@
 	.order-masker {
 		@extend %all-mask;
 
-		
+
 		/* .translate{
 			transform: translateY(100%);
 		} */
@@ -933,10 +994,11 @@
 				@include rect(100%, 372upx);
 				border: 1upx $main-color solid;
 				position: relative;
-				image{
-					@include rect(100%,100%)
-					border-radius: $radius-md;
+
+				image {
+					@include rect(100%, 100%) border-radius: $radius-md;
 				}
+
 				.close-mask {
 					position: absolute;
 					right: 0;
@@ -985,7 +1047,7 @@
 							/* margin-left: 40upx; */
 							width: 510upx;
 							@extend %flex-list;
-							
+
 							.arrt_Iitem {
 								font-size: 26upx;
 								@include rect(155upx, 58upx);
@@ -1044,7 +1106,8 @@
 					padding: 0 40upx 0 32upx;
 					box-sizing: border-box;
 					line-height: 100upx;
-					.price{
+
+					.price {
 						color: $color-red;
 						font-size: 32upx;
 					}
@@ -1087,58 +1150,61 @@
 			border: 1upx solid #888;
 		}
 	}
+
 	.header-control {
 		@extend %flex-alcent;
 		@include box-padding(28upx);
 		@include rect(100%, 110upx);
 		justify-content: space-between;
 		background-color: $bg-white;
-	
+
 		.address-info {
 			text {
 				font-size: 32upx;
-	
+
 				&:last-child {
 					font-size: $font-sm;
 					color: #A0A4A7;
 				}
 			}
 		}
-	
+
 		.store-control {
 			height: 100%;
 			text-align: center;
-	
+
 			.check-juide {
 				margin-top: 6upx;
 				font-size: 20upx;
 				color: #a0a0a0;
 				justify-content: center;
 				@extend %flex-alcent;
-	
+
 				image {
 					@include rect(9upx, 18upx);
 					transform: rotate(90deg);
 					margin-left: 12upx;
 				}
 			}
-	
+
 		}
 	}
 
 	.header {
 		width: 100%;
 		box-sizing: border-box;
-		
-		.active-s{
+
+		.active-s {
 			background-color: #f5f5f5;
 			@include rect(100%, 85upx);
-			swiper-item{
-				@include rect(100%,100%);
+
+			swiper-item {
+				@include rect(100%, 100%);
 			}
 		}
+
 		.active-goods {
-			@include rect(100%,100%);
+			@include rect(100%, 100%);
 			@include box-padding(28upx);
 			@extend %flex-alcent;
 			justify-content: space-between;
@@ -1339,10 +1405,18 @@
 				line-height: 44upx;
 
 				.goods-price {
-					
 					font-size: 32upx;
 					font-weight: 700;
 					color: $color-red;
+
+				}
+
+				.oldprice {
+					font-size: 24upx;
+					color: #a5a5a5;
+					text-decoration: line-through;
+					font-weight: 400;
+					margin-left: 20upx;
 				}
 
 				.btn-r {
@@ -1388,7 +1462,7 @@
 		padding-bottom: 160upx;
 
 
-		
+
 
 		.scroll-shopcar {
 			width: 694upx;
@@ -1398,10 +1472,15 @@
 		}
 
 		.mealfee {
-			margin-left: 30upx;
+			margin:30upx 30upx 0 30upx;
 			font-size: $font-md;
-			margin-top: 30upx;
 			color: #666666;
+			display: flex;
+			justify-content: space-between;
+			text{
+				color: $color-red;
+				margin-right: 30upx;
+			}
 		}
 
 		.shopcar-item {
@@ -1454,6 +1533,7 @@
 
 		/* @include rect(100%,400upx); */
 	}
+
 	.order-info {
 		position: absolute;
 		width: 100%;
@@ -1464,31 +1544,31 @@
 		border-top-left-radius: 20upx;
 		overflow: hidden;
 	}
-	
+
 	.head_juide {
 		@include rect(100%, 129upx);
 		@extend %flex-alcent;
-		justify-content: space-between;	
-		
-		.close-icon{
-			@include rect(55upx,55upx);
+		justify-content: space-between;
+
+		.close-icon {
+			@include rect(55upx, 55upx);
 			margin-right: 36upx;
 		}
-		
-		view{
+
+		view {
 			margin-left: 28upx;
+
 			image {
 				@include rect(32upx, 32upx);
 				margin-right: 10upx;
 			}
-			
+
 			text {
-				color:#767273;
+				color: #767273;
 				margin-right: 28upx;
 				line-height: 60upx;
 			}
 		}
-		
+
 	}
-	
 </style>

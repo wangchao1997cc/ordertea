@@ -1,6 +1,6 @@
 <template>
 	<view class="loading" :hidden= "loadingState">
-		这里展现的是loading.....
+		<image src="../static/loading.gif"></image>
 	</view>
 </template>
 
@@ -34,6 +34,9 @@
 		z-index: 9;
 		@extend %flex-alcent;
 		justify-content: center;
+		image{
+			@include rect(228upx,228upx);
+		}
 	}
 
 </style>
