@@ -62,44 +62,42 @@
 						{{item.name}}
 					</view>
 					<view class="t-list">
-						<block v-for="(titem,idx) in item.products" :key="idx">
-							<view class="t-item" @click="openOrderMask(titem,index,idx)">
-								<view class="good-pic">
-									<image :src="titem.logo?titem.logo:'../../static/menu/logo.png'"></image>
+						<view class="t-item" v-for="(titem,idx) in item.products" :key="idx" @click="openOrderMask(titem,index,idx)">
+							<view class="good-pic">
+								<image :src="titem.logo?titem.logo:'../../static/menu/logo.png'"></image>
+							</view>
+							<view class="goods-info">
+								<view class="goods-name">
+									{{titem.name}}
 								</view>
-								<view class="goods-info">
-									<view class="goods-name">
-										{{titem.name}}
+								<view class="goods-desc">
+									{{titem.desc}}
+								</view>
+								<view class="goods-footer">
+									<view class="goods-price">
+										<text>¥{{titem.activePrice?titem.activePrice:titem.price}}</text>
+										<text class="oldprice" v-if="titem.activePrice">¥{{titem.price}}</text>
 									</view>
-									<view class="goods-desc">
-										{{titem.desc}}
-									</view>
-									<view class="goods-footer">
-										<view class="goods-price">
-											<text>¥{{titem.activePrice?titem.activePrice:titem.price}}</text>
-											<text class="oldprice" v-if="titem.activePrice">¥{{titem.price}}</text>
+									<view class="btn-r">
+										<view class="juide-text" v-if="titem.isInServiceTime || titem.isSoldOut">
+											{{!titem.isInServiceTime?'餐品不在供应时间':(titem.isSoldOut?'商品已售罄':'')}}
 										</view>
-										<view class="btn-r">
-											<view class="juide-text" v-if="titem.isInServiceTime || titem.isSoldOut">
-												{{!titem.isInServiceTime?'餐品不在供应时间':(titem.isSoldOut?'商品已售罄':'')}}
-											</view>
-											<view @click.stop="prentEvents" v-if="titem.type == 1 && !titem.isRequirement">
-												<view class="goods-single">
-													<image v-if="titem.nums" src="../../static/sub.png" @click="reduceTap(1,titem)"></image>
-													<view class="num">
-														{{titem.nums?titem.nums:''}}
-													</view>
-													<image src="../../static/add.png" @click="addTap(1,titem,index,idx)"></image>
+										<view @click.stop="prentEvents" v-if="titem.type == 1 && !titem.isRequirement">
+											<view class="goods-single">
+												<image v-if="titem.nums" src="../../static/sub.png" @click="reduceTap(1,titem)"></image>
+												<view class="num">
+													{{titem.nums?titem.nums:''}}
 												</view>
+												<image src="../../static/add.png" @click="addTap(1,titem,index,idx)"></image>
 											</view>
-											<view v-else class="meal">
-												<text>{{titem.isRequirement?'选规格':'选套餐'}}</text>
-											</view>
+										</view>
+										<view v-else class="meal">
+											<text>{{titem.isRequirement?'选规格':'选套餐'}}</text>
 										</view>
 									</view>
 								</view>
 							</view>
-						</block>
+						</view>
 					</view>
 				</view>
 				<view class="blank">
@@ -502,12 +500,15 @@
 			},
 			//添加按钮
 			addTap(type, goods, index, idx) {
+				console.log('添加按钮上的goods', goods.name,index,idx)
 				switch (type) {
 					case 1:
 						if (!goods.nums) {
 							this.$set(goods, 'nums', 1);
-							goods.idx = idx;
-							goods.index = index;
+							goods.indexarr = {
+								idx:idx,
+								index:index,
+							}
 						} else {
 							goods.nums++;
 						}
@@ -518,7 +519,8 @@
 						break;
 					case 3:
 						goods.nums++;
-						this.products[goods.index].products[goods.idx].nums = goods.nums; //同步餐单上的商品数据
+						this.products[goods.indexarr.index].products[goods.indexarr.idx].nums = goods.nums; //同步餐单上的商品数据
+						break;
 				}
 			},
 			//减按钮
@@ -546,7 +548,7 @@
 							this.deleteShopCar(goods);
 						}
 						goods.nums--;
-						this.products[goods.index].products[goods.idx].nums = goods.nums; //同步餐单上的商品数据
+						this.products[goods.indexarr.index].products[goods.indexarr.idx].nums = goods.nums; //同步餐单上的商品数据
 				}
 			},
 
@@ -578,8 +580,9 @@
 					price: goods.price,
 					nums: goods.nums,
 					logo: goods.logo ? goods.logo : '../../static/menu/logo.png',
-					idx: goods.idx,
-					index: goods.index,
+					// idx: goods.idx,
+					// index: goods.index,
+					indexarr:goods.indexarr,
 					discounted: 0,
 				}
 				if (goods.activePrice) {
@@ -622,7 +625,7 @@
 							} else {
 								ishave = true;
 								item.nums++;
-								that.products[goods.index].products[goods.idx].nums = item.nums;
+								that.products[goods.indexarr.index].products[goods.indexarr.idx].nums = item.nums;
 							}
 						}
 					})
@@ -653,8 +656,10 @@
 				// }
 				// let popHeightInfo = that.popHeightInfo;
 				let chooseGoods = Object.assign({}, goods); //第一层深拷贝，防止价格影响
-				chooseGoods.idx = idx;
-				chooseGoods.index = index;
+				chooseGoods.indexarr= {
+					idx:idx,
+					index:index,
+				}
 				that.nums = 1;
 				this.chooseGoods = chooseGoods;
 				if (goods.type == 1 && goods.isRequirement) {
@@ -758,7 +763,7 @@
 				let windowHeight = sysinfo.windowHeight;
 				this.popHeightInfo = {
 					hei: windowHeight * 1,
-					low: windowHeight * 0.7,
+					low: windowHeight * 0.5,
 				};
 				this.shopBoxHeight = windowHeight * (750 / sysinfo.windowWidth) - 200;
 				let animation = uni.createAnimation({ //定义动画
@@ -838,29 +843,32 @@
 			//跳转订单页面
 			jumpOrder() {
 				let storeInfo = app.globalData.storeInfo;
-				console.log('店铺信息', storeInfo)
 				let memberinfo = uni.getStorageSync('memberinfo');
-				console.log(this.shopcar)
 				let shopcar = this.shopcar;
 				let order = [];
 				shopcar.forEach(item => {
-					order.push({
-						products: [{
-							"qty": item.nums,
-							discounted: item.discounted,
-							"condiments": [{
-								"qty": 3,
-								"name": "热/无糖/椰果/",
-								"price": 10
-							}],
-							product_no: item.uid,
-							name: item.name,
-							price: item.price
-						}]
+					let products = [{
+						qty: item.nums,
+						discounted: item.discounted,
+						product_no: item.uid,
+						name: item.name,
+						price: item.price,
+					}]
 
-					})
+					if (item.property) {
+						let price = 0;
+						item.property.forEach(aitem => {
+							price = accAdd(price, aitem.price)
+						})
+						products.condiments = [{
+							qty: item.qty,
+							name: item.descinfo,
+							price: price,
+						}];
+					}
+					order.push(products)
 				})
-
+				console.log(111, order)
 				let orderinfo = {
 					member: {
 						cardId: memberinfo.id,
