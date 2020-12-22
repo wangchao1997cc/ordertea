@@ -146,10 +146,11 @@
 				font-size: 30upx;
 				align-items: center;
 				justify-content: center;
-				@include nav-line(#FF5856, 60upx, 6upx) color: #9A9A9A;
+				@include nav-line($main-color, 60upx, 6upx);
+				color: #9A9A9A;
 
 				&.changeC {
-					color: #FF5856;
+					color: $main-color;
 
 					&::after {
 						transform: scaleX(1);

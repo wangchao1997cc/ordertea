@@ -23,8 +23,7 @@ export const getMemberInfo = async callback => {
 		mobile:store.state.isLogin,
 	}
 	let res = await api.getMemberInfo(data);
-	console.log(res)
-	if (res && res.status == 1) {
+	if (res && res.code == 200) {
 		uni.setStorageSync('memberinfo',res.data[0]);
 	}
 }
@@ -77,7 +76,7 @@ export const ajaxUserLogin = async (takeit) => {
 		code: wxCode,
 	};
 	let res = await api.getWxOpenid(data, true);
-	console.log(res)
+	// console.log(res)
 	if (res.status == 1) {
 		delete res.data.errcode;
 		store.commit('change', res.data);

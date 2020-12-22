@@ -89,32 +89,55 @@ function checkPhone(phone) {
 
 //时间格式转换
 
-export function formatDate(now) {
+function formatDate(now) {
 	now = new Date(now);
-	// var year = now.getFullYear(); //取得4位数的年份
-	// var month = now.getMonth() + 1; //取得日期中的月份，其中0表示1月，11表示12月
-	// var date = now.getDate(); //返回日期月份中的天数（1到31）
+	var year = now.getFullYear(); //取得4位数的年份
+	var month = now.getMonth() + 1; //取得日期中的月份，其中0表示1月，11表示12月
+	var date = now.getDate(); //返回日期月份中的天数（1到31）
 	var hour = now.getHours(); //返回日期中的小时数（0到23）
 	var minute = now.getMinutes(); //返回日期中的分钟数（0到59）
-	// var second = now.getSeconds(); //返回日期中的秒数（0到59）
-	return hour + ":" + minute
-	// return year + "-" + month + "-" + date + " " + hour + ":" + minute + ":" + second;
+	var second = now.getSeconds(); //返回日期中的秒数（0到59）
+	return year + "-" + month + "-" + date + " " + hour + ":" + minute + ":" + second;
 }
 //加法函数  
 export const accAdd = (arg1, arg2) => {
-	var r1, r2, m;
-	try {
-		r1 = arg1.toString().split(".")[1].length;
-	} catch (e) {
-		r1 = 0;
-	}
-	try {
-		r2 = arg2.toString().split(".")[1].length;
-	} catch (e) {
-		r2 = 0;
-	}
-	m = Math.pow(10, Math.max(r1, r2));
-	return (arg1 * m + arg2 * m) / m;
+	 if (isNaN(arg1)) {
+	        arg1 = 0;
+	    }
+	    if (isNaN(arg2)) {
+	        arg2 = 0;
+	    }
+	    arg1 = Number(arg1);
+	    arg2 = Number(arg2);
+	    var r1, r2, m, c;
+	    try {
+	        r1 = arg1.toString().split(".")[1].length;
+	    }
+	    catch (e) {
+	        r1 = 0;
+	    }
+	    try {
+	        r2 = arg2.toString().split(".")[1].length;
+	    }
+	    catch (e) {
+	        r2 = 0;
+	    }
+	    c = Math.abs(r1 - r2);
+	    m = Math.pow(10, Math.max(r1, r2));
+	    if (c > 0) {
+	        var cm = Math.pow(10, c);
+	        if (r1 > r2) {
+	            arg1 = Number(arg1.toString().replace(".", ""));
+	            arg2 = Number(arg2.toString().replace(".", "")) * cm;
+	        } else {
+	            arg1 = Number(arg1.toString().replace(".", "")) * cm;
+	            arg2 = Number(arg2.toString().replace(".", ""));
+	        }
+	    } else {
+	        arg1 = Number(arg1.toString().replace(".", ""));
+	        arg2 = Number(arg2.toString().replace(".", ""));
+	    }
+	    return (arg1 + arg2) / m;
 }
 
 //减法函数  

@@ -44,6 +44,7 @@
 
 <script>
 	import minesilder from './minesilder.vue';
+	const app = getApp();
 	export default {
 		data() {
 			return {
@@ -96,6 +97,7 @@
 			},
 			//前往此店铺的点餐页
 			jumpSoreMenu(item) {
+				app.globalData.storeInfo = item;
 				if(this.type){
 					this.$store.commit('copy', item.storeId);
 					uni.switchTab({
