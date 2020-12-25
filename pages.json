@@ -1,5 +1,6 @@
 {
 	"pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
+		
 		{
 		    "path" : "pages/ordermenu/ordermenu",
 		    "style" : {
@@ -7,15 +8,22 @@
 			}
 		},
 		{
-		    "path" : "pages/mine/mine",
+		    "path" : "pages/coupons/coupons",
 		    "style" : {
-				"navigationBarTitleText": "我的"
+				"navigationBarTitleText": ""
 			}
 		},
 		{
 			"path": "pages/settle/settle",
 			"style": {
 				"navigationBarTitleText": "订单详情"
+			}
+		},
+		
+		{
+		    "path" : "pages/mine/mine",
+		    "style" : {
+				"navigationBarTitleText": "我的"
 			}
 		},
 		{
@@ -61,6 +69,11 @@
 			}
 		}
         
+        
+        ,{
+            "path" : "pages/addremark/addremark",
+            "style" : {}
+        }
     ],
 	"globalStyle": {
 		"navigationBarTextStyle": "black",

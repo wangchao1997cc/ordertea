@@ -500,14 +500,13 @@
 			},
 			//添加按钮
 			addTap(type, goods, index, idx) {
-				console.log('添加按钮上的goods', goods.name,index,idx)
 				switch (type) {
 					case 1:
 						if (!goods.nums) {
 							this.$set(goods, 'nums', 1);
 							goods.indexarr = {
-								idx:idx,
-								index:index,
+								idx: idx,
+								index: index,
 							}
 						} else {
 							goods.nums++;
@@ -580,9 +579,7 @@
 					price: goods.price,
 					nums: goods.nums,
 					logo: goods.logo ? goods.logo : '../../static/menu/logo.png',
-					// idx: goods.idx,
-					// index: goods.index,
-					indexarr:goods.indexarr,
+					indexarr: goods.indexarr,
 					discounted: 0,
 				}
 				if (goods.activePrice) {
@@ -656,9 +653,9 @@
 				// }
 				// let popHeightInfo = that.popHeightInfo;
 				let chooseGoods = Object.assign({}, goods); //第一层深拷贝，防止价格影响
-				chooseGoods.indexarr= {
-					idx:idx,
-					index:index,
+				chooseGoods.indexarr = {
+					idx: idx,
+					index: index,
 				}
 				that.nums = 1;
 				this.chooseGoods = chooseGoods;
@@ -671,18 +668,19 @@
 			//选择规格
 			chooseAttr(index, idx) {
 				let attr = this.specarr[index].items[idx];
+				console.log(attr)
 				let price = null
-				if (index != this.specarr.length - 1) {
-					let price = this.specarr[index].items[this.currtabarr[index]].price;
-					this.computeSpecPrice(price, attr.price); //先减
-					this.currtabarr.splice(index, 1, idx);
-				} else {
+				if (index == this.specarr.length - 1 && attr.hasOwnProperty('selected')) {
 					if (this.specarr[index].items[idx].selected) { //已经选中情况   减去价格
 						this.computeSpecPrice(attr.price, 0);
 					} else { //选中情况   增加价格
 						this.computeSpecPrice(0, attr.price);
 					}
 					this.specarr[index].items[idx].selected = !attr.selected;
+				} else {
+					let price = this.specarr[index].items[this.currtabarr[index]].price;
+					this.computeSpecPrice(price, attr.price); //先减
+					this.currtabarr.splice(index, 1, idx);
 				}
 			},
 			//计算商品的规格价格
@@ -698,6 +696,7 @@
 			},
 			//处理规格属性
 			handleData(data) {
+				console.log(data)
 				let specarr = [];
 				let currtabarr = [];
 				specarr.push(data.standard);
@@ -709,10 +708,12 @@
 					currtabarr.push(0);
 				}
 				this.currtabarr = currtabarr;
-				data.choices.items.forEach(item => {
-					this.$set(item, 'selected', false);
-				})
-				specarr.push(data.choices)
+				if (data.choices) {
+					data.choices.items.forEach(item => {
+						this.$set(item, 'selected', false);
+					})
+					specarr.push(data.choices)
+				}
 				this.specarr = specarr;
 			},
 			//展现动画
@@ -847,14 +848,14 @@
 				let shopcar = this.shopcar;
 				let order = [];
 				shopcar.forEach(item => {
-					let products = [{
+					let products = {
 						qty: item.nums,
 						discounted: item.discounted,
 						product_no: item.uid,
 						name: item.name,
 						price: item.price,
-					}]
-
+						condiments: [],
+					}
 					if (item.property) {
 						let price = 0;
 						item.property.forEach(aitem => {
@@ -864,26 +865,31 @@
 							qty: item.qty,
 							name: item.descinfo,
 							price: price,
+
 						}];
 					}
-					order.push(products)
+					order.push(products);
 				})
-				console.log(111, order)
 				let orderinfo = {
 					member: {
 						cardId: memberinfo.id,
 						usePoint: memberinfo.point,
 						useBalance: memberinfo.balance,
 						useRestriction: 1,
+						cardNo:memberinfo.cardNo,
 					},
 					boxFee: this.priceArr.lunchboxfee,
 					fee: storeInfo.fee,
+					order: {
+						products: [],
+					},
 				}
-				// app.globalData.orderinfo = orderinfo;
-				// uni.setStorageSync('orderinfo', orderinfo);
-				// uni.navigateTo({
-				// 	url: '../settle/settle'
-				// })
+				orderinfo.order.products = order;
+				app.globalData.orderinfo = orderinfo;
+				uni.setStorageSync('orderinfo', orderinfo);
+				uni.navigateTo({
+					url: '../settle/settle'
+				})
 			},
 			//服务端设置缓存
 			// async setCacheData(cityName) {

@@ -2,6 +2,7 @@
 	// import {ajaxUserLogin} from './utils/publicApi.js'
 	export default {
 		globalData: {
+			remark:'',   //订单的备注信息
 			brandId: 456,
 			menuId: 1804,
 			brandIdc: 383,

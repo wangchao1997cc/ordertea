@@ -71,6 +71,9 @@ export async function service_v(url, method, data, isloading) {
 function handleSingn(data){
 	let newData = {};
 	Object.keys(data).sort().map(key => {
+		if(typeof(data[key])=='object'){
+			data[key] = JSON.stringify(data[key])
+		}
 	   newData[key] = data[key]
 	})
 	newData.key = key;
@@ -107,7 +110,6 @@ function nrequest(method, header, url, data, isloading) {
 				if (e.statusCode === 200) {
 					resolve(e.data);
 					if (!JSESSIONID) {
-						console.log(111)
 						JSESSIONID = e.header["Set-Cookie"].match(/JSESSIONID=(.*)?;/)[1];
 						let data = {
 							"JSESSIONID": JSESSIONID

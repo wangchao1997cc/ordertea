@@ -126,11 +126,23 @@ const getActivity = (data, isloading) => {
 	return service_v('v4_3/find/markting/activity', 'post', data, isloading)
 }
 
+//品牌优惠活动
+const memberInterest = (data, isloading) => {
+	return service_v('v4_3/calculate/member/interests', 'post', data, isloading)
+}
+
+// //获取可使用优惠卷
+// const calculationCoupons = (data, isloading) => {
+// 	return service_v('v4_3/calculation/coupon', 'post', data, isloading)
+// }
+
 
 
 
 
 module.exports = {
+	// calculationCoupons:calculationCoupons,
+	memberInterest:memberInterest,
 	getMemberInfo: getMemberInfo,
 	getActivity: getActivity,
 	deleteAdress: deleteAdress,
