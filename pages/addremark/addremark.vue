@@ -43,7 +43,7 @@
 		@include rect(698upx,98upx);
 		background-color: $main-color;
 		@include text-allcenter(98upx);
-		bottom: 6upx;
+		bottom: 68upx;
 		left: 26upx;
 		position: fixed;
 		font-size: 32upx;

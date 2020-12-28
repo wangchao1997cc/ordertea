@@ -58,8 +58,8 @@
 			<text>会员余额支付</text>
 			<view class="box-l" @click="switchUseBalance">
 				<text>{{interest.balancePay?'已使用余额':'可用余额'}}：<text>{{interest.balancePay?interest.balancePay:(interest.card.balance?interest.card.balance:0)}}</text>元</text>
-				<view class="chosebox">
-					<image src=""></image>
+				<view class="chosebox" :class="{usebalance:interest.balancePay}">
+					<image v-if="interest.balancePay" src="../../static/choose_icon.png"></image>
 				</view>
 			</view>
 		</view>
@@ -267,7 +267,6 @@
 						}
 					})
 				})
-				console.log(timeData)
 				this.serviceTime = timeData[0].date + ' ' + timeData[0].timearr[0];
 				this.timeData = timeData;
 			},
@@ -413,6 +412,8 @@
 					let orderinfo = res.data;
 					if (orderinfo.progress[0].status == 1) {
 						this.getPayParams(orderid); //获取微信支付参数
+					}else{
+						this.goToOrderDetail(orderid);
 					}
 				}
 			},
@@ -424,6 +425,7 @@
 				let res = await api.wxOrderPay(data);
 				if (res.status == 1) {
 					let payres = await wxPayment(res.data);
+					this.goToOrderDetail(orderid)
 				}
 			},
 			//返回上一层页面
@@ -431,8 +433,10 @@
 				uni.navigateBack({})
 			},
 			//前往订单详情页面
-			goToOrderDetail(){
-				
+			goToOrderDetail(orderid){
+				uni.redirectTo({
+					url:'../orderdetail/orderdetail?orderId='+orderid
+				})
 			}
 		}
 	}
@@ -621,11 +625,19 @@
 			}
 
 			.chosebox {
-				@include rect(39upx, 39upx);
+				@include rect(38upx, 38upx);
 				border: 2upx #B2B5B8 solid;
 				margin-left: 30upx;
 				border-radius: 18upx;
+				box-sizing: border-box;
+				image{
+					@include rect(38upx, 38upx);
+				}
+				
 			}
+			.usebalance{
+				border: none;
+			} 
 		}
 	}
 
