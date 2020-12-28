@@ -2,16 +2,16 @@
 	<view class="content">
 		<view class="times-cont">
 			<view class="address">
-				<text>上海闵行店\n</text>
-				<text>上海市闵行区漕河泾XXXX商铺,99号</text>
+				<text>{{storeInfo.storeName}}\n</text>
+				<text>{{storeInfo.cityName+storeInfo.districtName+storeInfo.storeAddress}}</text>
 			</view>
-			<view class="takemeal-time">
+			<view class="takemeal-time" @click="openChooseTime">
 				<text>取餐时间</text>
-				<text>2020-12-08 14:56:59</text>
+				<text>{{serviceTime?serviceTime:''}}</text>
 			</view>
 			<view class="takemeal-time">
 				<text>联系电话</text>
-				<text>13788899999</text>
+				<text>{{storeInfo.phoneNumberList[0]}}</text>
 			</view>
 		</view>
 		<view class="goods-info">
@@ -47,8 +47,8 @@
 			</block>
 
 			<view class="cost-item" @click="jumpUseCoupons">
-				<text>优惠卷</text>
-				<view class="span">{{interest.canUseTotal?interest.canUseTotal:0}}张可用</view>
+				<text>{{couponJuide.tit}}</text>
+				<view class="span">{{couponJuide.cont}}</view>
 			</view>
 			<view class="summary">
 				实付：<text class="black-text">￥{{interest.afterDiscountTotal?interest.afterDiscountTotal:0}}</text>
@@ -56,9 +56,11 @@
 		</view>
 		<view class="balance">
 			<text>会员余额支付</text>
-			<view class="box-l">
-				<text>可用余额：<text>{{interest.card.balance?interest.card.balance:0}}</text>元</text>
-				<view class="chosebox"></view>
+			<view class="box-l" @click="switchUseBalance">
+				<text>{{interest.balancePay?'已使用余额':'可用余额'}}：<text>{{interest.balancePay?interest.balancePay:(interest.card.balance?interest.card.balance:0)}}</text>元</text>
+				<view class="chosebox">
+					<image src=""></image>
+				</view>
 			</view>
 		</view>
 		<view class="otherinfo">
@@ -72,25 +74,25 @@
 			<view class="other-item">
 				<text>餐具份数</text>
 				<view class="other-item-r">
-					<text>{{}}</text>
+					<text>{{peopleNum?peopleNum+'份':'根据餐量提供'}}</text>
 					<image src="../../static/07_icon_right.png"></image>
 				</view>
 			</view>
 		</view>
 		<view class="blank"></view>
 		<view class="footer-btn">
-			<text>￥99</text>
-			<view class="buy-btn">
+			<text>¥{{interest.afterDiscountTotal?interest.afterDiscountTotal:0}}</text>
+			<view class="buy-btn" @click="addOrder">
 				下单
 			</view>
 		</view>
-		<view class="mask" v-if="maskShow">
-			<view class="order-info" :animation="animationData">
+		<view class="mask" v-if="maskShow" @catchtouchmove="true">
+			<view class="order-info" :class="{on:chooseWareShow}" :animation="animationData">
 				<!-- 选择时间 -->
 				<view class="choose-box" v-if="chooseTimeShow">
 					<view class="chose-store-head">
 						选择送达时间
-						<image src="../../static/cha.png"></image>
+						<image @click="closeMask" src="../../static/cha.png"></image>
 					</view>
 					<view class="choose-cont">
 						<view class="date-l">
@@ -98,13 +100,24 @@
 								{{item.date}}
 							</view>
 						</view>
+						<scroll-view class="date-r" scroll-y>
+							<view class="date-r-item" v-for="(item,index) in timeData[choosetime].timearr" :key="index" @click="chooseServer(item)">
+								{{item}}
+							</view>
+						</scroll-view>
 					</view>
 				</view>
 				<!-- 选择餐具 -->
-				<view class="choose-box" v-if="chooseWareShow">
+				<view class="choose-box on" v-if="chooseWareShow">
 					<view class="chose-store-head">
-						选择餐具数量
-						<image src="../../static/cha.png"></image>
+						选择餐具
+						<image @click="closeMask" src="../../static/cha.png"></image>
+					</view>
+					<view class="tableware-box">
+						<view class="tableware-item" :class="{change_bor:wareCurrtab==index}" v-for="(item,index) in tablewarearr" :key='index'
+						 @click="switchWrae(index,item)">
+							{{item + '份'}}
+						</view>
 					</view>
 				</view>
 			</view>
@@ -114,36 +127,48 @@
 
 <script>
 	import api from '../../WXapi/api.js'
+	import {
+		wxPayment
+	} from '../../utils/publicApi.js'
 	const app = getApp();
 	export default {
 		data() {
 			return {
-				choosetime:0,   //选中的时间段索引
-				maskShow: true, //总幕布
-				chooseTimeShow: true, //预约时间幕布
-                chooseWareShow: false, //预约餐具幕布
+				useBalance: 1, //是否使用余额   1是0否
+				coupons: null,
+				wareCurrtab: 0, //选择餐具份数索引
+				peopleNum: 1, //就餐人数
+				tablewarearr: [1, 2, 3, 4],
+				choosetime: 0, //选中的时间段索引
+				maskShow: false, //总幕布
+				chooseTimeShow: false, //预约时间幕布
+				chooseWareShow: false, //预约餐具幕布
 				animationData: {},
-				timeData:[],   //预约时间
-				// orderparams: {},
+				timeData: [], //预约时间
+				orderparams: {}, //请求的参数
 				interest: {}, //会员折扣信息
 				remark: null, //订单备注
+				serviceTime: null, //选择的预计送达时间
+				storeInfo: null, //店铺信息
 			};
 		},
 		onLoad() {
 			let orderparams = app.globalData.orderinfo;
-			// this.orderparams = orderparams;
-			let orderInfo = app.globalData.storeInfo
-			this.computedTIme(orderInfo.appointmentTime);
+			let storeInfo = app.globalData.storeInfo;
+			this.storeInfo = storeInfo;
+			this.computedTIme(storeInfo.appointmentTime);
+			this.orderparams = orderparams;
 			this.memberInterest(orderparams); //会员权益计算
 			uni.showLoading({})
 			this.renderAnimation(); //定义动画
+			this.getWxaSubscribeTemplates() //获取微信订阅消息列表
 		},
 		onShow() {
 			let remark = app.globalData.remark;
 			let orderparams = app.globalData.orderinfo;
 			if (orderparams.ticketId) { //如果有优惠卷
 				this.memberInterest(orderparams); //会员权益计算
-				// this.orderparams = orderparams;
+				this.orderparams = orderparams;
 			}
 			if (remark) {
 				this.remark = remark;
@@ -152,13 +177,68 @@
 		onUnload() {
 			app.globalData.remark = '';
 		},
+		computed: {
+			couponJuide() {
+				let tit = '优惠卷';
+				let cont = '';
+				if (this.coupons) {
+					tit = this.coupons.name;
+					cont = '-¥' + this.coupons.amount
+				} else {
+					cont = (this.interest.canUseTotal ? this.interest.canUseTotal : 0) + '张可用'
+				}
+				return {
+					tit: tit,
+					cont: cont
+				}
+			},
+		},
 		methods: {
+			//切换是否使用余额
+			switchUseBalance() {
+				if (this.useBalance == 1) {
+					this.useBalance = 0;
+				} else {
+					this.useBalance = 1;
+				}
+				this.orderparams.member.useBalance = this.useBalance;
+				this.memberInterest(); //会员权益计算
+
+			},
+			async getWxaSubscribeTemplates() {
+				let res = await api.getWxaSubscribeTemplates({});
+				console.log(res);
+			},
+			//切换餐具数量
+			switchWrae(index, item) {
+				this.wareCurrtab = index;
+				this.peopleNum = item;
+				this.closeMask();
+			},
+			//打开选择时间幕布
+			openChooseTime() {
+				this.maskShow = true;
+				this.chooseTimeShow = true;
+			},
+			//预计送达时间
+			chooseServer(item) {
+				this.serviceTime = this.timeData[this.choosetime].date + ' ' + item;
+				this.closeMask();
+			},
 			//改变时间段
-			changeTimeFrag(index){
-				if(this.choosetime==index){
+			changeTimeFrag(index) {
+				if (this.choosetime == index) {
 					return;
 				}
 				this.choosetime = index;
+			},
+			//关闭幕布
+			closeMask() {
+				setTimeout(() => {
+					this.maskShow = false; //总幕布
+					this.chooseTimeShow = false; //预约时间幕布
+					this.chooseWareShow = false; //预约餐具幕布
+				}, 300)
 			},
 			//定义动画
 			renderAnimation() {
@@ -187,23 +267,25 @@
 						}
 					})
 				})
-				this.timeData = timeData;
 				console.log(timeData)
+				this.serviceTime = timeData[0].date + ' ' + timeData[0].timearr[0];
+				this.timeData = timeData;
 			},
 			//时间切段   15分钟为一个时间段
 			handerTime(date, startTime, endTime) {
 				let timerarr = [];
-				timerarr.push(startTime);
 				startTime = new Date(new Date(date + ' ' + startTime));
+				timerarr.push(new Date(startTime).format("hh:mm:ss"));
 				startTime = Date.parse(startTime); //转为时间戳
 				endTime = new Date(new Date(date + ' ' + endTime));
 				endTime = Date.parse(endTime); //转为时间戳
 				let totalnum = Math.floor((endTime - startTime) / 1000 / 60 / 15)
 				for (let i = 0; i < totalnum; i++) {
 					startTime += (15 * 60000);
-					timerarr.push(new Date(startTime).format("hh:mm"))
+					timerarr.push(new Date(startTime).format("hh:mm:ss"))
 				}
 				return timerarr;
+
 			},
 			//前往使用优惠卷页面
 			jumpUseCoupons() {
@@ -227,7 +309,14 @@
 				let res = await api.memberInterest(params)
 				uni.hideLoading();
 				if (res.code == 200 || res.code == 1901) {
-					that.interest = res.data;
+					let orderinfo = res.data;
+					orderinfo.promotions.forEach((item, index) => {
+						if (item.type == 8) {
+							orderinfo.promotions.splice(index, 1);
+							this.coupons = item;
+						}
+					})
+					that.interest = orderinfo;
 					if (res.code == 1901) {
 						this.$msg.showModal((result) => {
 							if (result == 1) {
@@ -238,6 +327,112 @@
 				} else {
 					that.$msg.showToast(res.message)
 				}
+			},
+			//创建订单
+			async addOrder() {
+				let that = this;
+				let orderparams = that.orderparams;
+				let interest = that.interest;
+				let storeInfo = that.storeInfo;
+				let location = uni.getStorageSync('location');
+				let params = {
+					storeId: storeInfo.storeId,
+					longitude: location.longitude,
+					latitude: location.latitude,
+					menuId: orderparams.menuId,
+					type: that.$store.state.businessType[0],
+					selfGetTime: that.serviceTime,
+					payType: 2,
+					name: "",
+					phone: interest.card.mobile,
+					address: that.storeInfo.storeAddress,
+					randomCode: new Date(new Date()).format("yyyyMMddhhmmss"),
+					userNote: that.remark ? that.remark : '无',
+					invoiceType: 0,
+					isInvoice: false,
+					couponId: 0,
+					peopleNum: 0,
+				}
+				let products = [];
+				let memberPreferentials = [];
+
+				orderparams.order.products.forEach(item => {
+					let product = {
+						pid: item.product_no,
+						num: item.qty,
+						typeId: item.typeId,
+					}
+					if (item.listRequirements.length) {
+						product.listRequirements = item.listRequirements;
+					}
+					products.push(product);
+				})
+
+				if (interest.balancePay) {
+					memberPreferentials.push({
+						content: '余额支付',
+						prePrice: -interest.balancePay,
+						type: 7,
+						childType: 0
+					})
+				}
+				interest.promotions.forEach(item => {
+					memberPreferentials.push({
+						content: item.name,
+						prePrice: -item.amount,
+						type: 7,
+
+					})
+				})
+				params.products = products;
+				params.memberPreferentials = memberPreferentials;
+				// params = JSON.parse(JSON.stringify(params))
+				let res = await api.placeOrder(params);
+
+				if (res.status == 1) {
+					let tit = `是否前往【${storeInfo.storeName}】自提`
+					this.$msg.showModal((json) => {
+						if (json == 1) {
+							this.getOrderDetail(res.data); //获取订单详情
+						}
+					}, '订单确认后无法更改', tit)
+				} else {
+					this.$msg.showToast(res.msg);
+
+				}
+				console.log(res)
+				console.log(params)
+			},
+			//获取订单详情
+			async getOrderDetail(orderid) {
+				let data = {
+					orderId: orderid
+				}
+				let res = await api.getOrderDetail(data);
+				if (res && res.status == 1) {
+					let orderinfo = res.data;
+					if (orderinfo.progress[0].status == 1) {
+						this.getPayParams(orderid); //获取微信支付参数
+					}
+				}
+			},
+			async getPayParams(orderid) {
+				let data = {
+					payType: 2,
+					orderId: orderid,
+				};
+				let res = await api.wxOrderPay(data);
+				if (res.status == 1) {
+					let payres = await wxPayment(res.data);
+				}
+			},
+			//返回上一层页面
+			gobackPage(){
+				uni.navigateBack({})
+			},
+			//前往订单详情页面
+			goToOrderDetail(){
+				
 			}
 		}
 	}
@@ -261,6 +456,19 @@
 		border-top-left-radius: 20upx;
 		overflow: hidden;
 
+
+		.choose-box {
+			height: 100%;
+		}
+
+		&.on {
+			height: 647upx;
+
+			.choose-box {
+				background-color: $bg-white;
+			}
+		}
+
 		.chose-store-head {
 			@include rect(100%, 129upx);
 			@include text-allcenter(129upx);
@@ -275,16 +483,52 @@
 				right: 33upx;
 			}
 		}
-		.choose-cont{
-			@include rect(100%,84%);
+
+		.tableware-box {
+			// margin-top: 15upx;
+			@include rect(100%, 84%);
+
+			.tableware-item {
+				@include rect(698upx, 98upx);
+				border: 2upx #EDEDED solid;
+				margin: 0upx auto 15upx auto;
+				border-radius: $radius-md;
+				@include text-allcenter(98upx);
+			}
+
+			.change_bor {
+				border: 2upx $main-color solid;
+			}
+		}
+
+		.choose-cont {
+			@include rect(100%, 84%);
 			display: flex;
-			.date-l{
-				@include rect(272upx,100%);
-				.data-l-item{
-					@include rect(100%,124upx);
+
+			.date-l {
+				flex: 1;
+
+				.data-l-item {
+					@include rect(100%, 124upx);
 					@include text-allcenter(124upx);
-					&.on{
+
+					&.on {
 						background-color: $bg-white;
+					}
+				}
+			}
+
+			.date-r {
+				flex: 1.75;
+				background-color: $bg-white;
+
+				.date-r-item {
+					width: 100%;
+					text-align: center;
+					margin-bottom: 72upx;
+
+					&:first-child {
+						margin-top: 45upx;
 					}
 				}
 			}
@@ -371,12 +615,17 @@
 			text {
 				color: #A3A3A3;
 
-				.chosebox {
-					@include rect(39upx, 39upx);
-					border: 2upx #B2B5B8 solid;
+				text {
+					color: $main-color;
 				}
 			}
 
+			.chosebox {
+				@include rect(39upx, 39upx);
+				border: 2upx #B2B5B8 solid;
+				margin-left: 30upx;
+				border-radius: 18upx;
+			}
 		}
 	}
 

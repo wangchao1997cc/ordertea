@@ -302,6 +302,7 @@
 					progressbar: '50%',
 				},
 				isfullprice: null, //满减
+				menuId: null, //餐单id
 			}
 		},
 
@@ -574,6 +575,7 @@
 				let shopcar = this.shopcar;
 				let currtabarr = that.currtabarr;
 				let shopitem = { //定义购物车单个变量
+					typeId: that.products[goods.indexarr.index].uid,
 					uid: goods.uid,
 					name: goods.name,
 					price: goods.price,
@@ -590,9 +592,11 @@
 					let property = [];
 					for (let i in that.specarr) {
 						if (i != that.specarr.length - 1) {
+							that.specarr[i].items[currtabarr[i]].title = that.specarr[i].title;
 							property.push(that.specarr[i].items[currtabarr[i]])
 						} else {
 							that.specarr[i].items.forEach(item => {
+								item.title = that.specarr[i].title;
 								if (item.selected) {
 									property.push(item)
 								}
@@ -647,6 +651,7 @@
 			},
 			//点击商品打开幕布
 			openOrderMask(goods, index, idx) {
+				console.log(goods)
 				let that = this;
 				// if(goods.isInServiceTime || goods.isSoldOut){   //售罄和不在售时间内
 				// 	return;
@@ -668,7 +673,9 @@
 			//选择规格
 			chooseAttr(index, idx) {
 				let attr = this.specarr[index].items[idx];
-				console.log(attr)
+				// this.$set(attr,'title',this.specarr[index].title);
+				// console.log(this.specarr[index].items[idx])
+				// console.log(attr)
 				let price = null
 				if (index == this.specarr.length - 1 && attr.hasOwnProperty('selected')) {
 					if (this.specarr[index].items[idx].selected) { //已经选中情况   减去价格
@@ -696,7 +703,6 @@
 			},
 			//处理规格属性
 			handleData(data) {
-				console.log(data)
 				let specarr = [];
 				let currtabarr = [];
 				specarr.push(data.standard);
@@ -710,6 +716,7 @@
 				this.currtabarr = currtabarr;
 				if (data.choices) {
 					data.choices.items.forEach(item => {
+						// item.title = data.choices.title;
 						this.$set(item, 'selected', false);
 					})
 					specarr.push(data.choices)
@@ -754,7 +761,9 @@
 					sendType: that.model,
 				}
 				let res = await api.getProductMenu(data);
+
 				if (res && res.status == 1) {
+					this.menuId = res.data.menuId;
 					this.handleShopData(res.data.bigs);
 				}
 			},
@@ -843,11 +852,14 @@
 			},
 			//跳转订单页面
 			jumpOrder() {
+				// console.log(this.products)
 				let storeInfo = app.globalData.storeInfo;
 				let memberinfo = uni.getStorageSync('memberinfo');
 				let shopcar = this.shopcar;
 				let order = [];
-				shopcar.forEach(item => {
+
+				shopcar.forEach((item, index) => {
+					console.log(item)
 					let products = {
 						qty: item.nums,
 						discounted: item.discounted,
@@ -855,29 +867,50 @@
 						name: item.name,
 						price: item.price,
 						condiments: [],
+						typeId: item.typeId,
+						listRequirements: [],
 					}
+
 					if (item.property) {
+						let quirements = {
+							index: index,
+							num: item.qty,
+							propertys: []
+						}
 						let price = 0;
 						item.property.forEach(aitem => {
 							price = accAdd(price, aitem.price)
+							quirements.propertys.push({
+								pid: aitem.pid,
+								title: aitem.title,
+								items: [{
+									index: index,
+									uid: aitem.uid,
+									name: aitem.name,
+									price: aitem.price
+								}]
+							})
 						})
+
 						products.condiments = [{
 							qty: item.qty,
 							name: item.descinfo,
 							price: price,
 
 						}];
+						products.listRequirements = [quirements]
 					}
 					order.push(products);
 				})
 				let orderinfo = {
 					member: {
 						cardId: memberinfo.id,
-						usePoint: memberinfo.point,
-						useBalance: memberinfo.balance,
+						usePoint: 0,
+						useBalance: 1,
 						useRestriction: 1,
-						cardNo:memberinfo.cardNo,
+						cardNo: memberinfo.cardNo,
 					},
+					menuId: this.menuId,
 					boxFee: this.priceArr.lunchboxfee,
 					fee: storeInfo.fee,
 					order: {

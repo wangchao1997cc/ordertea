@@ -81,6 +81,27 @@ const getUserInfo = (data, isloading) => {
 	return service('candao.user.getBaseInfo', 'post', data, isloading)
 }
 
+//创建订单
+const placeOrder = (data, isloading) => {
+	return service('candao.orderOwn.postOrder', 'post', data, isloading)
+}
+
+//获取微信订阅消息ID列表
+const getWxaSubscribeTemplates = (data, isloading) => {
+	return service('candao.sms.getWxaSubscribeTemplates', 'post', data, isloading)
+}
+
+//获取订单详情
+const getOrderDetail = (data, isloading) => {
+	return service('candao.orderOwn.getOrderDetail', 'post', data, isloading)
+}
+
+//获取订单详情
+const wxOrderPay = (data, isloading) => {
+	return service('candao.pay.orderPay', 'post', data, isloading)
+}
+
+
 //normoal请求区域
 //微信登录
 const getWxOpenid = (data, isPlicing, isloading) => {
@@ -96,6 +117,8 @@ const setCache = (data, isPlicing, isloading) => {
 const phoneLogin = (data, isPlicing, isloading) => {
 	return normoal('LocalAction?method=autoLogin' + key, 'post', data, isPlicing, isloading)
 }
+
+
 
 
 //v_4.3接口地方  service_v
@@ -126,10 +149,13 @@ const getActivity = (data, isloading) => {
 	return service_v('v4_3/find/markting/activity', 'post', data, isloading)
 }
 
-//品牌优惠活动
+//会员权益计算
 const memberInterest = (data, isloading) => {
 	return service_v('v4_3/calculate/member/interests', 'post', data, isloading)
 }
+
+
+
 
 // //获取可使用优惠卷
 // const calculationCoupons = (data, isloading) => {
@@ -141,7 +167,10 @@ const memberInterest = (data, isloading) => {
 
 
 module.exports = {
-	// calculationCoupons:calculationCoupons,
+	wxOrderPay:wxOrderPay,
+	getOrderDetail:getOrderDetail,
+	placeOrder:placeOrder,
+	getWxaSubscribeTemplates:getWxaSubscribeTemplates,
 	memberInterest:memberInterest,
 	getMemberInfo: getMemberInfo,
 	getActivity: getActivity,
