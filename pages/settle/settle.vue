@@ -1,12 +1,12 @@
 <template>
-	<view class="content">
+	<view class="content" v-if="storeInfo">
 		<view class="times-cont">
 			<view class="address">
 				<text>{{storeInfo.storeName}}\n</text>
 				<text>{{storeInfo.cityName+storeInfo.districtName+storeInfo.storeAddress}}</text>
 			</view>
 			<view class="takemeal-time" @click="openChooseTime">
-				<text>取餐时间</text>
+				<text>{{type==1?'预定送达时间':'取餐时间'}}</text>
 				<text>{{serviceTime?serviceTime:''}}</text>
 			</view>
 			<view class="takemeal-time">
@@ -14,11 +14,25 @@
 				<text>{{storeInfo.phoneNumberList[0]}}</text>
 			</view>
 		</view>
+		<view class="list" v-if="address">
+			<view class="row-box">
+				<view class="name-tel">
+					<view>{{address.receiverAddress + address.appendReceiverAddress}}</view>
+					<view>
+						配送地址
+						<!-- <image @click="addressEdit(address)" src="../../static/06_icon_编辑.png"></image> -->
+					</view>
+				</view>
+				<view class="address-desc">
+					<text>{{`${address.receiverName} ${address.receiverPhone}`}}</text>
+				</view>
+			</view>
+		</view>
 		<view class="goods-info">
 			<view class="goods-item" v-for="(item,index) in interest.products" :key="index">
 				<view class="goods-info-t">
 					<text>{{item.name}}</text>
-					<text>￥{{item.price}}</text>
+					<text>￥{{item.orderTotal}}</text>
 				</view>
 				<view class="goods-info-t">
 					<text>{{item.condiments[0]?item.condiments[0].name:'常规'}}</text>
@@ -130,6 +144,9 @@
 	import {
 		wxPayment
 	} from '../../utils/publicApi.js'
+	import {
+		goOrderDeatails
+	} from '../../utils/goToPage.js'
 	const app = getApp();
 	export default {
 		data() {
@@ -150,18 +167,26 @@
 				remark: null, //订单备注
 				serviceTime: null, //选择的预计送达时间
 				storeInfo: null, //店铺信息
+				type: null,
+				location: {}, //用户位置信息
+				address: null, //用户地址
 			};
 		},
-		onLoad() {
+		onLoad(options) {
+			let that = this;
 			let orderparams = app.globalData.orderinfo;
-			let storeInfo = app.globalData.storeInfo;
-			this.storeInfo = storeInfo;
-			this.computedTIme(storeInfo.appointmentTime);
-			this.orderparams = orderparams;
-			this.memberInterest(orderparams); //会员权益计算
+			this.storeInfo = app.globalData.storeInfo; //先渲染页面
+			that.getStore(options.storeId); //获取门店信息
+			that.orderparams = orderparams;
+			that.memberInterest(orderparams); //会员权益计算
 			uni.showLoading({})
-			this.renderAnimation(); //定义动画
-			this.getWxaSubscribeTemplates() //获取微信订阅消息列表
+			that.renderAnimation(); //定义动画
+			that.getWxaSubscribeTemplates() //获取微信订阅消息列表
+			that.type = that.$store.state.businessType[0]; //当前的模式
+			if (that.type == 1 || that.type == 4) {
+				this.address = uni.getStorageSync('selectAddress');
+				console.log(this.address)
+			}
 		},
 		onShow() {
 			let remark = app.globalData.remark;
@@ -194,6 +219,21 @@
 			},
 		},
 		methods: {
+			//获取当前门店信息
+			async getStore(storeId) {
+				let location = uni.getStorageSync('location');
+				this.location = location;
+				let data = {
+					storeId: storeId,
+					businessType: this.$store.state.businessType[0],
+					coordinate: [location.longitude, location.latitude],
+				}
+				let res = await api.getStore(data);
+				if (res.status == 1) {
+					this.storeInfo = res.data;
+					this.computedTIme(res.data.appointmentTime);
+				}
+			},
 			//切换是否使用余额
 			switchUseBalance() {
 				if (this.useBalance == 1) {
@@ -256,6 +296,7 @@
 			},
 			//计算预约时间
 			computedTIme(timeData) {
+				console.log(timeData);
 				timeData.forEach(item => {
 					item.times.forEach(aitem => {
 						let timearr = aitem.split('~');
@@ -273,9 +314,10 @@
 			//时间切段   15分钟为一个时间段
 			handerTime(date, startTime, endTime) {
 				let timerarr = [];
-				startTime = new Date(new Date(date + ' ' + startTime));
+				console.log(55555, new Date(date + ' ' + startTime))
+				startTime = new Date(new Date(date + ' ' + startTime)); //加上45分钟
+				startTime = Date.parse(startTime) + (45 * 60000); //转为时间戳
 				timerarr.push(new Date(startTime).format("hh:mm:ss"));
-				startTime = Date.parse(startTime); //转为时间戳
 				endTime = new Date(new Date(date + ' ' + endTime));
 				endTime = Date.parse(endTime); //转为时间戳
 				let totalnum = Math.floor((endTime - startTime) / 1000 / 60 / 15)
@@ -284,7 +326,6 @@
 					timerarr.push(new Date(startTime).format("hh:mm:ss"))
 				}
 				return timerarr;
-
 			},
 			//前往使用优惠卷页面
 			jumpUseCoupons() {
@@ -328,21 +369,22 @@
 				}
 			},
 			//创建订单
-			async addOrder() {
+			addOrder() {
 				let that = this;
+
 				let orderparams = that.orderparams;
 				let interest = that.interest;
 				let storeInfo = that.storeInfo;
-				let location = uni.getStorageSync('location');
+				let type = that.type;
 				let params = {
 					storeId: storeInfo.storeId,
-					longitude: location.longitude,
-					latitude: location.latitude,
+					longitude: that.location.longitude,
+					latitude: that.location.latitude,
 					menuId: orderparams.menuId,
 					type: that.$store.state.businessType[0],
 					selfGetTime: that.serviceTime,
 					payType: 2,
-					name: "",
+					name: interest.card.name,
 					phone: interest.card.mobile,
 					address: that.storeInfo.storeAddress,
 					randomCode: new Date(new Date()).format("yyyyMMddhhmmss"),
@@ -352,55 +394,66 @@
 					couponId: 0,
 					peopleNum: 0,
 				}
-				let products = [];
-				let memberPreferentials = [];
-
-				orderparams.order.products.forEach(item => {
-					let product = {
-						pid: item.product_no,
-						num: item.qty,
-						typeId: item.typeId,
-					}
-					if (item.listRequirements.length) {
-						product.listRequirements = item.listRequirements;
-					}
-					products.push(product);
-				})
-
-				if (interest.balancePay) {
-					memberPreferentials.push({
-						content: '余额支付',
-						prePrice: -interest.balancePay,
-						type: 7,
-						childType: 0
-					})
+				let tit = `是否前往【${storeInfo.storeName}】自提`;
+				if (type == 1) {
+					let address = this.address;
+					params.type = 4;
+					params.name = address.receiverName;
+					params.phone = address.receiverPhone;
+					params.address = address.receiverAddress + address.appendReceiverAddress;
+					tit = `是否确认配送地址【${address.receiverAddress}${address.appendReceiverAddress}】自提`
 				}
-				interest.promotions.forEach(item => {
-					memberPreferentials.push({
-						content: item.name,
-						prePrice: -item.amount,
-						type: 7,
+				that.$msg.showModal(async json => {
+					if (json == 1) {
+						uni.showLoading({
+							mask: true,
+						})
+						let products = [];
+						let memberPreferentials = [];
+						orderparams.order.products.forEach(item => {
+							let product = {
+								pid: item.product_no,
+								num: item.qty,
+								typeId: item.typeId,
+							}
+							if (item.listRequirements.length) {
+								product.listRequirements = item.listRequirements;
+							}
+							products.push(product);
+						})
 
-					})
-				})
-				params.products = products;
-				params.memberPreferentials = memberPreferentials;
-				// params = JSON.parse(JSON.stringify(params))
-				let res = await api.placeOrder(params);
-
-				if (res.status == 1) {
-					let tit = `是否前往【${storeInfo.storeName}】自提`
-					this.$msg.showModal((json) => {
-						if (json == 1) {
-							this.getOrderDetail(res.data); //获取订单详情
+						if (interest.balancePay) {
+							memberPreferentials.push({
+								content: '余额支付',
+								prePrice: -interest.balancePay,
+								type: 7,
+								childType: 0
+							})
 						}
-					}, '订单确认后无法更改', tit)
-				} else {
-					this.$msg.showToast(res.msg);
+						interest.promotions.forEach(item => {
+							memberPreferentials.push({
+								content: item.name,
+								prePrice: -item.amount,
+								type: 7,
+							})
+						})
+						params.products = products;
+						params.memberPreferentials = memberPreferentials;
+						// params = JSON.parse(JSON.stringify(params))
 
-				}
-				console.log(res)
-				console.log(params)
+
+
+						let res = await api.placeOrder(params);
+						uni.hideLoading()
+						if (res.status == 1) {
+							this.getOrderDetail(res.data); //获取订单详情
+						} else {
+							this.$msg.showToast(res.msg);
+
+						}
+					}
+					uni.hideLoading()
+				}, '订单确认后无法更改', tit)
 			},
 			//获取订单详情
 			async getOrderDetail(orderid) {
@@ -412,7 +465,7 @@
 					let orderinfo = res.data;
 					if (orderinfo.progress[0].status == 1) {
 						this.getPayParams(orderid); //获取微信支付参数
-					}else{
+					} else {
 						this.goToOrderDetail(orderid);
 					}
 				}
@@ -424,19 +477,22 @@
 				};
 				let res = await api.wxOrderPay(data);
 				if (res.status == 1) {
-					let payres = await wxPayment(res.data);
-					this.goToOrderDetail(orderid)
+					wxPayment(res.data).then(res => {
+						this.$msg.showToast('支付成功');
+						this.goToOrderDetail(orderid)
+					}).catch(ret => {
+						this.goToOrderDetail(orderid)
+					})
+
 				}
 			},
 			//返回上一层页面
-			gobackPage(){
+			gobackPage() {
 				uni.navigateBack({})
 			},
 			//前往订单详情页面
-			goToOrderDetail(orderid){
-				uni.redirectTo({
-					url:'../orderdetail/orderdetail?orderId='+orderid
-				})
+			goToOrderDetail(orderid) {
+				goOrderDeatails(orderid, true);
 			}
 		}
 	}
@@ -630,14 +686,16 @@
 				margin-left: 30upx;
 				border-radius: 18upx;
 				box-sizing: border-box;
-				image{
+
+				image {
 					@include rect(38upx, 38upx);
 				}
-				
+
 			}
-			.usebalance{
+
+			.usebalance {
 				border: none;
-			} 
+			}
 		}
 	}
 
@@ -759,6 +817,48 @@
 					font-size: 24upx;
 					color: #C2C3C5;
 				}
+			}
+		}
+	}
+
+	.list {
+		view: {
+			display: flex;
+		}
+
+		.row-box {
+			@include rect(698upx, 145upx);
+			background: #FFFFFF;
+			border-radius: 10px;
+			flex-wrap: wrap;
+			padding: 30upx 40upx;
+			box-sizing: border-box;
+			font-size: 30upx;
+			margin: 30upx auto 0 auto;
+
+			.name-tel {
+				color: #000000;
+				font-size: $font-md;
+				@include rect(100%, 30upx) @extend %flex-alcent;
+				justify-content: space-between;
+
+				view:first-child {
+					width: 400upx;
+					@include lineOnly();
+				}
+
+				image {
+					@include rect(30upx, 30upx);
+					margin-right: 7upx;
+				}
+			}
+
+			.address-desc {
+				min-height: 76upx;
+				line-height: 38upx;
+				color: #87888B;
+				font-size: 24upx;
+				margin: 18upx 0;
 			}
 		}
 	}

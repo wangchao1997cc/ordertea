@@ -127,15 +127,18 @@
 			sildermine
 		},
 		async onLoad() {
-			if(!this.JSESSIONID){
+			uni.hideTabBar({});
+			if (!this.JSESSIONID) {
 				await ajaxUserLogin(); //先进行登录
 			}
+			uni.showTabBar({})
 			this.init(); //归纳函数
 		},
 		computed: {
 			...mapState(['cityid','JSESSIONID','isLogin'])
 		},
 		methods: {
+			
 			init() {
 				this.getUserInfo();
 			},

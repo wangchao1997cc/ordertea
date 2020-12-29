@@ -8,6 +8,15 @@
 			}
 		},
 		{
+		    "path" : "pages/orderdetail/orderdetail",
+		    "style" :                                                                                    
+		    {
+		        "navigationBarTitleText": "",
+		        "enablePullDownRefresh": false
+		    }
+		    
+		},
+		{
 		    "path" : "pages/coupons/coupons",
 		    "style" : {
 				"navigationBarTitleText": ""
@@ -59,7 +68,7 @@
 	    {
             "path" : "pages/order/order",
             "style" : {
-				"navigationBarTitleText": "订单"
+				"navigationBarTitleText": "历史订单"
 			}
         },
 		{
@@ -74,15 +83,7 @@
             "path" : "pages/addremark/addremark",
             "style" : {}
         }
-        ,{
-            "path" : "pages/orderdetail/orderdetail",
-            "style" :                                                                                    
-            {
-                "navigationBarTitleText": "",
-                "enablePullDownRefresh": false
-            }
-            
-        }
+       
     ],
 	"globalStyle": {
 		"navigationBarTextStyle": "black",

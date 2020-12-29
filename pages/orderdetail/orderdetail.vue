@@ -1,140 +1,190 @@
 <template>
-	<view class="content">
-		<view class="times-cont">
-			<view class="takemeal-time" @click="openChooseTime">
-				<text>流水号</text>
-				<text></text>
+	<view class="content" v-if="orderdetails.orderProducts">
+		<view class="order-header-status">
+			<view class="status-juide">
+				{{orderdetails.progress[0].statusName}}
 			</view>
-			<view class="takemeal-time" @click="openChooseTime">
+			<!-- <view v-if="orderdetails.progress[0].status==1"> -->
+				<!-- <view class="status-cont">
+					剩余支付时间：
+				</view> -->
+				<view class="status-cont">
+					{{orderdetails.progress[0].clientTips}}
+				</view>
+				<view class="order-bt-box" v-if="orderdetails.progress[0].status==1">
+					<view class="order-btn" @click="cancelOrder">
+						取消订单
+					</view>
+					<view class="order-btn" @click="getPayParams">
+						去支付
+					</view>
+				</view>
+			<!-- </view>
+			<view class="status-cont" v-else>
+				{{orderdetails.progress[0].clientTips}}
+			</view> -->
+		</view>
+		<view class="times-cont">
+			<view class="takemeal-time" v-if="orderdetails.takeMealSn">
+				<text>取餐号</text>
+				<text>{{orderdetails.takeMealSn}}</text>
+			</view>
+			<view class="takemeal-time">
 				<text>联系电话</text>
-				<text></text>
+				<text>{{orderdetails.storePhone}}</text>
 			</view>
 			<view class="takemeal-time">
 				<text>预定时间</text>
-				<text>{{storeInfo.phoneNumberList[0]}}</text>
+				<text>{{orderdetails.sendTime}}</text>
 			</view>
-			<view class="takemeal-time" @click="openChooseTime">
-				<text>送餐地址</text>
-				<text></text>
+			<view class="takemeal-time">
+				<text>取餐地址</text>
+				<text>{{orderdetails.storeAddress}}</text>
 			</view>
-			<view class="takemeal-time" @click="openChooseTime">
+			<view class="takemeal-time">
 				<text>订单编号</text>
-				<text></text>
+				<text>{{orderdetails.orderNo}}</text>
 			</view>
-			<view class="takemeal-time" @click="openChooseTime">
+			<view class="takemeal-time">
 				<text>下单时间</text>
-				<text></text>
+				<text>{{orderdetails.orderDate}}</text>
 			</view>
 		</view>
 		<view class="goods-info">
-			<view class="goods-item" v-for="(item,index) in interest.products" :key="index">
+			<view class="goods-item" v-for="(item,index) in orderdetails.orderProducts" :key="index">
 				<view class="goods-info-t">
 					<text>{{item.name}}</text>
-					<text>￥{{item.price}}</text>
+					<text>￥{{item.totalPrice}}</text>
 				</view>
 				<view class="goods-info-t">
-					<text>{{item.condiments[0]?item.condiments[0].name:'常规'}}</text>
-					<text>x{{item.qty}}</text>
+					<text>{{item.propertyItemNameList?item.propertyItemNameList.itemNameCNList:'常规'}}</text>
+					<text>x{{item.num}}</text>
 				</view>
 			</view>
 		</view>
 		<view class="cost-price">
 			<view class="cost-item">
 				<text>餐饮费</text>
-				<text>￥{{interest.orderTotal?interest.orderTotal:0}}</text>
+				<text>￥{{orderdetails.productPrice?orderdetails.productPrice:0}}</text>
 			</view>
 			<view class="cost-item">
 				<text>餐盒费</text>
-				<text>¥{{interest.boxFee?interest.boxFee:0}}</text>
+				<text>¥{{orderdetails.mealFee?orderdetails.mealFee:0}}</text>
 			</view>
-			<block v-for="(item,index) in interest.promotions" :key="index">
-				<view class="cost-item" v-if="item.type!=6">
-					<text>{{item.name}}</text>
-					<text>¥{{item.amount}}</text>
-				</view>
-				<view class="cost-item" v-else>
-					<text>{{item.name}}</text>
-					<text>¥{{item.amount}}</text>
+			<block v-for="(item,index) in orderdetails.orderPreferentials" :key="index">
+				<view class="cost-item">
+					<text>{{item.content}}</text>
+					<text>-¥ {{-(item.price)}}</text>
 				</view>
 			</block>
-
-			<view class="cost-item" @click="jumpUseCoupons">
-				<text>{{couponJuide.tit}}</text>
-				<view class="span">{{couponJuide.cont}}</view>
-			</view>
 			<view class="summary">
-				实付：<text class="black-text">￥{{interest.afterDiscountTotal?interest.afterDiscountTotal:0}}</text>
+				实付：<text class="black-text">￥{{orderdetails.totalPrice?orderdetails.totalPrice:0}}</text>
 			</view>
 		</view>
-		<view class="balance">
-			<text>会员余额支付</text>
-			<view class="box-l" @click="switchUseBalance">
-				<text>{{interest.balancePay?'已使用余额':'可用余额'}}：<text>{{interest.balancePay?interest.balancePay:(interest.card.balance?interest.card.balance:0)}}</text>元</text>
-				<view class="chosebox" :class="{usebalance:interest.balancePay}">
-					<image v-if="interest.balancePay" src="../../static/choose_icon.png"></image>
-				</view>
-			</view>
-		</view>
+		
 		<view class="otherinfo">
-			<view class="other-item" @click="jumpOrederReark">
+			<view class="other-item">
 				<text>订单备注</text>
 				<view class="other-item-r">
-					<view class="remark">{{remark?remark:'无'}}</view>
-					<image src="../../static/07_icon_right.png"></image>
+					<view class="remark">{{orderdetails.userNote?orderdetails.userNote:'无'}}</view>
+					<!-- <image src="../../static/07_icon_right.png"></image> -->
 				</view>
 			</view>
 			<view class="other-item">
 				<text>餐具份数</text>
 				<view class="other-item-r">
-					<text>{{peopleNum?peopleNum+'份':'根据餐量提供'}}</text>
-					<image src="../../static/07_icon_right.png"></image>
+					<text>{{orderdetails.peopleNum?orderdetails.peopleNum:'1'}}份</text>
+					<!-- <image src="../../static/07_icon_right.png"></image> -->
 				</view>
 			</view>
 		</view>
 		<view class="blank"></view>
-		<view class="footer-btn">
-			<text>¥{{interest.afterDiscountTotal?interest.afterDiscountTotal:0}}</text>
-			<view class="buy-btn" @click="addOrder">
-				下单
-			</view>
-		</view>
 		
 	</view>
 </template>
 
 <script>
 	import api from '../../WXapi/api.js'
+	import {TimeDown} from '../../utils/utils.js'   //时间倒计时
+	import {
+		wxPayment
+	} from '../../utils/publicApi.js'
 	const app = getApp();
 	export default {
 		data() {
 			return {
-				
+				orderdetails:{},  //订单详情数据
 			};
 		},
 		onLoad(options){
-			let orderId = options.orderId;
-			this.getOrderDetail(orderId);   //获取订单详情
+			this.orderId = options.orderId;
+			this.getOrderDetail();   //获取订单详情
 		},
 		onShow() {
 			
 		},
-		onUnload() {
-			app.globalData.remark = '';
-		},
-		computed: {
+		// computed: {
 		
-		},
+		// },
 		methods: {
-			async getOrderDetail(orderId){
+			async getOrderDetail(){
 				let data = {
-					orderId: orderId
+					orderId: this.orderId
 				}
 				let res = await api.getOrderDetail(data);
-				console.log(11111111111111111,res)
 				if (res && res.status == 1) {
-					
+					this.orderdetails = res.data
+					// if(res.data.progress[0].status==1){
+					// 	let createdtime = res.data.progress[0].createTime;
+					// 	var enddate = new Date(createdtime) + (15 * 60000);
+					// 	console.log(enddate)
+					// 	this.timeOut(enddate);
+					// }
 				}
-			}
+			},
+			timeOut(date) {
+				let that = this;
+				let dateEnd = TimeDown(date);
+				console.log(dateEnd)
+				// that.timer = setInterval(() => {
+				// 	dateEnd = TimeDown(date);
+				// 	if (!dateEnd) {
+				// 		clearInterval(that.timer)
+				// 		return;
+				// 	}
+				// }, 1000);
+			},
+			//取消订单
+			cancelOrder(){
+				this.$msg.showModal(async json => {
+					if(json==1){
+						let data = {
+							orderId:this.orderId,
+						}
+						let res = await api.cancelOrder(data);
+						if(res.status==1){
+							this.$msg.showToast('取消成功')
+							this.getOrderDetail();
+						}
+					}
+				},'是否取消该订单')
+			},
+			//开始支付
+			async getPayParams() {
+				let data = {
+					payType: 2,
+					orderId: this.orderId,
+				};
+				let res = await api.wxOrderPay(data);
+				if (res.status == 1) {
+					wxPayment(res.data).then(res => {
+						this.$msg.showToast('支付成功');
+						this.getOrderDetail();
+					}).catch(ret => {
+						this.$msg.showToast('取消支付')
+					})
+				}
+			},
 		}
 	}
 </script>
@@ -144,6 +194,43 @@
 
 	.blank {
 		height: 200upx;
+	}
+	
+	.order-header-status{
+		width: 698upx;
+		@extend %box-style;
+		.status-juide{
+			margin-top: 40upx;
+			font-size: 38upx;
+			font-weight: 700;
+			text-align: center;
+		}
+		.status-cont{
+			font-size: 30upx;
+			margin-top: 20upx;
+			text-align: center;
+			margin-bottom: 42upx;
+		}
+		.order-bt-box{
+			margin-bottom: 40upx;
+			height: 60upx;
+			@extend %flex-alcent;
+			justify-content: center;
+			
+		}
+		.order-btn{
+			@include rect(160upx,60upx);
+			border: 2upx #999999 solid;
+			border-radius: 8upx;
+			@include text-allcenter(60upx);
+			color: #999999;
+			margin: 0 40upx;
+			&:last-child{
+				background-color: $main-color;
+				color: $bg-white;
+				border: none;
+			}
+		}
 	}
 
 	.footer-btn {
@@ -210,39 +297,7 @@
 	}
 
 
-	.balance {
-		@include rect(698upx, 104upx);
-		@extend %flex-alcent;
-		justify-content: space-between;
-		@extend %box-style;
-
-		.box-l {
-			@extend %flex-alcent;
-
-			text {
-				color: #A3A3A3;
-
-				text {
-					color: $main-color;
-				}
-			}
-
-			.chosebox {
-				@include rect(38upx, 38upx);
-				border: 2upx #B2B5B8 solid;
-				margin-left: 30upx;
-				border-radius: 18upx;
-				box-sizing: border-box;
-				image{
-					@include rect(38upx, 38upx);
-				}
-				
-			}
-			.usebalance{
-				border: none;
-			} 
-		}
-	}
+	
 
 	.cost-price {
 		width: 698upx;
@@ -295,7 +350,7 @@
 		color: $uni-text-color;
 
 		.times-cont {
-			@include rect(698upx, 380upx);
+			width: 698upx;
 			@extend %box-style;
 			margin-top: 26upx;
 

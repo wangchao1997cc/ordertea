@@ -3,7 +3,7 @@
 		<view class="list">
 			<view class="row-box" v-for="(item,index) in addressList" :key="index" @tap="select(item)">
 				<view class="name-tel">
-					<view>{{item.receiverAddress}}</view>
+					<view>{{item.receiverAddress+item.appendReceiverAddress}}</view>
 					<view @click.stop="prentEvent">
 						<image @click="addressEdit(item)" src="../../static/06_icon_编辑.png"></image>
 					</view>

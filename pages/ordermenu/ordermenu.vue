@@ -79,20 +79,23 @@
 										<text class="oldprice" v-if="titem.activePrice">¥{{titem.price}}</text>
 									</view>
 									<view class="btn-r">
-										<view class="juide-text" v-if="titem.isInServiceTime || titem.isSoldOut">
-											{{!titem.isInServiceTime?'餐品不在供应时间':(titem.isSoldOut?'商品已售罄':'')}}
+										
+										<view class="juide-text" v-if="!titem.isInServiceTime || titem.isSoldOut">
+											{{!titem.isInServiceTime?'非供应时间':(titem.isSoldOut?'商品已售罄':'')}}
 										</view>
-										<view @click.stop="prentEvents" v-if="titem.type == 1 && !titem.isRequirement">
-											<view class="goods-single">
-												<image v-if="titem.nums" src="../../static/sub.png" @click="reduceTap(1,titem)"></image>
-												<view class="num">
-													{{titem.nums?titem.nums:''}}
+										<view v-else>
+											<view @click.stop="prentEvents" v-if="titem.type == 1 && !titem.property">
+												<view class="goods-single" >
+													<image v-if="titem.nums" src="../../static/sub.png" @click="reduceTap(1,titem)"></image>
+													<view class="num">
+														{{titem.nums?titem.nums:''}}
+													</view>
+													<image src="../../static/add.png" @click="addTap(1,titem,index,idx)"></image>
 												</view>
-												<image src="../../static/add.png" @click="addTap(1,titem,index,idx)"></image>
 											</view>
-										</view>
-										<view v-else class="meal">
-											<text>{{titem.isRequirement?'选规格':'选套餐'}}</text>
+											<view v-else class="meal">
+												<text>{{titem.type==2?'选套餐':'选规格'}}</text>
+											</view>
 										</view>
 									</view>
 								</view>
@@ -203,6 +206,7 @@
 		<view class="chopcar-tab" v-if="shopcar.length && maskarr.shopCarShow">
 			<view class="tab-l">
 				<view class="shop-car-icon" @click="openAnimation(2)">
+					<image src="../../static/shopcar_icon.png"></image>
 					<view class="nums-juide">
 						{{shopcar.length}}
 					</view>
@@ -210,10 +214,14 @@
 				<view class="total-price">
 					¥{{priceArr.totalPrice}}
 				</view>
+				<view class="takeout-juide" v-if="model==1">
+					<text>配送费：{{storeInfo.fee}}元，满{{storeInfo.reachFee}}元起送\n</text><text v-if="(storeInfo.reachFee-priceArr.totalPrice)>0">还差{{storeInfo.reachFee-priceArr.totalPrice}}元</text>
+				</view>
 			</view>
 			<view class="tab-r" @click="jumpOrder">
 				选好了
 			</view>
+			
 		</view>
 		<storeDetail :shopinfo="storeInfo" :shopBoxHeight="shopBoxHeight" :showdetail="showdetail"></storeDetail>
 		<choseStore :nearList="nearList" @switchStore="switchStore" ref="chosestore"></choseStore>
@@ -357,10 +365,14 @@
 				let totalPrice = 0; //总价格
 				let lunchboxfee = 0; //餐盒费
 				let shopcar = this.shopcar;
+				let specoffer = [];    //特价商品变量
 				if (shopcar.length) {
 					shopcar.forEach(item => {
 						let singleprice = accMul(item.price, item.nums)
 						totalPrice = accAdd(totalPrice, singleprice);
+						if(item.discounted==1){
+							specoffer.push(item.price);
+						}
 						if (item.mealFee) {
 							let mealFee = accMul(item.mealFee, item.nums);
 							lunchboxfee = accAdd(lunchboxfee, mealFee);
@@ -374,9 +386,15 @@
 					let fullarr = [];
 					activelist.forEach(item => {
 						if (item.type == 3) { //满减
+						    let notSpecPrice = totalPrice;
+						    if(specoffer.length){
+								specoffer.forEach(item =>{    //去除特价商品
+									notSpecPrice = subtr(notSpecPrice,item)
+								})
+							}
 							let moneyOff = item.moneyOff.sort(compare('moneyCondition'));
 							for (let i in moneyOff) {
-								if (totalPrice > moneyOff[i].moneyCondition) {
+								if (notSpecPrice > moneyOff[i].moneyCondition) {
 									isfullprice = moneyOff[i];
 									totalPrice = subtr(totalPrice, moneyOff[i].discount);
 									break;
@@ -401,9 +419,11 @@
 			}
 		},
 		async onLoad(options) {
+			uni.hideTabBar({});
 			if (!this.JSESSIONID) {
 				await ajaxUserLogin(); //先进行登录
 			}
+			uni.showTabBar({})
 			this.init();
 		},
 		onShow: function onShow() {
@@ -604,13 +624,13 @@
 						}
 					}
 					let descinfo = '';
-					let qty = 0;
+					// let qty = 0;
 					property.forEach(item => {
-						qty++;
+						// qty++;
 						descinfo += item.name + '/'
 					})
 					descinfo = descinfo.substring(0, descinfo.length - 1);
-					shopitem.qty = qty;
+					// shopitem.qty = qty;
 					shopitem.descinfo = descinfo;
 					shopitem.property = property;
 				}
@@ -852,14 +872,12 @@
 			},
 			//跳转订单页面
 			jumpOrder() {
-				// console.log(this.products)
 				let storeInfo = app.globalData.storeInfo;
 				let memberinfo = uni.getStorageSync('memberinfo');
 				let shopcar = this.shopcar;
 				let order = [];
 
 				shopcar.forEach((item, index) => {
-					console.log(item)
 					let products = {
 						qty: item.nums,
 						discounted: item.discounted,
@@ -874,7 +892,7 @@
 					if (item.property) {
 						let quirements = {
 							index: index,
-							num: item.qty,
+							num: item.nums,
 							propertys: []
 						}
 						let price = 0;
@@ -883,6 +901,7 @@
 							quirements.propertys.push({
 								pid: aitem.pid,
 								title: aitem.title,
+								
 								items: [{
 									index: index,
 									uid: aitem.uid,
@@ -891,17 +910,20 @@
 								}]
 							})
 						})
-
+						products.price = subtr(products.price, price)
 						products.condiments = [{
-							qty: item.qty,
+							qty: 1,
 							name: item.descinfo,
 							price: price,
 
 						}];
+						console.log(quirements)
 						products.listRequirements = [quirements]
+					
 					}
 					order.push(products);
 				})
+				
 				let orderinfo = {
 					member: {
 						cardId: memberinfo.id,
@@ -920,8 +942,8 @@
 				orderinfo.order.products = order;
 				app.globalData.orderinfo = orderinfo;
 				uni.setStorageSync('orderinfo', orderinfo);
-				uni.navigateTo({
-					url: '../settle/settle'
+				uni.navigateTo({   //前往下单页
+					url: '../settle/settle?storeId='+ this.storeInfo.storeId,
 				})
 			},
 			//服务端设置缓存
@@ -1036,6 +1058,14 @@
 		display: flex;
 		justify-content: space-between;
 		box-shadow: 0px 8upx 21upx 0px rgba(19, 19, 20, 0.08);
+		.takeout-juide{
+			/* position: absolute;
+			bottom: 8upx; */
+			font-size: 20upx;
+			color: #999999;
+			margin-left: 20upx;
+			/* left: 200upx; */
+		}
 
 		/* box-shadow: ; */
 		.tab-l {
@@ -1044,9 +1074,11 @@
 			height: 100%;
 
 			.shop-car-icon {
-				@include rect(50upx, 50upx);
-				border: 1upx $main-color solid;
+				@include rect(50upx, 45upx);
 				position: relative;
+				image{
+					@include rect(50upx, 45upx);
+				}
 
 				.nums-juide {
 					position: absolute;

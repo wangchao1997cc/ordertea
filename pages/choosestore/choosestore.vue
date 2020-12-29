@@ -3,7 +3,7 @@
 		<view class="list">
 			<view class="row-box">
 				<view class="name-tel">
-					<view>{{address.receiverAddress}}</view>
+					<view>{{address.receiverAddress + address.appendReceiverAddress}}</view>
 					<view @click.stop="prentEvent">
 						<!-- <image @click="addressEdit(address)" src="../../static/06_icon_编辑.png"></image> -->
 					</view>
