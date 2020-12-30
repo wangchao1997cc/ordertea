@@ -80,7 +80,6 @@
 		mapMutations,
 	} from "vuex";
 	import {
-		refreshUserInfo,
 		ajaxUserLogin
 	} from '../../utils/publicApi.js'
 	import {goUserAddress} from '../../utils/goToPage.js'

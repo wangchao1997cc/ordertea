@@ -3,9 +3,7 @@ import store from '../store/store.js'
 
 //刷新用户信息
 export const refreshUserInfo = async callback => {
-	
 	let res = await api.getUserInfo();
-	console.log(res)
 	if (res && res.status == 1) {
 		if (res.data.phone) {
 			store.commit('changeLogin', res.data.phone);
@@ -27,6 +25,9 @@ export const getMemberInfo = async callback => {
 	let res = await api.getMemberInfo(data);
 	if (res && res.code == 200) {
 		uni.setStorageSync('memberinfo', res.data[0]);
+		if(callback){
+			return res.data[0];
+		}
 	}
 }
 

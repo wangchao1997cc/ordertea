@@ -6,11 +6,11 @@
 				<image src="../../static/member_icon.png"></image>
 				会员码
 			</view>
-			
 		</view>
 		<view class="member-card">
 			<view class="member-head">
 				<view class="user-pic">
+					<image :src="memberinfo.headUrl?memberinfo.headUrl:'../../static/touxiang.png'"></image>
 					<view class="user-label">
 						<image src="../../static/grade_pic.png"></image>
 						最强王者
@@ -18,10 +18,10 @@
 				</view>
 				<view class="user-detail">
 					<view class="user-name">
-						张嘻嘻
+						{{memberinfo.name?memberinfo.name:'用户'}}
 					</view>
 					<view class="card-no">
-						卡号：12342342353453456
+						卡号：{{memberinfo.cardNo}}
 					</view>
 					<view class="slider-box">
 						<view class="slider">
@@ -60,15 +60,41 @@
 				</view>
 			</view>
 		</view>
+		<view class="mask" v-if="notAuth">
+			<view class="author-info">
+				<image class="pop-top" src="../../static/POP_top.png"></image>
+				<view class="home-id">
+					<image src="../../static/my/mine_detail_icon.png"></image>
+				</view>
+				<view class="juide-cont">
+					<view class="title">
+						完善信息
+					</view>
+					<view class="juide-content">
+						<text>您的会员信息还不完整哦!
+						为了您的权益请尽快完善您的会员信息
+						完善后即可获得您的专属折扣卷
+						</text>
+					</view>
+					<button class="autho_btn" open-type="getUserInfo" @getuserinfo="getUserInfo">
+						即刻完善信息
+					</button>
+				</view>
+			</view>
+		</view>
 	</view>
 </template>
 
 <script>
 	// import navbar from '../../components/nav.vue'
+	import api from '../../WXapi/api.js'
 	import sildermine from '../../components/minesilder.vue'
-	export default {
+	import {getMemberInfo} from '../../utils/publicApi.js'
+	export default { 
 		data() {
 			return {
+				notAuth:false,
+				memberinfo:{},
 				sliderConfig: {
 					progresswidth: '320upx',
 					progressbar: '50%',
@@ -80,7 +106,7 @@
 					img:'../../static/address_icon.png',
 					text:'地址管理'
 				},{
-					img:'../../static/my/pay-record.png',
+					img:'../../static/my/mine_detail_icon.png',
 					text:'个人资料'
 				},{
 					img:'../../static/my/blance_icon.png',
@@ -100,12 +126,44 @@
 				},]
 			}
 		},
-		onLoad() {},
+		onLoad() {
+			
+		},
+		async onShow() {
+			this.notAuth = true;
+			let memberinfo = await getMemberInfo(true);
+			console.log(memberinfo)
+			this.memberinfo = memberinfo;
+			if(!memberinfo.name){
+				this.notAuth = true;
+			}
+		},
 		components: {
 			// navbar,
 			sildermine
 		},
-		methods: {}
+		methods: {
+			//用户授权信息
+			async getUserInfo(e){
+				if(e.detail.errMsg=='getUserInfo:ok'){
+					let userInfo = e.detail.userInfo;
+					let memberinfo = uni.getStorageSync('memberinfo')
+					console.log(memberinfo,userInfo)
+					let data = {
+						name: userInfo.nickName,
+						headUrl: userInfo.avatarUrl,
+						sex: userInfo.gender,
+						cardId: memberinfo.id,
+					}
+					let res = await api.updateMember(data,true);
+					if(res.code == 200){
+						uni.navigateTo({
+							url:'../memberinfo/memberinfo'
+						})
+					}
+				}
+			},
+		}
 	}
 </script>
 
@@ -113,6 +171,67 @@
 	.content {
 		font-size: $font-md;
 		width: $screen-width;
+	}
+	
+	.mask{
+		@extend %all-mask;
+		.author-info{
+			
+			width: 580upx;
+			position: absolute;
+			top:50%;
+			transform: translateY(-50%);
+			left: 85upx;
+			background-color: $bg-white;
+			border-radius: $radius-md;
+			position: relative;
+			// @include box-padding(32upx);
+			padding-top: 1upx;
+			
+			.pop-top{
+				position: absolute;
+				@include rect(260upx,56upx);
+				top: -52upx;
+				left: 160upx;
+			}
+		}
+		.home-id{
+			@include rect(100%,140upx);
+			margin: 40upx auto;
+			display: flex;
+			justify-content: center;
+			border-bottom: 1upx #E2E2E2 solid;
+			image{
+				@include rect(88upx,88upx);
+			}
+		}
+		.juide-cont{
+			width: 100%;
+			@include box-padding(32upx);
+			padding-bottom: 1upx;
+			.title{
+				font-size: 34upx;
+				text-align: center;
+			}
+			.juide-content{
+				text-align: center;
+				margin-top: 30upx;
+				font-size: 28upx;
+				line-height: 46upx;
+				color: #B5B5B5;
+				
+			}
+			.autho_btn{
+				@extend %clear-button;
+				font-size: 28upx;
+				@include rect(300upx,68upx);
+				border-radius: $radius-md;
+				background-color: $main-color;
+				@include text-allcenter(68upx);
+				color: $text-white;
+				margin: 50upx auto;
+			}
+		}
 	}
 
 	.header_info {
@@ -158,6 +277,9 @@
 				border-radius: 80upx;
 				border:1upx $color-red solid;
 				margin-top: -40upx;
+				image{
+					@include rect(160upx,160upx)
+				}
 				.user-label{
 					position: absolute;
 					@include rect(155upx,40upx);

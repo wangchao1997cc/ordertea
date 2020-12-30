@@ -171,6 +171,11 @@ const memberInterest = (data, isloading) => {
 	return service_v('v4_3/calculate/member/interests', 'post', data, isloading)
 }
 
+//修改会员信息
+const updateMember = (data, isloading) => {
+	return service_v('v4_3/card/update', 'post', data, isloading)
+}
+
 
 
 
@@ -184,6 +189,7 @@ const memberInterest = (data, isloading) => {
 
 
 module.exports = {
+	updateMember:updateMember,
 	getStore:getStore,
 	cancelOrder:cancelOrder,
 	getOrderList:getOrderList,
