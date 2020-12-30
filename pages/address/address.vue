@@ -159,7 +159,7 @@
 			jumpMenu(storeId){
 				app.globalData.storeInfo = this.shopinfo;
 				this.$store.commit('copy',storeId);
-				this.$store.commit('changebussiness',[1,3])
+				this.$store.commit('changebussiness',[1])
 				uni.switchTab({
 					url:'../ordermenu/ordermenu'
 				})

@@ -1,22 +1,24 @@
 <template>
 	<view class="content">
-		<navbar :config="config"></navbar>
-		<view class="head-info">
-
-		</view>
+		<swiper class="head-info" :autoplay="true" :circular="true" :interval="3000" :duration="1000">
+			<!-- <navbar :config="config"></navbar> -->
+			<swiper-item v-for="(item,index) in bannerData.topBannerList" :key="index" @click="jumpAdvertise(item)">
+				<image :src="item.picUrl"></image>
+			</swiper-item>
+		</swiper>
 		<view class="home-cont">
 			<view class="app-model">
-				<view class="">
+				<view class="" @click="jumpMenu(2)">
 					自取
 				</view>
-				<view class="">
+				<view class="" @click="jumpMenu(1)">
 					外卖
 				</view>
 			</view>
 			<view class="blance-box">
 				<view class="blance-l">
 					<view>
-						<image></image>
+						<image src="../../static/money_icon.png"></image>
 						我的余额：0
 					</view>
 					<view>
@@ -24,7 +26,7 @@
 						<image src="../../static/07_icon_right.png"></image>
 					</view>
 				</view>
-				<image class="blance-icon"></image>
+				<image class="blance-icon" src="../../static/member_icon.png"></image>
 			</view>
 			<view class="integral">
 				<view class="integral-item" v-for="(item,index) in integralarr" :key="index">
@@ -56,40 +58,48 @@
 				<view class="adver-tit">
 					新鲜事
 				</view>
-				<view class="adver-item">
-					<image></image>
+				<view class="adver-item" v-for="(item,index) in bannerData.bottomBannerList" :key="index" @click="jumpAdvertise(item)">
+					<image :src="item.picUrl" mode="aspectFill"></image>
 				</view>
 			</view>
 		</view>
+		<view class="blank"></view>
 	</view>
 </template>
 
 <script>
-	import navbar from '../../components/nav.vue'
+	const app = getApp();
+	import {getBannerList} from '../../utils/publicApi.js'
 	import sildermine from '../../components/minesilder.vue'
+	import {jumpAdvertise} from '../../utils/utils.js'
 	import {
-		getLocation
+		getLocation,
 	} from '../../utils/author.js'
 	import {
 		mapState,
 		mapMutations,
 	} from "vuex";
-	import {refreshUserInfo,ajaxUserLogin} from '../../utils/publicApi.js'
+	import {
+		refreshUserInfo,
+		ajaxUserLogin
+	} from '../../utils/publicApi.js'
+	import {goUserAddress} from '../../utils/goToPage.js'
 	export default {
 		data() {
 			return {
 				progressbar: '60%',
 				title: 'Hello',
-				sliderConfig:{
-					progresswidth:'272upx',
+				sliderConfig: {
+					progresswidth: '272upx',
 					progressbar: '50%',
 				},
-				config: {
-					slideHeight: 400,
-					hiddentit: false,
-					color: '#343434',
-					bgcolor: 'white',
-				},
+				bannerData:{},   //轮播图数据
+				// config: {
+				// 	slideHeight: 400,
+				// 	hiddentit: false,
+				// 	color: '#343434',
+				// 	bgcolor: 'white',
+				// },
 				integralarr: [{
 						icon: '',
 						tit: '我的积分',
@@ -122,8 +132,8 @@
 				]
 			}
 		},
-		components:{
-			navbar,
+		components: {
+			// navbar,
 			sildermine
 		},
 		async onLoad() {
@@ -135,24 +145,44 @@
 			this.init(); //归纳函数
 		},
 		computed: {
-			...mapState(['cityid','JSESSIONID','isLogin'])
+			...mapState(['cityid', 'JSESSIONID', 'isLogin'])
 		},
 		methods: {
-			
 			init() {
-				this.getUserInfo();
+				this.getBannerList();
 			},
-			getUserInfo(){
-				refreshUserInfo();
+			//跳转点单页，判断自取或外卖
+			jumpMenu(type){
+				if(type==1){
+					goUserAddress('select');
+				}else{
+					this.$store.commit('changebussiness',[2])
+					uni.switchTab({
+						url:'../ordermenu/ordermenu'
+					})
+				}
+			},
+			//获取轮播图广告
+			async getBannerList() {
+				let res = await getBannerList();
+				if (res) {
+					this.bannerData = res;
+				}
 			},
 			async getLocation() {
 				let location = await getLocation();
+			},
+			jumpAdvertise(item){
+				jumpAdvertise(item)
 			},
 		}
 	}
 </script>
 
 <style lang="scss">
+	.blank{
+		height: 100upx;
+	}
 	.content {
 		width: $screen-width;
 		color: $uni-text-color;
@@ -161,8 +191,14 @@
 
 	.head-info {
 		@include rect(100%, 640upx);
-		background-color: $main-color;
-
+		// background-color: $main-color;.
+		.swiper-item{
+			@include rect(100%,100%);
+				
+			image{
+				@include rect(100%,100%);
+			}
+		}
 	}
 
 	.home-cont {
@@ -202,7 +238,6 @@
 
 				image {
 					@include rect(32upx, 32upx) margin-right: 25upx;
-					border: 1upx $main-color solid;
 				}
 
 				&:last-child {
@@ -221,7 +256,6 @@
 		.blance-icon {
 			@include rect(52upx, 52upx);
 			margin-right: 50upx;
-			border: 1upx $main-color solid;
 		}
 	}
 
@@ -267,29 +301,33 @@
 					display: flex;
 					align-items: flex-end;
 					margin-bottom: 30upx;
-					text{
+
+					text {
 						line-height: 44upx;
 						font-size: 41upx;
-						
-						&:last-child{
+
+						&:last-child {
 							line-height: 30upx;
 							font-size: 21upx;
 						}
 					}
+
 					image {
 						@include rect(27upx, 44upx);
 						border: 1upx $main-color solid;
 						margin-right: 14upx;
 					}
 				}
-				.active-desc{
+
+				.active-desc {
 					width: 100%;
 					margin-top: 10upx;
 					font-size: 24upx;
 					@extend %flex-alcent;
 					color: #A3A3A3;
-					image{
-						@include rect(6upx,13upx);
+
+					image {
+						@include rect(6upx, 13upx);
 						margin-left: 12upx;
 					}
 				}
@@ -304,24 +342,28 @@
 			}
 		}
 	}
-	.adver{
+
+	.adver {
 		width: 100%;
 		background-color: $bg-white;
 		padding: 1upx 35upx;
 		box-sizing: border-box;
 		border-radius: $radius-md;
-		.adver-tit{
+
+		.adver-tit {
 			font-size: $font-lg;
 			font-weight: 700;
 			margin: 40upx auto;
 		}
-		.adver-item{
-			@include rect(628upx,220upx);
+
+		.adver-item {
+			@include rect(628upx, 220upx);
 			border-radius: 8upx;
 			overflow: hidden;
 			margin-bottom: 28upx;
-			image{
-				@include rect(100%,100%);
+
+			image {
+				@include rect(100%, 100%);
 				border: 1upx $main-color solid;
 			}
 		}

@@ -110,7 +110,9 @@ function nrequest(method, header, url, data, isloading) {
 				if (e.statusCode === 200) {
 					resolve(e.data);
 					if (!JSESSIONID) {
+						// JSESSIONID = "cc8bef60-c231-4a26-b0e3-6c3e13549cbf; path=/; expires=Fri, 01-Jan-2021 02:47:00 GMT"
 						JSESSIONID = e.header["Set-Cookie"].match(/JSESSIONID=(.*)?;/)[1];
+						// console.log(JSESSIONID)
 						let data = {
 							"JSESSIONID": JSESSIONID
 						};
@@ -148,6 +150,9 @@ function request(method, header, url, data, isloading) {
 				if (isloading) uni.hideLoading();
 				if (e.statusCode === 200) {
 					resolve(e.data);
+					// if(e.data.status==11){
+					// 	console.log(3333)
+					// }
 				} else {}
 			},
 			fail(e) {

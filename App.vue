@@ -9,6 +9,7 @@
 			clientId: '32e58123cb58fe0bc7ed15933b4537f4fa0d07',
 			storeInfo: {},   //当前的店铺信息
 			orderinfo: {},   //当前结算的订单信息
+			productPrimaryTypeName:null,   //广告的一级菜单名
 		},
 		onLaunch: async function() {},
 		onShow: function() {

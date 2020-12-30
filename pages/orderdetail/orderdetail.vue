@@ -30,6 +30,10 @@
 				<text>{{orderdetails.takeMealSn}}</text>
 			</view>
 			<view class="takemeal-time">
+				<text>订餐方式</text>
+				<text>{{orderdetails.orderTypeName}}</text>
+			</view>
+			<view class="takemeal-time">
 				<text>联系电话</text>
 				<text>{{orderdetails.storePhone}}</text>
 			</view>
@@ -38,7 +42,7 @@
 				<text>{{orderdetails.sendTime}}</text>
 			</view>
 			<view class="takemeal-time">
-				<text>取餐地址</text>
+				<text>{{orderdetails.sendType==1 || orderdetails.sendType==4?'商家地址':'取餐地址'}}</text>
 				<text>{{orderdetails.storeAddress}}</text>
 			</view>
 			<view class="takemeal-time">
@@ -48,6 +52,20 @@
 			<view class="takemeal-time">
 				<text>下单时间</text>
 				<text>{{orderdetails.orderDate}}</text>
+			</view>
+		</view>
+		<view class="list"v-if="orderdetails.sendType==1 || orderdetails.sendType==4">
+			<view class="row-box">
+				<view class="name-tel">
+					<view>{{orderdetails.address}}</view>
+					<view>
+						配送地址
+						<!-- <image @click="addressEdit(address)" src="../../static/06_icon_编辑.png"></image> -->
+					</view>
+				</view>
+				<view class="address-desc">
+					<text>{{`${orderdetails.name} ${orderdetails.phone}`}}</text>
+				</view>
 			</view>
 		</view>
 		<view class="goods-info">
@@ -417,6 +435,47 @@
 					font-size: 24upx;
 					color: #C2C3C5;
 				}
+			}
+		}
+	}
+	.list {
+		view: {
+			display: flex;
+		}
+	
+		.row-box {
+			@include rect(698upx, 145upx);
+			background: #FFFFFF;
+			border-radius: 10px;
+			flex-wrap: wrap;
+			padding: 30upx 40upx;
+			box-sizing: border-box;
+			font-size: 30upx;
+			margin: 30upx auto 0 auto;
+	
+			.name-tel {
+				color: #000000;
+				font-size: $font-md;
+				@include rect(100%, 30upx) @extend %flex-alcent;
+				justify-content: space-between;
+	
+				view:first-child {
+					width: 400upx;
+					@include lineOnly();
+				}
+	
+				image {
+					@include rect(30upx, 30upx);
+					margin-right: 7upx;
+				}
+			}
+	
+			.address-desc {
+				min-height: 76upx;
+				line-height: 38upx;
+				color: #87888B;
+				font-size: 24upx;
+				margin: 18upx 0;
 			}
 		}
 	}

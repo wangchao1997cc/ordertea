@@ -1,16 +1,27 @@
-// #ifdef APP-PLUS
-import {
-	judgePermission
-} from './permission'
-// #endif
 
-
+import store from '../store/store.js';
+export const jumpAdvertise = item => {
+	switch (item.jumpType) {
+		case 1:
+			uni.navigateTo({
+				url: '../../pages/webview/webview.vue?url=' + item.jumpUrl
+			})
+			break;
+		case 2:
+		    console.log(item.productPrimaryTypeName)
+		    store.commit('adverStatus',item.productPrimaryTypeName)
+			uni.switchTab({
+				url: '../../pages/ordermenu/ordermenu',
+			})
+			break;
+	}
+}
 
 export const appshare = () => {
 	let userId = uni.getStorageSync('userinfo').clientId;
 	return {
 		title: "富必达欢迎您！",
-		path: '/pages/menu/menu?id='+ userId,
+		path: '/pages/menu/menu?id=' + userId,
 	}
 }
 /*
@@ -18,7 +29,8 @@ export const appshare = () => {
 TimeDown.js
 */
 export const TimeDown = (endDate) => {
-    endDate = new Date(endDate);
+	endDate = new Date(endDate);
+
 	//当前时间
 	var nowDate = new Date();
 	//相差的总秒数
@@ -62,20 +74,20 @@ function showMessage(message, msgType) {
 
 }
 
-/**
- * 前往广告页面  判断方式
- */
-export const goPageAdvert = (banners) => {
-	let url = banners.h5Url;
-	switch (banners.bannerType) {
-		case 1:
-			uni.navigateTo({
-				url: "../../pages/webview/webview?url=" + url
-			})
-			break;
-	}
-	
-}
+// /**
+//  * 前往广告页面  判断方式
+//  */
+// export const goPageAdvert = (banners) => {
+// 	let url = banners.h5Url;
+// 	switch (banners.bannerType) {
+// 		case 1:
+// 			uni.navigateTo({
+// 				url: "../../pages/webview/webview?url=" + url
+// 			})
+// 			break;
+// 	}
+
+// }
 
 /**
  * 手机号正则判断
@@ -101,43 +113,41 @@ function formatDate(now) {
 }
 //加法函数  
 export const accAdd = (arg1, arg2) => {
-	 if (isNaN(arg1)) {
-	        arg1 = 0;
-	    }
-	    if (isNaN(arg2)) {
-	        arg2 = 0;
-	    }
-	    arg1 = Number(arg1);
-	    arg2 = Number(arg2);
-	    var r1, r2, m, c;
-	    try {
-	        r1 = arg1.toString().split(".")[1].length;
-	    }
-	    catch (e) {
-	        r1 = 0;
-	    }
-	    try {
-	        r2 = arg2.toString().split(".")[1].length;
-	    }
-	    catch (e) {
-	        r2 = 0;
-	    }
-	    c = Math.abs(r1 - r2);
-	    m = Math.pow(10, Math.max(r1, r2));
-	    if (c > 0) {
-	        var cm = Math.pow(10, c);
-	        if (r1 > r2) {
-	            arg1 = Number(arg1.toString().replace(".", ""));
-	            arg2 = Number(arg2.toString().replace(".", "")) * cm;
-	        } else {
-	            arg1 = Number(arg1.toString().replace(".", "")) * cm;
-	            arg2 = Number(arg2.toString().replace(".", ""));
-	        }
-	    } else {
-	        arg1 = Number(arg1.toString().replace(".", ""));
-	        arg2 = Number(arg2.toString().replace(".", ""));
-	    }
-	    return (arg1 + arg2) / m;
+	if (isNaN(arg1)) {
+		arg1 = 0;
+	}
+	if (isNaN(arg2)) {
+		arg2 = 0;
+	}
+	arg1 = Number(arg1);
+	arg2 = Number(arg2);
+	var r1, r2, m, c;
+	try {
+		r1 = arg1.toString().split(".")[1].length;
+	} catch (e) {
+		r1 = 0;
+	}
+	try {
+		r2 = arg2.toString().split(".")[1].length;
+	} catch (e) {
+		r2 = 0;
+	}
+	c = Math.abs(r1 - r2);
+	m = Math.pow(10, Math.max(r1, r2));
+	if (c > 0) {
+		var cm = Math.pow(10, c);
+		if (r1 > r2) {
+			arg1 = Number(arg1.toString().replace(".", ""));
+			arg2 = Number(arg2.toString().replace(".", "")) * cm;
+		} else {
+			arg1 = Number(arg1.toString().replace(".", "")) * cm;
+			arg2 = Number(arg2.toString().replace(".", ""));
+		}
+	} else {
+		arg1 = Number(arg1.toString().replace(".", ""));
+		arg2 = Number(arg2.toString().replace(".", ""));
+	}
+	return (arg1 + arg2) / m;
 }
 
 //减法函数  
@@ -299,4 +309,3 @@ Date.prototype.format = function(fmt = 'yyyy-MM-dd hh:mm:ss') { //author: meizz
 			k]).substr(("" + o[k]).length)));
 	return fmt;
 }
-

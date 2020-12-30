@@ -49,3 +49,18 @@ export function goChoseStore(parms) {
 		url: `../storelist/storelist`,
 	})
 }
+
+//前往订单详情
+export function goOrderDeatails(parms,bollean) {
+	let url = `../orderdetail/orderdetail?orderId=`;
+	if(bollean){
+		uni.redirectTo({
+			url:url + parms
+		})
+		return;
+	}
+	console.log(222)
+	uni.navigateTo({
+		url: url + parms,
+	})
+}

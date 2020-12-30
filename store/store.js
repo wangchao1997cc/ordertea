@@ -13,9 +13,15 @@ const store = new Vuex.Store({
 		session_key:'',
 		businessType: [2],
 		storeId:'',
-		isLogin:false,
+		isLogin:null,
+		productPrimaryTypeName:'',  //二级菜单名
+		
     },
     mutations: {
+		adverStatus(state,cont){
+			state.productPrimaryTypeName = cont;
+			console.log(state)
+		},
         copy(state,cont){
             //单一的改变某一个变量
             state.storeId = cont;

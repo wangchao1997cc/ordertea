@@ -4,7 +4,7 @@
 			<view class="order-header">
 				<view class="order-header-l">
 					<view class="order-status">
-						{{item.bookName}}<!-- {{item.orderType==2?'自取':(item.orderType==3?'堂食':'外卖')}} -->
+						{{item.orderType==2?'自取':(item.orderType==3?'堂食':'外卖')}}<!-- {{item.orderType==2?'自取':(item.orderType==3?'堂食':'外卖')}} -->
 					</view>
 					<text>{{item.storeName}}</text>
 				</view>
@@ -41,10 +41,20 @@
 			return {
 				pageNow:0,   //当前页数
 				orderList:[],  //订单列表
+				isNexPage:true,   //是否有下一页
 			}
 		},
 		onLoad() {
 			this.getOrderList();   //获取订单数据
+		},
+		//页面触底加载分页
+		onReachBottom: function() {
+			let that = this;
+			if (!that.isNexPage) {
+				return
+			}
+			that.pageNow++;
+			that.getOrderList();
 		},
 		methods: {
 			//获取订单数据
@@ -53,15 +63,23 @@
 					pageNow: this.pageNow,
 					pageSize: 10,
 				}
-				let res = await api.getOrderList(data);
+				let res = await api.getOrderList(data,true);
 				if(res.status==1){
-					this.orderList = res.data
+					if(!res.data.length){
+						return this.isNexPage = false;
+					}
+					if(res.data.length < 10){
+						this.isNexPage = false
+					}
+					if(this.pageNow==0){
+						this.orderList = res.data
+					}else{
+						this.orderList = this.orderList.concat(res.data)
+					}
 				}
-				console.log(res)
 			},
 			//跳转订单详情
 			jumpOrderDetail(orderId){
-				console.log(111)
 				goOrderDeatails(orderId)
 			}
 		}

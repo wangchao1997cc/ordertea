@@ -21,6 +21,11 @@ const getStoreList = (data, isPlicing, isloading) => {
 	return service('candao.storeStandard.getStoreList', 'post', data, isloading)
 }
 
+//获取门店信息
+const getStore = (data, isPlicing, isloading) => {
+	return service('candao.storeStandard.getStore', 'post', data, isloading)
+}
+
 //获取最近的一家门店
 const getNearStore = (data, isPlicing, isloading) => {
 	return service('candao.storeStandard.getNearStore', 'post', data, isloading)
@@ -96,10 +101,22 @@ const getOrderDetail = (data, isloading) => {
 	return service('candao.orderOwn.getOrderDetail', 'post', data, isloading)
 }
 
-//获取订单详情
+//获取微信支付参数
 const wxOrderPay = (data, isloading) => {
 	return service('candao.pay.orderPay', 'post', data, isloading)
 }
+
+//获取订单列表
+const getOrderList = (data, isloading) => {
+	return service('candao.orderOwn.getUserOrders', 'post', data, isloading)
+}
+
+//取消订单
+const cancelOrder = (data, isloading) => {
+	return service('candao.orderOwn.cancelOrder', 'post', data, isloading)
+}
+
+
 
 
 //normoal请求区域
@@ -167,6 +184,9 @@ const memberInterest = (data, isloading) => {
 
 
 module.exports = {
+	getStore:getStore,
+	cancelOrder:cancelOrder,
+	getOrderList:getOrderList,
 	wxOrderPay:wxOrderPay,
 	getOrderDetail:getOrderDetail,
 	placeOrder:placeOrder,

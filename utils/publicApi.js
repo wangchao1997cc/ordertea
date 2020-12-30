@@ -3,9 +3,11 @@ import store from '../store/store.js'
 
 //刷新用户信息
 export const refreshUserInfo = async callback => {
+	
 	let res = await api.getUserInfo();
+	console.log(res)
 	if (res && res.status == 1) {
-		if(res.data.phone){
+		if (res.data.phone) {
 			store.commit('changeLogin', res.data.phone);
 			getMemberInfo();
 		}
@@ -20,21 +22,21 @@ export const refreshUserInfo = async callback => {
 //获取会员用户信息
 export const getMemberInfo = async callback => {
 	let data = {
-		mobile:store.state.isLogin,
+		mobile: store.state.isLogin,
 	}
 	let res = await api.getMemberInfo(data);
 	if (res && res.code == 200) {
-		uni.setStorageSync('memberinfo',res.data[0]);
+		uni.setStorageSync('memberinfo', res.data[0]);
 	}
 }
-	
+
 
 //用户注册
 export const userRegister = async data => {
 	let res = await api.vUserLogin(data);
 	if (res && res.code == 200) {
-		uni.setStorageSync('memberinfo',res.data[0]);
-		
+		uni.setStorageSync('memberinfo', res.data[0]);
+
 	}
 }
 
@@ -59,7 +61,7 @@ export function wxLogin() {
 	})
 }
 
-export const getCityId = async (cityname,isboolean) => {
+export const getCityId = async (cityname, isboolean) => {
 	let data = {
 		name: cityname
 	}
@@ -76,7 +78,7 @@ export const ajaxUserLogin = async (takeit) => {
 		code: wxCode,
 	};
 	let res = await api.getWxOpenid(data, true);
-	// console.log(res)
+	refreshUserInfo();
 	if (res.status == 1) {
 		delete res.data.errcode;
 		store.commit('change', res.data);
