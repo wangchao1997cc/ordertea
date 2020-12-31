@@ -25,7 +25,7 @@
 			couponlist
 		},
 		onLoad(options) {
-			let type = 'choose';
+			let type = options.type;
 			let title = '我的优惠卷';
 			// let navarr = ['未使用','已使用','已过期'];
 			if (type == 'choose') {
@@ -34,6 +34,8 @@
 				this.handerCoupons(couponsList);  //处理优惠卷数据
 				title = '选择优惠卷'
 				// uni.removeStorageSync('canusecoupons');
+			}else{
+				this.getCoupons();
 			}
 			// this.navarr = navarr;
 			uni.setNavigationBarTitle({
@@ -42,6 +44,14 @@
 			// this.getCoupons();
 		},
 		methods: {
+			//获取我的优惠卷
+			async getCoupons(){
+				let res = await api.getCoupons({
+					cardNo: this.$store.state.cardNo,
+					type: this.currtab
+				})
+				this.handerCoupons(res.data);
+			},
 			//处理优惠卷数据
 			handerCoupons(couponsList) {
 				let couponsObj = [];
@@ -68,9 +78,20 @@
 							}
 						})
 						break;
+						case 0:
+						couponsObj = [{
+							tit: '未使用',
+							list: [],
+						}, {
+							tit: '已使用',
+							list: [],
+						},{
+							tit: '已过期',
+							list: [],
+						}];
+						couponsObj[this.currtab].list = couponsList;
 				}
 				this.couponsObj = couponsObj;
-				console.log(this.couponsObj)
 			},
 
 			tabNav(index) {
@@ -78,6 +99,9 @@
 					return;
 				}
 				this.currtab = index;
+				if(this.type==0){
+					this.getCoupons();
+				}
 			}
 		}
 	}

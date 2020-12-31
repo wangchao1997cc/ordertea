@@ -119,6 +119,9 @@ const cancelOrder = (data, isloading) => {
 
 
 
+
+
+
 //normoal请求区域
 //微信登录
 const getWxOpenid = (data, isPlicing, isloading) => {
@@ -176,19 +179,29 @@ const updateMember = (data, isloading) => {
 	return service_v('v4_3/card/update', 'post', data, isloading)
 }
 
+//获取等级权益信息
+const getLevel = (data, isloading) => {
+	return service_v('v4_3/level/by', 'get', data, isloading)
+}
 
 
 
-// //获取可使用优惠卷
-// const calculationCoupons = (data, isloading) => {
-// 	return service_v('v4_3/calculation/coupon', 'post', data, isloading)
-// }
+//获取可使用优惠卷
+const getCoupons = (data, isloading) => {
+	let backurl;
+	if (data) {
+		backurl = handerGetParams(data);
+	}
+	return service_v('v4_3/coupon/by' + backurl, 'get', data, isloading)
+}
 
 
 
 
 
 module.exports = {
+	getCoupons:getCoupons,
+	getLevel:getLevel,
 	updateMember:updateMember,
 	getStore:getStore,
 	cancelOrder:cancelOrder,

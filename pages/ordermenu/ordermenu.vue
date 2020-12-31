@@ -339,8 +339,10 @@
 				let storeInfo = this.storeInfo;
 				if (this.model == 2) {
 					let location = this.location;
-					if(this.$children[0].currtab!=0){
-						this.$children[0].currtab = 0;
+					if(this.$children.length){
+						if(this.$children[0].currtab!=0){
+							this.$children[0].currtab = 0;
+						}
 					}
 					if (storeInfo.coordinate) {
 						name = '距您' + etdistance(storeInfo.coordinate[1], storeInfo.coordinate[0], location.latitude, location.longitude);

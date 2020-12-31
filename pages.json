@@ -1,6 +1,12 @@
 {
 	"pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
 		{
+		    "path" : "pages/shopping/shopping",
+		    "style" : {
+				"navigationBarTitleText": "积分商城"
+			}
+		},
+		{
 			"path": "pages/home/home",
 			"style": {
 				"navigationStyle": "custom"
@@ -85,9 +91,12 @@
         
         ,{
             "path" : "pages/addremark/addremark",
-            "style" : {}
+            "style" : {
+				"navigationBarTitleText": "订单备注"
+			}
         }
        
+        
     ],
 	"globalStyle": {
 		"navigationBarTextStyle": "black",
