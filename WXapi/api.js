@@ -195,11 +195,35 @@ const getCoupons = (data, isloading) => {
 	return service_v('v4_3/coupon/by' + backurl, 'get', data, isloading)
 }
 
+//获取商品列表
+const getGoodsList = (data, isloading) => {
+	let backurl;
+	if (data) {
+		backurl = handerGetParams(data);
+	}
+	return service_v('v4_3/pointProduct/queryList' + backurl, 'get', data, isloading)
+}
+
+//获取当前充值套餐
+const getRecharge = (data, isloading) => {
+	let backurl;
+	if (data) {
+		backurl = handerGetParams(data);
+	}
+	return service_v('v4_3/recharge/getPackage' + backurl, 'get', data, isloading)
+}
+
+
+
+
+
 
 
 
 
 module.exports = {
+	getRecharge:getRecharge,
+	getGoodsList:getGoodsList,
 	getCoupons:getCoupons,
 	getLevel:getLevel,
 	updateMember:updateMember,

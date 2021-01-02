@@ -37,7 +37,7 @@
 				</view>
 			</view>
 			<view class="user-assets">
-				<view class="assets-item">
+				<view class="assets-item" @click="jumpShopping">
 					<text>{{memberinfo.point?memberinfo.couponsCount:0}}</text>
 					<text>商城</text>
 				</view>
@@ -182,6 +182,12 @@
 			jumpCoupons(){
 				uni.navigateTo({
 					url:'../coupons/coupons'
+				})
+			},
+			//跳转商城
+			jumpShopping(){
+				uni.navigateTo({
+					url:'../shopping/shopping'
 				})
 			}
 		}

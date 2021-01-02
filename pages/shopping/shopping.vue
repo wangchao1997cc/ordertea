@@ -12,21 +12,21 @@
 			</view>
 		</view>
 		<view class="goods-box">
-			<view class="goods-item" v-for="i in 6">
+			<view class="goods-item" v-for="(item,index) in productList" :key="index">
 				<view class="goods-pic">
-					<image></image>
+					<image :src="item.productPic"></image>
 				</view>
 				<view class="goods-cont">
 					<view class="goods-tit-box">
 						<view class="goods-tit">
-							商品标题
+							{{item.productName}}
 						</view>
 						<view class="goods-label">
-							<text>自提</text>
+							<text>{{item.getWay==0?'领取':(item.getWay==1?'自取':'快递')}}</text>
 						</view>
 					</view>
 					<view class="nums-juide">
-						12120人已兑换
+						库存{{item.inventory}}
 					</view>
 					<view class="goods-price">
 						<text>30</text>元+<text>100积分</text>
@@ -42,13 +42,30 @@
 </template>
 
 <script>
+	import api from '../../WXapi/api.js'
 	export default {
 		data() {
 			return {
-
+				page:0,   //当前页索引
+				productList:[],   //商品列表
 			}
 		},
+		onLoad() {
+			this.getGoodsList();
+		},
 		methods: {
+			//获取商品列表
+			async getGoodsList(){
+				let data = {
+					page:this.page,
+					limit:10,
+				}
+				let res = await api.getGoodsList(data);
+				if(res.code==200){
+					this.productList = res.data;
+				}
+				console.log(res)
+			}
 
 		}
 	}
