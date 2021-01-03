@@ -6,19 +6,22 @@
 				当前余额
 			</view>
 			<view class="balance-box">
-				<text>55.00</text>
+				<text>{{memberinfo.balance?memberinfo.balance:0}}</text>
 				<view class="record-btn">
 					充值记录
 				</view>
 			</view>
 		</view>
-		<mswiper :imgList="imgList"></mswiper>
+		<mswiper :imgList="imgList" @changeData="changeData"></mswiper>
 		<view class="recharge-desc">
 			充值说明
 			<text>
-				\n内含100元储值金、折扣券X10,额外赠送10元、10积分
+				\n内含{{currtabData.amount}}元储值金、{{currtabData.ticketNames}},额外赠送<text :hidden="!currtabData.give">{{currtabData.give}}元、</text>{{currtabData.point?currtabData.point+'积分':''}}
 			</text>
-			<text>\n*以下等级可以充值：LV1，LV2</text>
+			<text class="span">\n*以下等级可以充值：{{currtabData.lvarr}}</text>
+		</view>
+		<view class="pay-btn" @click="begainRecharge" >
+			立即充值
 		</view>
 	</view>
 </template>
@@ -29,7 +32,10 @@
 	export default {
 		data() {
 			return {
+				memberinfo:{},   //会员信息
+				currtabData:{},   //当前选中的充值卡数据
 				imgList:[],   //充值卡套餐数据
+				// lvarr:''
 			}
 		},
 		components:{
@@ -40,19 +46,60 @@
 		},
 		methods: {
 			init(){
+				this.getMemberInfo();  //获取会员信息
 				this.getPackage();   //获取充值套餐
+			},
+			//swiper  切换数据
+			changeData(val){
+				this.currtabData = val;
+			},
+			//获取会员信息
+			getMemberInfo(){
+				let memberinfo = uni.getStorageSync('memberinfo');
+				this.memberinfo = memberinfo;
 			},
 			async getPackage(){
 
 				let res =  await api.getRecharge({});
 				if(res.code==200){
 					console.log(11,res)
-					let powerarr = [];
-					// res.data.
+					res.data.forEach(item => {
+						let lvarr = '';
+						if(item.needLevel){
+							item.needLevel.forEach((aitem,index) => {
+								if(index==0){
+									lvarr+=aitem.levelName;
+								}else{
+									lvarr+=('，'+aitem.levelName)
+								}
+							})
+						}else{
+							lvarr = '不限制等级哦！'
+						}
+						
+						item.lvarr = lvarr
+					})
+					this.currtabData = res.data[0];
 					this.imgList = res.data;
 					
 				}
-			}
+			},
+			//点击充值
+			async begainRecharge(){
+				// let memberinfo = this.memberinfo;
+				let currtabData = this.currtabData;
+				console.log()
+				let data = {
+					cardId: this.memberinfo.id,
+					amount: currtabData.amount,
+					body: currtabData.title,
+					curUrl: 'pages/wallet/wallet',
+					amountConfigId: currtabData.id,
+					openId: this.$store.state.openid,
+				}
+				let res = await api.rechargeApi(data);
+				console.log(res)
+			},
 		}
 	}
 </script>
@@ -101,10 +148,26 @@
 		font-size: 32upx;
 		width: 100%;
 		margin-top: 30upx;
+		line-height: 50upx;
 		@include box-padding(28upx);
 		text{
 			font-size: 28upx;
+				
+			
 		}
+		.span{
+			color: $main-color;
+		}
+	}
+	.pay-btn{
+		@include rect(698upx,88upx);
+		@include  text-allcenter(88upx);
+		color: $text-white;
+		background-color: $main-color;
+		position: fixed;
+		bottom:5.3%;
+		left: 26upx;
+		border-radius: 44upx;
 	}
 
 </style>

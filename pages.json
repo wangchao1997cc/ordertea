@@ -1,11 +1,12 @@
 {
 	"pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
 		{
-		    "path" : "pages/wallet/wallet",
+		    "path" : "pages/active/active",
 		    "style" :                                                                                    
 		    {
-		        "navigationBarTitleText": "充值",
-		        "enablePullDownRefresh": false
+		        "navigationBarTitleText": "邀请活动",
+				"navigationBarBackgroundColor": "#A8D732",
+				"navigationBarTextStyle": "white"
 		    }
 		    
 		},
@@ -14,6 +15,15 @@
 			"style": {
 				"navigationStyle": "custom"
 			}
+		},
+		{
+		    "path" : "pages/wallet/wallet",
+		    "style" :                                                                                    
+		    {
+		        "navigationBarTitleText": "充值",
+		        "enablePullDownRefresh": false
+		    }
+		    
 		},
 		{
 		    "path" : "pages/shopping/shopping",
@@ -44,7 +54,7 @@
 		    "path" : "pages/orderdetail/orderdetail",
 		    "style" :                                                                                    
 		    {
-		        "navigationBarTitleText": "",
+		        "navigationBarTitleText": "订单详情",
 		        "enablePullDownRefresh": false
 		    }
 		    
@@ -58,7 +68,7 @@
 		{
 			"path": "pages/settle/settle",
 			"style": {
-				"navigationBarTitleText": "订单详情"
+				"navigationBarTitleText": "确认订单"
 			}
 		},
 		{
@@ -96,8 +106,6 @@
 				"navigationBarTitleText": "地址管理"
 			}
 		}
-        
-        
         ,{
             "path" : "pages/addremark/addremark",
             "style" : {
@@ -105,8 +113,6 @@
 			}
         }
        
-        
-        
     ],
 	"globalStyle": {
 		"navigationBarTextStyle": "black",

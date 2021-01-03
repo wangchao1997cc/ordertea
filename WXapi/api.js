@@ -214,6 +214,14 @@ const getRecharge = (data, isloading) => {
 }
 
 
+//微信充值下单接口
+const rechargeApi = (data, isloading) => {
+	
+	return service_v('v4_3/weixin/recharge', 'post', data, isloading)
+}
+
+
+
 
 
 
@@ -222,19 +230,20 @@ const getRecharge = (data, isloading) => {
 
 
 module.exports = {
-	getRecharge:getRecharge,
-	getGoodsList:getGoodsList,
-	getCoupons:getCoupons,
-	getLevel:getLevel,
-	updateMember:updateMember,
-	getStore:getStore,
-	cancelOrder:cancelOrder,
-	getOrderList:getOrderList,
-	wxOrderPay:wxOrderPay,
-	getOrderDetail:getOrderDetail,
-	placeOrder:placeOrder,
-	getWxaSubscribeTemplates:getWxaSubscribeTemplates,
-	memberInterest:memberInterest,
+	rechargeApi: rechargeApi,
+	getRecharge: getRecharge,
+	getGoodsList: getGoodsList,
+	getCoupons: getCoupons,
+	getLevel: getLevel,
+	updateMember: updateMember,
+	getStore: getStore,
+	cancelOrder: cancelOrder,
+	getOrderList: getOrderList,
+	wxOrderPay: wxOrderPay,
+	getOrderDetail: getOrderDetail,
+	placeOrder: placeOrder,
+	getWxaSubscribeTemplates: getWxaSubscribeTemplates,
+	memberInterest: memberInterest,
 	getMemberInfo: getMemberInfo,
 	getActivity: getActivity,
 	deleteAdress: deleteAdress,

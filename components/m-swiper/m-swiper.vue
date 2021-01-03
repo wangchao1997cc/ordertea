@@ -1,11 +1,11 @@
 <template>
 	<view class="my-plan-style">
 		<!-- 3D轮播 -->
-		<swiper class="imageContainer" previous-margin="50rpx" next-margin="50rpx" circular autoplay>
+		<swiper @change="intervalChange" class="imageContainer" previous-margin="50rpx" next-margin="50rpx" circular autoplay>
 			<block v-for="(item,index) in imgList" :key="index">
 				<swiper-item class="swiperitem">
 					<view class="recharge-tit">
-						充值卡
+						{{item.title}}
 					</view>
 					<view class="price-box">
 						{{item.amount}}<text> 元</text>
@@ -19,18 +19,17 @@
 	export default {
 		data() {
 			return {
-				// imgList:[
-				// '../../static/detail/swiper2.png',
-				// '../../static/detail/swiper2.png',
-				// '../../static/detail/swiper2.png',
-				// '../../static/detail/swiper2.png',
-				// '../../static/detail/swiper2.png']
 			}
 		},
 		props: {
 			imgList: {
 				typeof: Array,
 				default: () => [],
+			}
+		},
+		methods:{
+			intervalChange(e){
+				this.$emit('changeData',this.imgList[e.detail.current]);
 			}
 		}
 	}

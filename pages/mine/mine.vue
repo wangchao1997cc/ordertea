@@ -45,7 +45,7 @@
 					<text>{{memberinfo.couponsCount?memberinfo.couponsCount:0}}</text>
 					<text>优惠卷</text>
 				</view>
-				<view class="assets-item">
+				<view class="assets-item" @click="jumpWallet">
 					<text>{{memberinfo.balance?memberinfo.balance:0}}</text>
 					<text>钱包</text>
 				</view>
@@ -188,6 +188,12 @@
 			jumpShopping(){
 				uni.navigateTo({
 					url:'../shopping/shopping'
+				})
+			},
+			//跳转钱包页面
+			jumpWallet(){
+				uni.navigateTo({
+					url:'../wallet/wallet'
 				})
 			}
 		}
