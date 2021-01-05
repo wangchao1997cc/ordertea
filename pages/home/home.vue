@@ -9,10 +9,12 @@
 		<view class="home-cont">
 			<view class="app-model">
 				<view class="" @click="jumpMenu(2)">
-					自取
+					<image class="take-pic" src="../../static/homepage/home_takeit_pic.png" mode=""></image>
+					<image class="take-btn" src="../../static/homepage/takeit_btn.png"></image>
 				</view>
 				<view class="" @click="jumpMenu(1)">
-					外卖
+					<image class="take-pic" src="../../static/homepage/home_takeout_pic.png"></image>
+					<image class="take-btn" src="../../static/homepage/takeout_btn.png"></image>
 				</view>
 			</view>
 			<view class="blance-box">
@@ -31,7 +33,7 @@
 			<view class="integral">
 				<view class="integral-item" v-for="(item,index) in integralarr" :key="index">
 					<view class="intehead_info">
-						<image></image>
+						<image :src="item.icon"></image>
 						<view class="">
 							<text>{{item.tit}}\n</text>
 							<text>{{item.value}}</text>
@@ -39,7 +41,7 @@
 					</view>
 					<view class="active" v-if="index==4">
 						<view class="active-juide">
-							<image></image>
+							<image class="sm-icon" src="../../static/homepage/home_milktea.png"></image>
 							<text>6 </text>
 							<text>/ 7</text>
 						</view>
@@ -49,9 +51,7 @@
 							<image src="../../static/homepage/right.png"></image>
 						</view>
 					</view>
-					<image class="bg-pic">
-
-					</image>
+					<image class="bg-pic" :src="item.bg"></image>
 				</view>
 			</view>
 			<view class="adver">
@@ -69,9 +69,13 @@
 
 <script>
 	const app = getApp();
-	import {getBannerList} from '../../utils/publicApi.js'
+	import {
+		getBannerList
+	} from '../../utils/publicApi.js'
 	import sildermine from '../../components/minesilder.vue'
-	import {jumpAdvertise} from '../../utils/utils.js'
+	import {
+		jumpAdvertise
+	} from '../../utils/utils.js'
 	import {
 		getLocation,
 	} from '../../utils/author.js'
@@ -82,7 +86,9 @@
 	import {
 		ajaxUserLogin
 	} from '../../utils/publicApi.js'
-	import {goUserAddress} from '../../utils/goToPage.js'
+	import {
+		goUserAddress
+	} from '../../utils/goToPage.js'
 	export default {
 		data() {
 			return {
@@ -92,7 +98,7 @@
 					progresswidth: '272upx',
 					progressbar: '50%',
 				},
-				bannerData:{},   //轮播图数据
+				bannerData: {}, //轮播图数据
 				// config: {
 				// 	slideHeight: 400,
 				// 	hiddentit: false,
@@ -100,33 +106,33 @@
 				// 	bgcolor: 'white',
 				// },
 				integralarr: [{
-						icon: '',
+						icon: '../../static/homepage/home_sm_inte.png',
 						tit: '我的积分',
 						value: '288',
-						bg: '',
+						bg: '../../static/homepage/home_ingetral.png',
 					},
 					{
-						icon: '',
+						icon: '../../static/my/shop_icon.png',
 						tit: '积分商城',
 						value: '	更多好物',
-						bg: '',
+						bg: '../../static/homepage/home_store.png',
 					}, {
-						icon: '',
+						icon: '../../static/homepage/home_sm_earn.png',
 						tit: '赚取积分',
 						value: '玩转积分',
-						bg: '',
+						bg: '../../static/homepage/home_inte_t.png',
 					},
 					{
-						icon: '',
+						icon: '../../static/homepage/home_sm_coupon.png',
 						tit: '我的优惠卷',
 						value: '288',
-						bg: '',
+						bg: '../../static/homepage/home_coupons.png',
 					},
 					{
-						icon: '',
+						icon: '../../static/homepage/home_sm_card.png',
 						tit: '集点卡',
 						value: '',
-						bg: '',
+						bg: '../../static/homepage/home_card.png',
 					},
 				]
 			}
@@ -151,13 +157,13 @@
 				this.getBannerList();
 			},
 			//跳转点单页，判断自取或外卖
-			jumpMenu(type){
-				if(type==1){
+			jumpMenu(type) {
+				if (type == 1) {
 					goUserAddress('select');
-				}else{
-					this.$store.commit('changebussiness',[2])
+				} else {
+					this.$store.commit('changebussiness', [2])
 					uni.switchTab({
-						url:'../ordermenu/ordermenu'
+						url: '../ordermenu/ordermenu'
 					})
 				}
 			},
@@ -171,7 +177,7 @@
 			async getLocation() {
 				let location = await getLocation();
 			},
-			jumpAdvertise(item){
+			jumpAdvertise(item) {
 				jumpAdvertise(item)
 			},
 		}
@@ -179,9 +185,10 @@
 </script>
 
 <style lang="scss">
-	.blank{
+	.blank {
 		height: 100upx;
 	}
+
 	.content {
 		width: $screen-width;
 		color: $uni-text-color;
@@ -190,12 +197,13 @@
 
 	.head-info {
 		@include rect(100%, 640upx);
+
 		// background-color: $main-color;.
-		.swiper-item{
-			@include rect(100%,100%);
-				
-			image{
-				@include rect(100%,100%);
+		.swiper-item {
+			@include rect(100%, 100%);
+
+			image {
+				@include rect(100%, 100%);
 			}
 		}
 	}
@@ -213,9 +221,26 @@
 
 			view {
 				@include rect(50%, 258upx);
+				@extend %flex-column;
+				justify-content: center;
+
+				.take-btn {
+					margin-top: 28upx;
+					@include rect(143upx, 53upx)
+				}
 
 				&:first-child {
+					.take-pic {
+						@include rect(119upx, 94upx)
+					}
+
 					border-right: 1upx $line-color solid;
+				}
+
+				&:last-child {
+					.take-pic {
+						@include rect(107upx, 88upx)
+					}
 				}
 			}
 		}
@@ -268,14 +293,67 @@
 			background-color: $bg-white;
 			border-radius: $radius-md;
 			position: relative;
+			overflow: hidden;
+
+			.bg-pic {
+				@include rect(112upx, 112upx);
+				position: absolute;
+				right: -20upx;
+				bottom: -14upx;
+			}
 
 			&:nth-of-type(3) {
 				margin: 0;
+
+				.sm-icon {
+					@include rect(31upx, 27upx);
+				}
+
+				.bg-pic {
+					@include rect(90upx, 105upx);
+					right: 0upx;
+					bottom: -9upx;
+				}
 			}
+
+			&:nth-of-type(2) {
+				.sm-icon {
+					@include rect(31upx, 27upx);
+				}
+
+				.bg-pic {
+					@include rect(98upx, 98upx);
+					right: 0upx;
+					bottom: -2upx;
+				}
+			}
+
+			&:nth-of-type(4) {
+				.sm-icon {
+					@include rect(30upx, 23upx);
+				}
+
+				.bg-pic {
+					@include rect(122upx, 122upx);
+					right: -22upx;
+					bottom: -22upx;
+				}
+			}
+
 
 			&:last-child {
 				width: 458upx;
 				margin: 0;
+
+				.sm-icon {
+					@include rect(26upx, 24upx);
+				}
+
+				.bg-pic {
+					@include rect(143upx, 143upx);
+					right: -20upx;
+					bottom: -20upx;
+				}
 			}
 
 			.intehead_info {
@@ -285,7 +363,6 @@
 
 				image {
 					@include rect(32upx, 32upx);
-					border: 1upx $main-color solid;
 					margin-right: 16upx;
 				}
 
@@ -313,7 +390,6 @@
 
 					image {
 						@include rect(27upx, 44upx);
-						border: 1upx $main-color solid;
 						margin-right: 14upx;
 					}
 				}
@@ -332,13 +408,7 @@
 				}
 			}
 
-			.bg-pic {
-				position: absolute;
-				@include rect(93upx, 107upx);
-				bottom: 0;
-				right: 0;
-				border: 1upx $main-color solid;
-			}
+
 		}
 	}
 
@@ -363,7 +433,6 @@
 
 			image {
 				@include rect(100%, 100%);
-				border: 1upx $main-color solid;
 			}
 		}
 	}

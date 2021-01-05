@@ -18,6 +18,7 @@
 		methods:{
 			switchIcon(){
 				let currtab = this.currtab;
+				this.$emit('switchTab',currtab);
 				if(currtab==0){
 					return goUserAddress('select');
 				}else{
@@ -25,7 +26,7 @@
 					currtab = 0;
 				}
 				this.currtab = currtab;
-				this.$emit('switchTab',currtab);
+				// this.$emit('switchTab',currtab);
 			}
 		}
 	}

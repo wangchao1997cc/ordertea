@@ -25,7 +25,6 @@ export const getMemberInfo = async callback => {
 	let res = await api.getMemberInfo(data);
 	if (res && res.code == 200) {
 		if(!store.state.cardNo){
-			console.log(res.data[0].cardNo)
 			store.commit('setCardNo', res.data[0].cardNo);
 		}
 		uni.setStorageSync('memberinfo', res.data[0]);
@@ -78,11 +77,13 @@ export const getCityId = async (cityname, isboolean) => {
 
 //小程序登录获取openid
 export const ajaxUserLogin = async (takeit) => {
+	console.log(1111)
 	let wxCode = await wxLogin();
 	let data = {
 		code: wxCode,
 	};
 	let res = await api.getWxOpenid(data, true);
+	console.log(res)
 	refreshUserInfo();
 	if (res.status == 1) {
 		delete res.data.errcode;

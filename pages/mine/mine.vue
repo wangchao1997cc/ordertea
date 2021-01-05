@@ -94,6 +94,7 @@
 	import {
 		getMemberInfo
 	} from '../../utils/publicApi.js'
+	import {subtr} from '../../utils/utils.js'
 	export default {
 		data() {
 			return {
@@ -161,6 +162,7 @@
 			async getUserInfo(e) {
 				if (e.detail.errMsg == 'getUserInfo:ok') {
 					let userInfo = e.detail.userInfo;
+					userInfo.gender = subtr(userInfo.gender,1);
 					let memberinfo = uni.getStorageSync('memberinfo')
 					let data = {
 						name: userInfo.nickName,
@@ -168,12 +170,11 @@
 						sex: userInfo.gender,
 						cardId: memberinfo.id,
 					}
-					uni.setStorageSync('avatarUrl', userInfo.avatarUrl);
 					let res = await api.updateMember(data, true);
 					if (res.code == 200) {
 						this.notAuth = false;
 						uni.navigateTo({
-							url: '../memberinfo/memberinfo'
+							url: '../userdetail/userdetail'
 						})
 					}
 				}

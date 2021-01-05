@@ -6,7 +6,7 @@
 				<text @click="switchStoreOwn">{{headerinfo_t}}</text>
 			</view>
 			<view class="store-control">
-				<switchC></switchC>
+				<switchC @switchTab="switchTab"></switchC>
 				<view class="check-juide" @click="checkDetail">
 					{{showdetail?'更多门店信息':'收起'}}
 					<image src="../../static/07_icon_right.png"></image>
@@ -435,6 +435,7 @@
 			uni.showTabBar({})
 			this.init();
 		},
+		
 		onShow: function onShow() {
 			let that = this;
 			if (that.storeId) { //如果有storeId则刷新点餐
@@ -472,6 +473,10 @@
 				that.getLocation(); //获取地理位置
 				that.computReftHe(); //计算右边商品列表的高度
 				that.getBannerList(); //获取轮播图广告
+			},
+			switchTab(){
+				console.log(111)
+				this.showdetail = true;
 			},
 			//跳转广告
 			jumpAdver(item){
@@ -1201,7 +1206,7 @@
 
 			.goods-pic {
 				@include rect(100%, 372upx);
-				border: 1upx $main-color solid;
+				/* border: 1upx $main-color solid; */
 				position: relative;
 
 				image {
@@ -1577,7 +1582,7 @@
 
 		.good-pic {
 			@include rect(140upx, 140upx);
-			border: 1upx $main-color solid;
+/* 			border: 1upx $main-color solid; */
 			border-radius: 8upx;
 			overflow: hidden;
 
