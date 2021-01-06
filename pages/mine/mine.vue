@@ -56,7 +56,7 @@
 				我的服务
 			</view>
 			<view class="service-box">
-				<view class="service-item" v-for="(item,index) in servicearr" :key="index">
+				<view class="service-item" v-for="(item,index) in servicearr" :key="index" @click="jumpClassIfyPage(index)">
 					<image :src="item.img"></image>
 					<text>{{item.text}}</text>
 				</view>
@@ -94,7 +94,9 @@
 	import {
 		getMemberInfo
 	} from '../../utils/publicApi.js'
-	import {subtr} from '../../utils/utils.js'
+	import {
+		subtr
+	} from '../../utils/utils.js'
 	export default {
 		data() {
 			return {
@@ -129,11 +131,11 @@
 					img: '../../static/my/about_icon.png',
 					text: '关于我们'
 				}, ],
-				currentLev:{},
+				currentLev: {},
 			}
 		},
 		onLoad() {
-			
+
 		},
 		async onShow() {
 			let memberinfo = await getMemberInfo(true);
@@ -150,10 +152,11 @@
 			//获取当前等级信息
 			async getGradeInfo() {
 				let res = await api.getLevel({});
-				if(res.code==200){
+				if (res.code == 200) {
 					let experience = this.memberinfo.experience;
-					let lev =  res.data.filter(item => {
-						return (experience == item.lowerLimit || experience > item.lowerLimit) && (experience < item.upperLimit || experience == item.lowerLimit)
+					let lev = res.data.filter(item => {
+						return (experience == item.lowerLimit || experience > item.lowerLimit) && (experience < item.upperLimit ||
+							experience == item.lowerLimit)
 					})
 					this.currentLev = lev[0];
 				}
@@ -162,7 +165,7 @@
 			async getUserInfo(e) {
 				if (e.detail.errMsg == 'getUserInfo:ok') {
 					let userInfo = e.detail.userInfo;
-					userInfo.gender = subtr(userInfo.gender,1);
+					userInfo.gender = subtr(userInfo.gender, 1);
 					let memberinfo = uni.getStorageSync('memberinfo')
 					let data = {
 						name: userInfo.nickName,
@@ -180,23 +183,56 @@
 				}
 			},
 			//跳转优惠卷
-			jumpCoupons(){
+			jumpCoupons() {
 				uni.navigateTo({
-					url:'../coupons/coupons'
+					url: '../coupons/coupons'
 				})
 			},
 			//跳转商城
-			jumpShopping(){
+			jumpShopping() {
 				uni.navigateTo({
-					url:'../shopping/shopping'
+					url: '../shopping/shopping'
 				})
 			},
 			//跳转钱包页面
-			jumpWallet(){
+			jumpWallet() {
 				uni.navigateTo({
-					url:'../wallet/wallet'
+					url: '../wallet/wallet'
 				})
-			}
+			},
+			//跳转分类页面
+			jumpClassIfyPage(index) {
+				let url = '';
+				switch (index) {
+					case 0:
+						url = '../transrecord/transrecord';
+						break;
+					case 1:
+						url = '../address/address';
+						break;
+					case 2:
+						url = '../userdetail/userdetail';
+						break;
+					case 3:
+						url = '../wallet/wallet';
+						break;
+					case 4:
+						url = '../address/address';
+						break;
+					case 5:
+						url = '../active/active';
+						break;
+					case 6:
+						url: '../address/address';
+						break;
+					case 7:
+						url = '../address/address';
+						break;
+				}
+				uni.navigateTo({
+					url: url
+				})
+			},
 		}
 	}
 </script>

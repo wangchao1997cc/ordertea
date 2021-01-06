@@ -1,45 +1,73 @@
 {
 	"pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
 		{
-		    "path" : "pages/userdetail/userdetail",
-		    "style" : {
-				"navigationBarTitleText": "个人信息"
+			"path": "pages/shopping/shopping",
+			"style": {
+				"navigationBarTitleText": "积分商城"
 			}
 		},
+		{
+			"path": "pages/goodsdesc/goodsdesc",
+			"style": {
+				"navigationBarTitleText": "确认订单",
+				"enablePullDownRefresh": false
+			}
+		
+		},
+		{
+		    "path" : "pages/pointstore/pointstore",
+		    "style" :                                                                                    
+		    {
+		        "navigationBarTitleText": "附近门店",
+		        "enablePullDownRefresh": false
+		    }
+		    
+		},
+		
 		{
 			"path": "pages/home/home",
 			"style": {
 				"navigationStyle": "custom"
 			}
 		},
+		
+		
 		{
-		    "path" : "pages/active/active",
-		    "style" :                                                                                    
-		    {
-		        "navigationBarTitleText": "邀请活动",
-				"navigationBarBackgroundColor": "#A8D732",
-				"navigationBarTextStyle": "white"
-		    }
-		    
+			"path": "pages/transrecord/transrecord",
+			"style": {
+				"navigationBarTitleText": "交易记录",
+				"enablePullDownRefresh": false
+			}
+
 		},
+		
 		{
-		    "path" : "pages/wallet/wallet",
-		    "style" :                                                                                    
-		    {
-		        "navigationBarTitleText": "充值",
-		        "enablePullDownRefresh": false
-		    }
-		    
-		},
-		{
-		    "path" : "pages/shopping/shopping",
-		    "style" : {
-				"navigationBarTitleText": "积分商城"
+			"path": "pages/userdetail/userdetail",
+			"style": {
+				"navigationBarTitleText": "个人信息"
 			}
 		},
 		{
-		    "path" : "pages/mine/mine",
-		    "style" : {
+			"path": "pages/active/active",
+			"style": {
+				"navigationBarTitleText": "邀请活动",
+				"navigationBarBackgroundColor": "#A8D732",
+				"navigationBarTextStyle": "white"
+			}
+
+		},
+		{
+			"path": "pages/wallet/wallet",
+			"style": {
+				"navigationBarTitleText": "充值",
+				"enablePullDownRefresh": false
+			}
+
+		},
+
+		{
+			"path": "pages/mine/mine",
+			"style": {
 				"navigationStyle": "custom"
 			}
 		},
@@ -49,25 +77,24 @@
 				"navigationBarTitleText": ""
 			}
 		},
-		
+
 		{
-		    "path" : "pages/ordermenu/ordermenu",
-		    "style" : {
+			"path": "pages/ordermenu/ordermenu",
+			"style": {
 				"navigationBarTitleText": "点餐"
 			}
 		},
 		{
-		    "path" : "pages/orderdetail/orderdetail",
-		    "style" :                                                                                    
-		    {
-		        "navigationBarTitleText": "订单详情",
-		        "enablePullDownRefresh": false
-		    }
-		    
+			"path": "pages/orderdetail/orderdetail",
+			"style": {
+				"navigationBarTitleText": "订单详情",
+				"enablePullDownRefresh": false
+			}
+
 		},
 		{
-		    "path" : "pages/coupons/coupons",
-		    "style" : {
+			"path": "pages/coupons/coupons",
+			"style": {
 				"navigationBarTitleText": ""
 			}
 		},
@@ -78,12 +105,12 @@
 			}
 		},
 		{
-		    "path" : "pages/choosestore/choosestore",
-		    "style" : {
+			"path": "pages/choosestore/choosestore",
+			"style": {
 				"navigationBarTitleText": "选择门店"
 			}
 		},
-		
+
 		{
 			"path": "pages/address/address",
 			"style": {
@@ -91,33 +118,35 @@
 			}
 		},
 		{
-		    "path" : "pages/storelist/storelist",
-		    "style" : {}
+			"path": "pages/storelist/storelist",
+			"style": {}
 		},
 		{
-		    "path" : "pages/chosecity/chosecity",
-		    "style" : {
+			"path": "pages/chosecity/chosecity",
+			"style": {
 				"navigationBarTitleText": "点餐"
 			}
 		},
-	    {
-            "path" : "pages/order/order",
-            "style" : {
+		{
+			"path": "pages/order/order",
+			"style": {
 				"navigationBarTitleText": "历史订单"
 			}
-        },
+		},
 		{
 			"path": "pages/address/edit/edit",
 			"style": {
 				"navigationBarTitleText": "地址管理"
 			}
-		}
-        ,{
-            "path" : "pages/addremark/addremark",
-            "style" : {
+		}, {
+			"path": "pages/addremark/addremark",
+			"style": {
 				"navigationBarTitleText": "订单备注"
 			}
-        }
+		}
+
+
+	    
     ],
 	"globalStyle": {
 		"navigationBarTextStyle": "black",
@@ -155,6 +184,6 @@
 				"text": "我的"
 			}
 		]
-	
+
 	}
 }

@@ -5,7 +5,7 @@
 				可用积分
 			</view>
 			<view class="exchange-box">
-				<text>0</text>
+				<text>{{memberinfo.point}}</text>
 				<view class="exchange-btn">
 					兑换记录
 				</view>
@@ -29,10 +29,15 @@
 						库存{{item.inventory}}
 					</view>
 					<view class="goods-price">
-						<text>30</text>元+<text>100积分</text>
+						<view v-if="item.payType==2">
+							<text>{{item.price}}元</text>+<text>{{item.point}}积分</text>
+						</view>
+						<view v-else>
+							<text>{{item.payType==0?item.point+'积分':item.price+'元'}}</text>
+						</view>
 					</view>
-					<view class="buy_btn" :class="{nogrady:true}">
-						积分不足
+					<view class="buy_btn" :class="{nogrady: memberinfo.point < item.point && item.point != memberinfo.point}" @click="jumpGoodsDesc(item)">
+						{{item.payType==1?'立即购买':(memberinfo.point>item.point || item.point== memberinfo.point?'立即兑换':'积分不足')}}
 					</view>
 				</view>
 
@@ -48,23 +53,51 @@
 			return {
 				page:0,   //当前页索引
 				productList:[],   //商品列表
+				totalPageindex:null,  //总页数
+				memberinfo:{},  
+				
 			}
 		},
 		onLoad() {
+			this.memberinfo = uni.getStorageSync('memberinfo');
+			console.log(this.memberinfo)
 			this.getGoodsList();
 		},
+		//页面触底加载分页
+		onReachBottom: function() {
+			let that = this;
+			if (that.page == that.totalPageindex) {
+				return
+			}
+			that.page++;
+			that.getGoodsList();
+		},
 		methods: {
+			//跳转商品详情
+			jumpGoodsDesc(item){
+				// if(this.memberinfo.point < item.point && item.point != this.memberinfo.point){
+				// 	return
+				// }
+				uni.navigateTo({
+					url:'../goodsdesc/goodsdesc?id='+item.id,
+				})
+			},
 			//获取商品列表
 			async getGoodsList(){
+				let that = this;
 				let data = {
-					page:this.page,
-					limit:10,
+					page:that.page,
+					limit:8,
 				}
-				let res = await api.getGoodsList(data);
+				let res = await api.getGoodsList(data,true);
 				if(res.code==200){
-					this.productList = res.data;
+					if(that.page==0){
+						that.productList = res.data;
+						that.totalPageindex = Math.floor(res.total / 10);
+					}else{
+						that.productList = that.productList.concat(res.data);
+					}
 				}
-				console.log(res)
 			}
 
 		}
@@ -124,7 +157,9 @@
 
 			.goods-pic {
 				@include rect(334upx, 334upx);
-				border: 1upx $main-color solid;
+				image{
+					@include rect(100%,100%);
+				}
 			}
 
 			.goods-cont {
@@ -139,6 +174,8 @@
 
 				.goods-tit {
 					max-width: 210upx;
+					@include lineOnly();
+					font-size: 28upx;
 				}
 
 				.goods-label {
@@ -148,6 +185,8 @@
 					justify-content: center;
 					color: $text-white;
 					background-color: $main-color;
+					border-radius: 4upx;
+					@include text-allcenter(28upx);
 					text {
 						font-size: 20upx;
 						transform: scale(0.8);

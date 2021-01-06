@@ -159,8 +159,10 @@ const getMemberInfo = (data, isloading) => {
 function handerGetParams(data) {
 	let string = ''
 	for (let i in data) {
+		
 		string += '/' + data[i];
 	}
+	console.log(string)
 	return string
 }
 
@@ -220,6 +222,33 @@ const rechargeApi = (data, isloading) => {
 	return service_v('v4_3/weixin/recharge', 'post', data, isloading)
 }
 
+//查询交易记录
+const checkRecord = (data, isloading) => {
+	return service_v('v4_3/transList', 'post', data, isloading)
+}
+
+//查询商品详情
+const goodsDetail = (data, isloading) => {
+	let backurl;
+	if (data) {
+		backurl = handerGetParams(data);
+	}
+	return service_v('v4_3/pointProduct/queryOne'+ backurl, 'get', data, isloading)
+}
+
+//查询积分商品的商店
+const pointStore = (data, isloading) => {
+	let backurl;
+	if (data) {
+		backurl = handerGetParams(data);
+	}
+	return service_v('v4_3/store/by'+ backurl, 'get', data, isloading)
+}
+
+
+
+
+
 
 
 
@@ -230,6 +259,9 @@ const rechargeApi = (data, isloading) => {
 
 
 module.exports = {
+	pointStore:pointStore,
+	goodsDetail:goodsDetail,
+	checkRecord:checkRecord,
 	rechargeApi: rechargeApi,
 	getRecharge: getRecharge,
 	getGoodsList: getGoodsList,
