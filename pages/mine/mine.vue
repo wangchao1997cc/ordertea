@@ -217,7 +217,7 @@
 						url = '../wallet/wallet';
 						break;
 					case 4:
-						url = '../address/address';
+						url = '../shopping/shopping';
 						break;
 					case 5:
 						url = '../active/active';

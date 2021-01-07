@@ -162,7 +162,6 @@ function handerGetParams(data) {
 		
 		string += '/' + data[i];
 	}
-	console.log(string)
 	return string
 }
 
@@ -227,6 +226,9 @@ const checkRecord = (data, isloading) => {
 	return service_v('v4_3/transList', 'post', data, isloading)
 }
 
+
+
+
 //查询商品详情
 const goodsDetail = (data, isloading) => {
 	let backurl;
@@ -245,13 +247,31 @@ const pointStore = (data, isloading) => {
 	return service_v('v4_3/store/by'+ backurl, 'get', data, isloading)
 }
 
+//生成积分商品的订单
+const shopOrder = (data, isloading) => {
+	
+	return service_v('v4_3/pointProduct/orders/add', 'post', data, isloading)
+}
 
+//生成积分商品的微信支付参数
+const shopOrderPayParams = (data, isloading) => {
+	
+	return service_v('v4_3/pointProduct/orders/wxPay', 'post', data, isloading)
+}
 
+//完成订单支付
+const completeOrder = (data, isloading) => {
+	return service_v('v4_3/pointProduct/orders/suc', 'post', data, isloading)
+}
 
-
-
-
-
+//兑换记录
+const exchangeRecord = (data, isloading) => {
+	let backurl;
+	if (data) {
+		backurl = handerGetParams(data);
+	}
+	return service_v('v4_3/pointProduct/orderRecord'+backurl, 'get', data, isloading)
+}
 
 
 
@@ -259,6 +279,10 @@ const pointStore = (data, isloading) => {
 
 
 module.exports = {
+	exchangeRecord:exchangeRecord,
+	completeOrder:completeOrder,
+	shopOrderPayParams:shopOrderPayParams,
+	shopOrder:shopOrder,
 	pointStore:pointStore,
 	goodsDetail:goodsDetail,
 	checkRecord:checkRecord,

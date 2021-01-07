@@ -40,7 +40,6 @@ export const userRegister = async data => {
 	let res = await api.vUserLogin(data);
 	if (res && res.code == 200) {
 		uni.setStorageSync('memberinfo', res.data[0]);
-
 	}
 }
 
@@ -96,6 +95,7 @@ export const ajaxUserLogin = async (takeit) => {
 //微信支付
 export const wxPayment = (payment) => {
 	return new Promise((resolve, reject) => {
+		console.log(5555,payment)
 		uni.requestPayment({
 			'timeStamp': payment.timeStamp,
 			'nonceStr': payment.nonceStr,

@@ -6,13 +6,13 @@
 			</view>
 			<view class="exchange-box">
 				<text>{{memberinfo.point}}</text>
-				<view class="exchange-btn">
+				<view class="exchange-btn" @click="jumpExchange">
 					兑换记录
 				</view>
 			</view>
 		</view>
 		<view class="goods-box">
-			<view class="goods-item" v-for="(item,index) in productList" :key="index">
+			<view class="goods-item" v-for="(item,index) in productList" :key="index" @click="jumpGoodsDesc(item)">
 				<view class="goods-pic">
 					<image :src="item.productPic"></image>
 				</view>
@@ -36,7 +36,7 @@
 							<text>{{item.payType==0?item.point+'积分':item.price+'元'}}</text>
 						</view>
 					</view>
-					<view class="buy_btn" :class="{nogrady: memberinfo.point < item.point && item.point != memberinfo.point}" @click="jumpGoodsDesc(item)">
+					<view class="buy_btn" :class="{nogrady: memberinfo.point < item.point && item.point != memberinfo.point}" >
 						{{item.payType==1?'立即购买':(memberinfo.point>item.point || item.point== memberinfo.point?'立即兑换':'积分不足')}}
 					</view>
 				</view>
@@ -59,9 +59,11 @@
 			}
 		},
 		onLoad() {
-			this.memberinfo = uni.getStorageSync('memberinfo');
-			console.log(this.memberinfo)
+			
 			this.getGoodsList();
+		},
+		onShow() {
+			this.memberinfo = uni.getStorageSync('memberinfo');
 		},
 		//页面触底加载分页
 		onReachBottom: function() {
@@ -75,9 +77,9 @@
 		methods: {
 			//跳转商品详情
 			jumpGoodsDesc(item){
-				// if(this.memberinfo.point < item.point && item.point != this.memberinfo.point){
-				// 	return
-				// }
+				if(this.memberinfo.point < item.point && item.point != this.memberinfo.point){
+					return
+				}
 				uni.navigateTo({
 					url:'../goodsdesc/goodsdesc?id='+item.id,
 				})
@@ -98,7 +100,13 @@
 						that.productList = that.productList.concat(res.data);
 					}
 				}
-			}
+			},
+			//跳转兑换记录
+			jumpExchange(){
+				uni.navigateTo({
+					url:'../exchangerecord/exchangerecord'
+				})
+			},
 
 		}
 	}

@@ -30,7 +30,10 @@
 				recordData:[],
 			};
 		},
-		onLoad() {
+		onLoad(options) {
+			if(options){
+				this.currtab = options.type;
+			}
 			this.getTransRecord();
 		},
 		methods:{

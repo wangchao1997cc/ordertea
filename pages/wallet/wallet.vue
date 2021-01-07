@@ -7,7 +7,7 @@
 			</view>
 			<view class="balance-box">
 				<text>{{memberinfo.balance?memberinfo.balance:0}}</text>
-				<view class="record-btn">
+				<view class="record-btn" @click="jumpRecord">
 					充值记录
 				</view>
 			</view>
@@ -29,6 +29,10 @@
 <script>
 	import api from '../../WXapi/api.js'
 	import mswiper from '../../components/m-swiper/m-swiper.vue'
+	import {
+		getMemberInfo,
+		wxPayment
+	} from '../../utils/publicApi.js'
 	export default {
 		data() {
 			return {
@@ -91,15 +95,29 @@
 				console.log()
 				let data = {
 					cardId: this.memberinfo.id,
-					amount: currtabData.amount,
+					amount: currtabData.amount*100,
 					body: currtabData.title,
 					curUrl: 'pages/wallet/wallet',
 					amountConfigId: currtabData.id,
 					openId: this.$store.state.openid,
 				}
 				let res = await api.rechargeApi(data);
-				console.log(res)
+				if(res.code==200){
+					res.payData.package = res.payData.prepay_id;
+					wxPayment(res.payData).then(async res => {
+						this.$msg.showToast('充值成功');
+						this.memberinfo = await getMemberInfo(true);
+					}).catch(ret => {
+						console.log(ret)
+					})
+				}
 			},
+			//跳转充值记录
+			jumpRecord(){
+				uni.navigateTo({
+					url:'../transrecord/transrecord?type=1'
+				})
+			}
 		}
 	}
 </script>

@@ -51,7 +51,8 @@
 							mobile:userinfo.phone,
 							openId:this.$store.state.openid,
 						}
-						userRegister(userdata)
+						await userRegister(userdata);
+						this.$emit('loginSuccess',true);
 					}
 				}
 			}

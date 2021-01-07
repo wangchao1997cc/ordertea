@@ -1,7 +1,7 @@
 <template>
 	<view class="my-plan-style">
 		<!-- 3D轮播 -->
-		<swiper @change="intervalChange" class="imageContainer" previous-margin="50rpx" next-margin="50rpx" circular autoplay>
+		<swiper @change="intervalChange" class="imageContainer" previous-margin="50rpx" next-margin="50rpx" circular >
 			<block v-for="(item,index) in imgList" :key="index">
 				<swiper-item class="swiperitem">
 					<view class="recharge-tit">

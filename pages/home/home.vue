@@ -17,11 +17,11 @@
 					<image class="take-btn" src="../../static/homepage/takeout_btn.png"></image>
 				</view>
 			</view>
-			<view class="blance-box">
+			<view class="blance-box" @click="jumpWallet">
 				<view class="blance-l">
 					<view>
 						<image src="../../static/money_icon.png"></image>
-						我的余额：0
+						我的余额：{{memberinfo.balance?memberinfo.balance:0}}
 					</view>
 					<view>
 						点击进行充值，享取优惠
@@ -31,7 +31,7 @@
 				<image class="blance-icon" src="../../static/member_icon.png"></image>
 			</view>
 			<view class="integral">
-				<view class="integral-item" v-for="(item,index) in integralarr" :key="index">
+				<view class="integral-item" v-for="(item,index) in integralarr" :key="index" @click="jumpClissIfy(index)">
 					<view class="intehead_info">
 						<image :src="item.icon"></image>
 						<view class="">
@@ -64,11 +64,13 @@
 			</view>
 		</view>
 		<view class="blank"></view>
+		<author ref="authorM" @loginSuccess="loginSuccess"></author>
 	</view>
 </template>
 
 <script>
 	const app = getApp();
+	import author from '../../components/author.vue'
 	import {
 		getBannerList
 	} from '../../utils/publicApi.js'
@@ -84,7 +86,9 @@
 		mapMutations,
 	} from "vuex";
 	import {
-		ajaxUserLogin
+		ajaxUserLogin,
+		refreshUserInfo,
+		getMemberInfo
 	} from '../../utils/publicApi.js'
 	import {
 		goUserAddress
@@ -98,6 +102,7 @@
 					progresswidth: '272upx',
 					progressbar: '50%',
 				},
+				memberinfo:null,  //用户信息
 				bannerData: {}, //轮播图数据
 				// config: {
 				// 	slideHeight: 400,
@@ -108,13 +113,13 @@
 				integralarr: [{
 						icon: '../../static/homepage/home_sm_inte.png',
 						tit: '我的积分',
-						value: '288',
+						value: '0',
 						bg: '../../static/homepage/home_ingetral.png',
 					},
 					{
 						icon: '../../static/my/shop_icon.png',
 						tit: '积分商城',
-						value: '	更多好物',
+						value: '更多好物',
 						bg: '../../static/homepage/home_store.png',
 					}, {
 						icon: '../../static/homepage/home_sm_earn.png',
@@ -125,7 +130,7 @@
 					{
 						icon: '../../static/homepage/home_sm_coupon.png',
 						tit: '我的优惠卷',
-						value: '288',
+						value: '0',
 						bg: '../../static/homepage/home_coupons.png',
 					},
 					{
@@ -138,8 +143,8 @@
 			}
 		},
 		components: {
-			// navbar,
-			sildermine
+			sildermine,
+			author,
 		},
 		async onLoad() {
 			uni.hideTabBar({});
@@ -155,6 +160,24 @@
 		methods: {
 			init() {
 				this.getBannerList();
+				this.juideUserInfo(); //判断用户是否登录
+			},
+			async juideUserInfo() {
+				if (!this.isLogin) {
+					let userinfo = await refreshUserInfo(true);
+					if (!userinfo || !userinfo.phone) {
+						this.$refs.authorM.showPop();
+					}else{
+						let memberinfo = await getMemberInfo(true);
+						this.integralarr[0].value = memberinfo.point;
+						this.integralarr[3].value = memberinfo.coupons.length+'张';
+						this.memberinfo = memberinfo;
+					}
+				}
+			},
+			async loginSuccess(val){
+				let memberinfo = await getMemberInfo(true);
+				this.memberinfo = memberinfo;
 			},
 			//跳转点单页，判断自取或外卖
 			jumpMenu(type) {
@@ -180,6 +203,47 @@
 			jumpAdvertise(item) {
 				jumpAdvertise(item)
 			},
+			//跳转充值
+			jumpWallet(){
+				if(this.memberinfo){
+					uni.navigateTo({
+						url:'../wallet/wallet'
+					})
+				}
+			},
+			//跳转各个分类页面
+			jumpClissIfy(index){
+				if(!this.memberinfo){
+					return;
+				}
+				switch(index){
+					case 0:
+					uni.switchTab({
+						url:'../mine/mine'
+					})
+					break;
+					case 1:
+					uni.navigateTo({
+						url:'../shopping/shopping'
+					})
+					break;
+					case 2:
+					uni.switchTab({
+						url:'../ordermenu/ordermenu'
+					})
+					break;
+					case 3:
+					uni.navigateTo({
+						url: '../coupons/coupons'
+					})
+					break;
+					case 4:
+					// uni.switchTab({
+					// 	url:'../mine/mine'
+					// })
+					break;
+				}
+			}
 		}
 	}
 </script>
