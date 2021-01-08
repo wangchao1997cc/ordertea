@@ -273,12 +273,22 @@ const exchangeRecord = (data, isloading) => {
 	return service_v('v4_3/pointProduct/orderRecord'+backurl, 'get', data, isloading)
 }
 
+//获取会员码
+const getCodeParams = (data, isloading) => {
+	let backurl;
+	if (data) {
+		backurl = handerGetParams(data);
+	}
+	return service_v('v4_3/cardCode/queryByCardNo' + backurl, 'get', data, isloading)
+}
+
 
 
 
 
 
 module.exports = {
+	getCodeParams:getCodeParams,
 	exchangeRecord:exchangeRecord,
 	completeOrder:completeOrder,
 	shopOrderPayParams:shopOrderPayParams,

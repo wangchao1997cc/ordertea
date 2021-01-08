@@ -11,6 +11,7 @@
 			orderinfo: {},   //当前结算的订单信息
 			productPrimaryTypeName:null,   //广告的一级菜单名
 			businessinfo:null,  //积分商品信息
+			forhere:null,  //堂食
 		},
 		onLaunch: async function() {},
 		onShow: function() {

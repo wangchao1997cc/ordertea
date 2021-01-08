@@ -2,7 +2,7 @@
 	<view class="content">
 		<view class="header_info">
 			<!-- <navbar :config="config"></navbar> -->
-			<view class="member-code">
+			<view class="member-code" @click="jumpMemberCoed">
 				<image src="../../static/member_icon.png"></image>
 				会员码
 			</view>
@@ -101,10 +101,10 @@
 		data() {
 			return {
 				notAuth: false,
-				memberinfo: {},
+				memberinfo: null,
 				sliderConfig: {
 					progresswidth: '320upx',
-					progressbar: '50%',
+					progressbar: this.silderW,
 				},
 				servicearr: [{
 					img: '../../static/my/pay-record.png',
@@ -131,11 +131,20 @@
 					img: '../../static/my/about_icon.png',
 					text: '关于我们'
 				}, ],
-				currentLev: {},
+				currentLev: null,
 			}
 		},
 		onLoad() {
 
+		},
+		computed: {
+			silderW() {
+				let width = 0;
+				if (this.memberinfo && this.currentLev) {
+					width = Math.floor((this.memberinfo.experience / this.currentLev.upperLimit) * 100);
+				}
+				return width;
+			}
 		},
 		async onShow() {
 			let memberinfo = await getMemberInfo(true);
@@ -158,7 +167,9 @@
 						return (experience == item.lowerLimit || experience > item.lowerLimit) && (experience < item.upperLimit ||
 							experience == item.lowerLimit)
 					})
+					console.log(333, lev)
 					this.currentLev = lev[0];
+					console.log(1111, this.currentLev)
 				}
 			},
 			//用户授权信息
@@ -223,7 +234,7 @@
 						url = '../active/active';
 						break;
 					case 6:
-						url: '../address/address';
+						url = '../gradedesc/gradedesc';
 						break;
 					case 7:
 						url = '../address/address';
@@ -233,6 +244,12 @@
 					url: url
 				})
 			},
+			//跳转会员码
+			jumpMemberCoed(){
+				uni.navigateTo({
+					url:'../membercode/membercode'
+				})
+			}
 		}
 	}
 </script>

@@ -2,19 +2,37 @@
 	<!-- 等级说明 -->
 	<view class="content">
 		<view class="head-pic">
-			<image src="../../static/grade_head.png"></image>
+			<image :src="interest.background"></image>
 		</view>
 		<view class="interest">
 			<view class="tit">
 				会员权益
 			</view>
-		</view>
-		<view class="interest">
-			<view class="tit">
-				权益说明
-			</view>
 			<view class="interest-cont">
-				
+				<!--  -->
+				<view class="interest-item" v-for="(item,index) in interest.ticketList" :key="index">
+					<image :src="item.ticketBaceImage?item.ticketBaceImage:'../../static/lv_coupons.png'"></image>
+					<text>{{item.ticketName}}</text>
+				</view>
+			</view>
+		</view>
+		<view class="interest tow_inter">
+			<view class="tit" @click="jumpGradeDesc">
+				<text>权益说明</text>
+				<view class="tit-r">
+					更多
+					<image src="../../static/07_icon_right.png"></image>
+				</view>
+			</view>
+			<view class="lv-box">
+				<view class="v-item" v-for="(item,index) in gradeinfo" :key="index">
+					<image src="../../static/v_lv.png"></image>
+					<text>{{item.levelName}}</text>
+				</view>
+				<view class="v-item" v-for="(item,index) in gradeinfo" :key="index">
+					<image src="../../static/v_lv.png"></image>
+					<text>{{item.levelName}}</text>
+				</view>
 			</view>
 		</view>
 	</view>
@@ -25,21 +43,35 @@
 	export default {
 		data() {
 			return {
-				
+				memberinfo:{},
+				interest:[],   //当前所享受权益
+				gradeinfo:[],   //当前等级信息
 			}
 		},
 		onLoad() {
+			let memberinfo = uni.getStorageSync('memberinfo');
+			this.memberinfo = memberinfo;
 			this.getMemberGrade();  //获取会员等级信息
 		},
 		methods: {
-			//获取当前等级信息
+			//获取会员等级信息
 			async getMemberGrade() {
-				let res = await api.getLevel({});
-				console.log(res)
+				let res = await api.getLevel({},true);
 				if (res.code == 200) {
-					
+					res.data.forEach(item => {
+						if(item.id == this.memberinfo.levelId){
+							this.interest = item;
+						}
+					})
+					this.gradeinfo = res.data;
 				}
 			},
+			//前往等级说明
+			jumpGradeDesc(){
+				uni.navigateTo({
+					url:'../interestdesc/interestdesc'
+				})
+			}
 		}
 	}
 </script>
@@ -49,6 +81,7 @@
 		width: $screen-width;
 		color: $uni-text-color;
 	}
+	
 	.head-pic{
 		@include rect(750upx,358upx);
 		image{
@@ -56,9 +89,10 @@
 		}
 	}
 	.interest{
-		@include rect(698upx,270upx);
+		width: 698upx;
 		margin: 23upx auto;
-		@include box-padding(38upx);
+		padding: 1upx 38upx 43upx 38upx;
+		box-sizing: border-box;
 		background-color: $bg-white;
 		padding-top: 1upx;
 		border-radius: $radius-md;
@@ -66,6 +100,68 @@
 			margin-top: 35upx;
 			font-size: 31upx;
 			color: #000000;
+			display: flex;
+			justify-content: space-between;
+			.tit-r{
+				color: #99989C;
+				@extend %flex-alcent;
+				margin-left: 20upx;
+				image{
+					@include rect(11upx,21upx);
+					margin-left: 20upx;
+				}
+			}
+		}
+		.lv-box{
+			@extend %flex-list;
+			margin-top: 58upx;
+			// @include box-padding(76upx);
+			
+			
+			.v-item{
+				image{
+					@include rect(40upx,35upx)
+				}
+				margin-bottom: 60upx;
+				width: 25%;
+				display: flex;
+				justify-content: center;
+				// margin-right: 100upx;
+				// &:nth-of-type(n+4){
+				// 	margin-top: 80upx;
+				// }
+				text{
+					font-size: 24upx;
+					color: $main-color;
+					margin-left: -4upx;
+					line-height: 44upx;
+					// border: 1upx red solid;
+				}
+			}
+		}
+	}
+	.tow_inter{
+		padding-bottom: 0upx;
+	}
+	.interest-cont{
+		width: 100%;
+		@extend %flex-list;
+		margin-top: 45upx;
+		// border: 1upx red solid;
+		.interest-item{
+			
+			height: 100upx;
+			// border: 1upx red solid;
+			@extend %flex-column;
+			margin-right: 20upx;
+			margin-bottom: 20upx;
+			text{
+				font-size: 25upx;
+			}
+			image{
+				@include rect(55upx,37upx);
+				margin-bottom: 24upx;
+			}
 		}
 	}
 </style>

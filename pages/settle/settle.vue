@@ -1,6 +1,10 @@
 <template>
 	<view class="content" v-if="storeInfo">
-		<view class="times-cont">
+		<view class="table-num" v-if="forhere">
+			<text>30</text>
+			您的桌号
+		</view>
+		<view class="times-cont" v-if="!forhere">
 			<view class="address">
 				<text>{{storeInfo.storeName}}\n</text>
 				<text>{{storeInfo.cityName+storeInfo.districtName+storeInfo.storeAddress}}</text>
@@ -85,7 +89,7 @@
 					<image src="../../static/07_icon_right.png"></image>
 				</view>
 			</view>
-			<view class="other-item">
+			<view class="other-item" @click="choseTableware">
 				<text>餐具份数</text>
 				<view class="other-item-r">
 					<text>{{peopleNum?peopleNum+'份':'根据餐量提供'}}</text>
@@ -170,22 +174,26 @@
 				type: null,
 				location: {}, //用户位置信息
 				address: null, //用户地址
+				forhere:null,  //堂食
 			};
 		},
 		onLoad(options) {
 			let that = this;
 			let orderparams = app.globalData.orderinfo;
 			this.storeInfo = app.globalData.storeInfo; //先渲染页面
-			that.getStore(options.storeId); //获取门店信息
+			that.getWxaSubscribeTemplates() //获取微信订阅消息列表
+			uni.showLoading({})
 			that.orderparams = orderparams;
 			that.memberInterest(orderparams); //会员权益计算
-			uni.showLoading({})
-			that.renderAnimation(); //定义动画
-			that.getWxaSubscribeTemplates() //获取微信订阅消息列表
 			that.type = that.$store.state.businessType[0]; //当前的模式
-			if (that.type == 1 || that.type == 4) {
-				this.address = uni.getStorageSync('selectAddress');
-				console.log(this.address)
+			that.renderAnimation(); //定义动画
+			if(that.type==3){
+				this.forhere = app.globalData.forhere;
+			}else{
+				that.getStore(options.storeId); //获取门店信息
+				if (that.type == 1 || that.type == 4) {
+					this.address = uni.getStorageSync('selectAddress');
+				}
 			}
 		},
 		onShow() {
@@ -219,6 +227,11 @@
 			},
 		},
 		methods: {
+			//选择餐具份数
+			choseTableware(){
+				this.maskShow = true; //总幕布
+				this.chooseWareShow = true;
+			},
 			//获取当前门店信息
 			async getStore(storeId) {
 				let location = uni.getStorageSync('location');
@@ -314,7 +327,6 @@
 			//时间切段   15分钟为一个时间段
 			handerTime(date, startTime, endTime) {
 				let timerarr = [];
-				console.log(55555, new Date(date + ' ' + startTime))
 				startTime = new Date(new Date(date + ' ' + startTime)); //加上45分钟
 				startTime = Date.parse(startTime) + (45 * 60000); //转为时间戳
 				timerarr.push(new Date(startTime).format("hh:mm:ss"));
@@ -503,6 +515,21 @@
 
 	.mask {
 		@extend %all-mask;
+	}
+	
+	.table-num{
+		@include rect(145upx,145upx);
+		border-radius: 50%;
+		background-color: $main-color;
+		margin: 42upx auto;
+		@extend %flex-column;
+		justify-content: center;
+		font-size: 20upx;
+		color: $text-white;
+		text{
+			font-size: 44upx;
+			margin-bottom: 4upx;
+		}
 	}
 
 	.order-info {

@@ -6,7 +6,11 @@
 				<text @click="switchStoreOwn">{{headerinfo_t}}</text>
 			</view>
 			<view class="store-control">
-				<switchC @switchTab="switchTab"></switchC>
+
+				<view class="table-num" v-if="forhere">
+					{{forhere.deskId}}号桌
+				</view>
+				<switchC v-else @switchTab="switchTab"></switchC>
 				<view class="check-juide" @click="checkDetail">
 					{{showdetail?'更多门店信息':'收起'}}
 					<image src="../../static/07_icon_right.png"></image>
@@ -221,7 +225,6 @@
 			<view class="tab-r" @click="jumpOrder">
 				选好了
 			</view>
-
 		</view>
 		<storeDetail :shopinfo="storeInfo" :shopBoxHeight="shopBoxHeight" :showdetail="showdetail"></storeDetail>
 		<choseStore :nearList="nearList" @switchStore="switchStore" ref="chosestore"></choseStore>
@@ -277,12 +280,14 @@
 	export default {
 		data() {
 			return {
+				forhere: null,
+				computedHeight: null, //系统高度
 				activelist: [], //活动list
 				bannerList: [], //轮播图广告
 				allmask: false,
 				nums: '1', //mask 中的nums
 				// model: 2, //2为自取模式， 1为外卖模式
-				shopBoxHeight: null,
+				// shopBoxHeight: null,
 				tabScrollTop: 0, //滚动条与顶部的距离
 				currentId: 1, //二级分类当前的pid
 				location: {}, //地址
@@ -334,13 +339,24 @@
 				}
 				return name;
 			},
+			shopBoxHeight() {
+				let height = 0;
+				let computedHeight = this.computedHeight;
+				if (computedHeight) {
+					height = computedHeight - 216;
+					// if(this.activelist.length){
+					// 	height = computedHeight - 106;
+					// }
+				}
+				return height;
+			},
 			headerinfo_t() {
 				let name = '正在选择店铺中...';
 				let storeInfo = this.storeInfo;
 				if (this.model == 2) {
 					let location = this.location;
-					if(this.$children.length){
-						if(this.$children[0].currtab!=0){
+					if (this.$children.length) {
+						if (this.$children[0].currtab != 0) {
 							this.$children[0].currtab = 0;
 						}
 					}
@@ -348,7 +364,7 @@
 						name = '距您' + etdistance(storeInfo.coordinate[1], storeInfo.coordinate[0], location.latitude, location.longitude);
 					}
 				} else {
-					if(this.$children.length){
+					if (this.$children.length) {
 						this.$children[0].currtab = 1;
 						name = `由${storeInfo.storeName}店配送`
 					}
@@ -427,15 +443,21 @@
 			}
 		},
 		async onLoad(options) {
+
 			uni.hideTabBar({});
 			if (!this.JSESSIONID) {
 				await ajaxUserLogin(); //先进行登录
+			}
+			if (options && options.deskId) {
+				this.forhere = options;
+				app.globalData.forhere = options;
+				this.$store.commit('changebussiness', [3])
 			}
 			// this.juideOptions(options); //判断路径参数
 			uni.showTabBar({})
 			this.init();
 		},
-		
+
 		onShow: function onShow() {
 			let that = this;
 			if (that.storeId) { //如果有storeId则刷新点餐
@@ -455,7 +477,7 @@
 			if (that.products.length && that.products[0].top) {
 				that.$nextTick(async () => { //解决DOM更新异步问题
 					await that.calcSize();
-					if(that.productPrimaryTypeName){
+					if (that.productPrimaryTypeName) {
 						that.jumpProduct();
 					}
 				})
@@ -470,20 +492,37 @@
 			init() {
 				let that = this;
 				that.juideUserInfo(); //判断用户是否登录
-				that.getLocation(); //获取地理位置
 				that.computReftHe(); //计算右边商品列表的高度
 				that.getBannerList(); //获取轮播图广告
+				that.getLocation(); //获取地理位置
 			},
-			switchTab(){
-				console.log(111)
+			//获取当前门店信息
+			async getStore(storeId) {
+				let that = this;
+				location = that.location;
+				let data = {
+					storeId: storeId,
+					businessType: that.$store.state.businessType[0],
+					coordinate: [location.longitude, location.latitude],
+				}
+				let res = await api.getStore(data);
+				if (res.status == 1) {
+					let storeInfo = res.data;
+					storeInfo.newdistance = conversion(storeInfo.distance) //换算距离
+					that.storeInfo = storeInfo;
+					that.getStoreMenu(storeInfo.storeId);
+					app.globalData.storeInfo = storeInfo
+				}
+			},
+			switchTab() {
 				this.showdetail = true;
 			},
 			//跳转广告
-			jumpAdver(item){
-				if(item.jumpType==2){
+			jumpAdver(item) {
+				if (item.jumpType == 2) {
 					// this.$store.commit('adverStatus',item.productPrimaryTypeName);
 					this.jumpProduct(item.productPrimaryTypeName);
-				}else{
+				} else {
 					jumpAdvertise(item);
 				}
 			},
@@ -821,12 +860,14 @@
 			//计算左边商品分类的高度
 			computReftHe() {
 				const sysinfo = uni.getSystemInfoSync();
+				console.log(sysinfo)
 				let windowHeight = sysinfo.windowHeight;
 				this.popHeightInfo = {
 					hei: windowHeight * 1,
 					low: windowHeight * 0.5,
 				};
-				this.shopBoxHeight = windowHeight * (750 / sysinfo.windowWidth) - 200;
+				this.computedHeight = windowHeight * (750 / sysinfo.windowWidth); //系统高度rpx
+				console.log(111, this.computedHeight)
 				let animation = uni.createAnimation({ //定义动画
 					duration: 300,
 					timingFunction: 'linear',
@@ -842,12 +883,13 @@
 				let log = location.longitude;
 				if (location) {
 					that.location = location;
-					if(!app.globalData.storeInfo.storeId){
+					if (that.forhere) {
+						return this.getStore(that.forhere.storeId);
+					}
+					if (!app.globalData.storeInfo.storeId) {
 						that.getNearShopList(); //获取距离最近的门店
 						let res = await getCityAddress(lat, log); //获取地理详细信息
 					}
-					// that.getCityId(res.result.ad_info.city); //获取城市id
-					// that.setCacheData(res.result.address_component.city); //服务器存储
 				} else {
 					that.getCategoryList(); //获取默认的商品列表
 				}
@@ -1010,7 +1052,7 @@
 				that.loadingState = true;
 				that.$nextTick(async () => { //解决DOM更新异步问题
 					await that.calcSize();
-					if(that.productPrimaryTypeName){
+					if (that.productPrimaryTypeName) {
 						that.jumpProduct();
 					}
 				})
@@ -1019,15 +1061,15 @@
 				// }, 150)
 			},
 			//跳转到某一个一级分类
-			jumpProduct(productPrimaryTypeName){
+			jumpProduct(productPrimaryTypeName) {
 				let that = this;
-				!productPrimaryTypeName?productPrimaryTypeName = that.productPrimaryTypeName:'';
+				!productPrimaryTypeName ? productPrimaryTypeName = that.productPrimaryTypeName : '';
 				that.products.find(item => {
-					if(item.name == productPrimaryTypeName){
+					if (item.name == productPrimaryTypeName) {
 						that.currentId = item.uid;
 						that.tabScrollTop = item.top;
-						if(that.productPrimaryTypeName){
-							this.$store.commit('adverStatus',null);
+						if (that.productPrimaryTypeName) {
+							this.$store.commit('adverStatus', null);
 						}
 					}
 				});
@@ -1065,7 +1107,7 @@
 			calcSize() {
 				return new Promise((res, ret) => {
 					let h = 0;
-					this.products.forEach((item,i) => {
+					this.products.forEach((item, i) => {
 						let view = uni.createSelectorQuery().select("#main-" + item.uid);
 						view.fields({
 							size: true
@@ -1073,12 +1115,12 @@
 							if (!data) return;
 							item.top = h + 140;
 							h += data.height;
-							if(i == this.products.length-1){
+							if (i == this.products.length - 1) {
 								res();
 							}
 						}).exec();
 					})
-					
+
 				})
 			},
 			//查看店铺详细信息
@@ -1401,6 +1443,16 @@
 				}
 			}
 
+			.table-num {
+				@include rect(114upx, 50upx);
+				background-color: $main-color;
+				border-radius: 25upx;
+				@include text-allcenter(50upx);
+				color: $text-white;
+				font-size: 24upx;
+				margin: 18upx auto 0 auto;
+			}
+
 		}
 	}
 
@@ -1582,7 +1634,7 @@
 
 		.good-pic {
 			@include rect(140upx, 140upx);
-/* 			border: 1upx $main-color solid; */
+			/* 			border: 1upx $main-color solid; */
 			border-radius: 8upx;
 			overflow: hidden;
 
