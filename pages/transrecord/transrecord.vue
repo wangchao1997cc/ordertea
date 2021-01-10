@@ -17,6 +17,12 @@
 				<text>{{item.createdDate}}</text>
 			</view>
 		</view>
+		<view class="no_record" v-if="nodataShow">
+			<view class="no-record-pic">
+				<image src="../../static/nodata/noRecord.png"></image>
+			</view>
+			<view class="no-record-juide">暂无{{currtab?'充值':'消费'}}记录</view>
+		</view>
 	</view>
 </template>
 
@@ -35,6 +41,15 @@
 				this.currtab = options.type;
 			}
 			this.getTransRecord();
+		},
+		computed:{
+			nodataShow(){
+				let nodata = false;
+				if(this.recordData && this.recordData.length == 0){
+					nodata = true;
+				}
+				return nodata;
+			}
 		},
 		methods:{
 			async getTransRecord(){
@@ -122,6 +137,22 @@
 			padding-top: 20upx;
 			line-height: 47upx;
 			color: #999999;
+		}
+	}
+	.no_record{
+		width: 100%;
+		.no-record-pic{
+			@include rect(400upx,384upx);
+			margin: 70upx auto;
+			image{
+				@include rect(100%,100%);
+			}
+		}
+		.no-record-juide{
+			color: #343434;
+			opacity: 0.5;
+			text-align: center;
+			
 		}
 	}
 </style>

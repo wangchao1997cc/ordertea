@@ -460,7 +460,10 @@
 		onShow: function onShow() {
 			let that = this;
 			if (that.storeId) { //如果有storeId则刷新点餐
-				that.shopcar = []; //清空购物车
+				if (that.shopcar.length) {
+					this.reductionData(that.shopcar);
+				}
+				// that.shopcar = []; //清空购物车
 				that.getStoreMenu(that.storeId);
 				that.storeInfo = app.globalData.storeInfo;
 				that.$store.commit('copy', '');
@@ -469,8 +472,9 @@
 					that.goToChoseCity();
 				}
 			}
-			if(app.globalData.orderSuccess){  //下单成功
-				that.shopcar = []; //清空购物车
+			if (app.globalData.orderSuccess) { //下单成功
+				this.reductionData(that.shopcar);
+				// that.shopcar = []; //清空购物车
 				app.globalData.orderSuccess = false;
 			}
 			let chooseAddress = uni.getStorageSync('selectAddress');
@@ -498,6 +502,14 @@
 				that.computReftHe(); //计算右边商品列表的高度
 				that.getBannerList(); //获取轮播图广告
 				that.getLocation(); //获取地理位置
+			},
+			//还原数据
+			reductionData() {
+				let shopcar = this.shopcar;
+				shopcar.forEach(item => {
+					this.products[item.indexarr.index].products[item.indexarr.idx].nums = 0; //同步餐单上的商品数据
+				})
+				this.shopcar = [];
 			},
 			//获取当前门店信息
 			async getStore(storeId) {
@@ -950,6 +962,7 @@
 			},
 			//跳转订单页面
 			jumpOrder() {
+				this.closeAllMask();
 				let storeInfo = app.globalData.storeInfo;
 				let memberinfo = uni.getStorageSync('memberinfo');
 				let shopcar = this.shopcar;

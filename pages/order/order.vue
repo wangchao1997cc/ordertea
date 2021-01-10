@@ -27,15 +27,16 @@
 			</view>
 			<view class="order-num">
 				{{item.takeMealSn?'取餐号：'+item.takeMealSn:item.statusName}}
-				
 			</view>
 		</view>
+		<nodata :conf="config"></nodata>
 	</view>
 </template>
 
 <script>
 	import api from '../../WXapi/api.js'
 	import {goOrderDeatails} from '../../utils/goToPage.js'
+	import nodata from '../../components/nodata.vue';
 	export default {
 		data() {
 			return {
@@ -47,6 +48,18 @@
 		onLoad() {
 			this.getOrderList();   //获取订单数据
 		},
+		computed:{
+			config() {
+				let nodatashow = true;
+				if (!this.orderList.length) {
+					nodatashow = false;
+				}
+				return {
+					nodatashow: nodatashow,
+					pageType: 'order'
+				}
+			},
+		},
 		//页面触底加载分页
 		onReachBottom: function() {
 			let that = this;
@@ -55,6 +68,9 @@
 			}
 			that.pageNow++;
 			that.getOrderList();
+		},
+		components:{
+			nodata
 		},
 		methods: {
 			//获取订单数据

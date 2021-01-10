@@ -19,13 +19,13 @@
 				添加新地址
 			</view>
 		</view>
-		<!-- <nodata :conf="config"></nodata> -->
+		<nodata :conf="config"></nodata>
 	</view>
 
 </template>
 <script>
 	const app = getApp();
-	// import nodata from '../../components/nodata.vue';
+	import nodata from '../../components/nodata.vue';
 	import api from '../../WXapi/api.js'
 	export default {
 		data() {
@@ -41,7 +41,7 @@
 		computed: {
 			config() {
 				let nodatashow = true;
-				if (!this.addressList.length) {
+				if (!this.addressList || !this.addressList.length) {
 					nodatashow = false;
 				}
 				return {
@@ -49,6 +49,9 @@
 					pageType: 'address'
 				}
 			},
+		},
+		components:{
+			nodata
 		},
 		onLoad(e) {
 			let that = this;

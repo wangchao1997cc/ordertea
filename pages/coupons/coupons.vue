@@ -28,6 +28,7 @@
 				</view>
 			</view>
 		</view>
+		<nodata :conf="config"></nodata>
 	</view>
 </template>
 
@@ -35,7 +36,8 @@
 	const app = getApp();
 	import jyfParser from '@/components/jyf-parser/jyf-parser'; //富文本组件
 	import couponlist from '../../components/couponlist.vue'
-	import api from '../../WXapi/api.js'
+	import api from '../../WXapi/api.js';
+	import nodata from '../../components/nodata.vue';
 	export default {
 		data() {
 			return {
@@ -51,7 +53,20 @@
 		},
 		components: {
 			couponlist,
-			jyfParser
+			jyfParser,
+			nodata,
+		},
+		computed:{
+			config() {
+				let nodatashow = true;
+				if (this.couponsObj.length && !this.couponsObj[this.currtab].length) {
+					nodatashow = false;
+				}
+				return {
+					nodatashow: nodatashow,
+					pageType: 'coupon'
+				}
+			},
 		},
 		onShareAppMessage(res) {
 			let that = this;
@@ -61,7 +76,6 @@
 					console.log('成功')
 				}
 			}
-			console.log(res)
 			if (res.from === 'button') { // 来自页面内分享按钮
 				data.path = '/pages/home/home?giveCardId='+that.memberinfo.id+'&ticketId='+that.choiceCoupons.id;
 				data.title = '我给你分享了一张' +"“"+ that.choiceCoupons.name+"”" + ',快来领取吧',

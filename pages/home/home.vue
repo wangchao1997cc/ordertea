@@ -79,7 +79,7 @@
 						<text>实付满{{shareCoupons.moneyRestriction}}元后就可以使用</text>
 					</view>
 					<view class="autho_btn" @click="receiveCouponsBtn">
-						领取优惠卷
+						{{memberinfo?'领取优惠券':'登陆/注册领取优惠券'}}
 					</view>
 				</view>
 			</view>
@@ -170,6 +170,10 @@
 			sildermine,
 			author,
 		},
+		// computed:{
+		// 	...mapState(['isLogin']),
+			
+		// },
 		async onLoad(options) {
 			uni.hideTabBar({});
 			if (!this.JSESSIONID) {
@@ -191,6 +195,10 @@
 			},
 			//点击领取优惠卷
 			async receiveCouponsBtn() {
+				let memberinfo = this.memberinfo;
+				if(!memberinfo){
+					return that.$refs.authorM.showPop();
+				}
 				let data = {
 					giveCardId: this.homeParams.giveCardId,
 					obtainCardId: this.memberinfo.id,
@@ -209,7 +217,11 @@
 				if (!that.isLogin) {
 					let userinfo = await refreshUserInfo(true);
 					if (!userinfo || !userinfo.phone) {
-						that.$refs.authorM.showPop();
+						if (that.homeParams && that.homeParams.giveCardId) {
+							that.receiveCoupons(); //领取优惠卷
+						}else{
+							that.$refs.authorM.showPop();
+						}
 					} else {
 						let memberinfo = await getMemberInfo(true);
 						that.integralarr[0].value = memberinfo.point;
@@ -233,6 +245,8 @@
 					if (res.code == 200) {
 						this.shareCoupons = res.data;
 						this.notAuth = true;
+					}else{
+						this.$msg.showToast(res.message)
 					}
 				}
 			},
@@ -240,7 +254,7 @@
 				let memberinfo = await getMemberInfo(true);
 				this.memberinfo = memberinfo;
 				if (that.homeParams && that.homeParams.giveCardId) {
-					that.receiveCoupons(); //领取优惠卷
+					that.receiveCouponsBtn(); //领取优惠卷
 				}
 			},
 			//跳转点单页，判断自取或外卖
