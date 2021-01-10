@@ -12,6 +12,9 @@
 			productPrimaryTypeName:null,   //广告的一级菜单名
 			businessinfo:null,  //积分商品信息
 			forhere:null,  //堂食
+			activeParams:null,   //推荐人参数
+			orderSuccess:false,   //下单成功清除购物车
+			exchangeSuccess:false, //兑换成功
 		},
 		onLaunch: async function() {},
 		onShow: function() {

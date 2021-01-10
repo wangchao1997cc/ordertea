@@ -1,10 +1,10 @@
 <template>
 	<view class="coupons-box">
-		<view class="coupons" v-for="(item,index) in coupons" :key="index">
+		<view class="coupons" v-for="(item,index) in coupons" :key="index" @click="checkCouponsDesc(item)">
 			<view class="coupons-l">
-				<view v-if="type!=1">
+				<!-- <view v-if="type!=1">
 					<text>{{item.amount}}</text><text>元</text>
-				</view>
+				</view> -->
 			</view>
 			<view class="coupons-r">
 				<view class="coupon-tit">
@@ -15,13 +15,16 @@
 				</view>
 				<view class="cou-footer">
 					<view class="cou-times">
-						<text>{{item.beginTime+' '+item.endTime}}</text>
+						<text>{{item.beginTime.slice(0,10) +'  		 '+item.endTime.slice(0,10)}}</text>
 					</view>
 					<view class="cou-btn" :class="{on:item.canUse==2}" @click="controlCoupons(item)">
 						{{type?(item.canUse==1?'去使用':'不可使用'):'查看使用限制'}}
 					</view>
 				</view>
 			</view>
+		</view>
+		<view class="">
+			
 		</view>
 	</view>
 </template>
@@ -52,6 +55,12 @@
 					}
 					app.globalData.orderinfo.ticketId = item.id;
 					uni.navigateBack({})
+				}
+			},
+			//查看优惠卷详情
+			checkCouponsDesc(item){
+				if(!this.type){
+					this.$emit('checkCouponsDesc',item)
 				}
 			}
 		}

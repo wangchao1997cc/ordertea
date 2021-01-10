@@ -51,8 +51,9 @@
 							mobile:userinfo.phone,
 							openId:this.$store.state.openid,
 						}
-						await userRegister(userdata);
-						this.$emit('loginSuccess',true);
+						let memberinfo = await userRegister(userdata);
+						uni.setStorageSync('memberinfo', memberinfo);
+						this.$emit('loginSuccess',memberinfo);
 					}
 				}
 			}

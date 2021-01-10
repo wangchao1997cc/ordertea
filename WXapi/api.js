@@ -282,12 +282,59 @@ const getCodeParams = (data, isloading) => {
 	return service_v('v4_3/cardCode/queryByCardNo' + backurl, 'get', data, isloading)
 }
 
+//裂变活动查询
+const fissionActive = (data, isloading) => {
+	return service_v('v4_3/activity/markting', 'post', data, isloading)
+}
+
+//推荐人的收益
+const restulActivity = (data, isloading) => {
+	return service_v('v4_3/activity/restul', 'post', data, isloading)
+}
+
+
+//活动详情及活动参与信息查询接口
+const activityDesc = (data, isloading) => {
+	return service_v('v4_3/activity/information', 'post', data, isloading)
+}
+
+//锁定分享的优惠卷
+const lockingCoupons = (data, isloading) => {
+	return service_v('v4_3/card/transfer/ticket/choice', 'post', data, isloading)
+}
+
+//兑换优惠卷
+const codeByTicket = (data, isloading) => {
+	return service_v('v4_3/ticket/codeByTicket', 'post', data, isloading)
+}
+
+//兑换优惠卷
+const confirmStutas = (data, isloading) => {
+	return service_v('v4_3/card/transfer/ticket/status', 'post', data, isloading)
+}
+
+//好友领取优惠卷
+const receiveCoupons = (data, isloading) => {
+	return service_v('v4_3/card/transfer/ticket/get', 'post', data, isloading)
+}
+
+
+
+
+
 
 
 
 
 
 module.exports = {
+	receiveCoupons:receiveCoupons,
+	confirmStutas:confirmStutas,
+	codeByTicket:codeByTicket,
+	lockingCoupons:lockingCoupons,
+	activityDesc:activityDesc,
+	fissionActive:fissionActive,
+	restulActivity:restulActivity,
 	getCodeParams:getCodeParams,
 	exchangeRecord:exchangeRecord,
 	completeOrder:completeOrder,

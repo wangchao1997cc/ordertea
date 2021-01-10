@@ -5,37 +5,48 @@
 				<image src="../../static/active/active_head.png"></image>
 			</view>
 			<view class="tips-cont">
-				<view class="cont-head">
+				<view class="not-login" v-if="!memberinfo">
+					您有 <text>8</text> 张优惠卷待领取
+				</view>
+				<view class="cont-head" v-else>
 					<view class="cont-item">
 						<image src="../../static/active/invitation_coupons.png"></image>
 						<text>获得优惠卷</text>
-						<text>100张</text>
+						<text>{{profitinfo.wxActivityReward.shareGiftTicketList.length || 0}}张</text>
 					</view>
 					<view class="cont-item">
 						<image src="../../static/active/invita_money.png"></image>
 						<text>实际收益</text>
-						<text>200.00元</text>
+						<text>{{profitinfo.earnings.orderMoneyEarnings || 0}}元</text>
 					</view>
 					<view class="cont-item">
 						<image src="../../static/active/invita_fir.png"></image>
 						<text>累计邀请</text>
-						<text>32位</text>
+						<text>{{profitinfo.earnings.invitationCount || 0}}位</text>
 					</view>
 				</view>
 			</view>
-			<button class="invitation-btn">立即邀请</button>
+			<view class="invitation-btn">
+				<button class="butt_item" v-if="memberinfo" open-type="share"></button>
+				<button v-else class="butt_item" open-type="getPhoneNumber" @getphonenumber="decryptPhoneNumber"></button>
+				{{memberinfo?'立即邀请':'立即领取'}}
+			</view>
+
 		</view>
-		<view class="invitation-tips invita-list">
+		<view class="invitation-tips invita-list" v-if="memberinfo">
 			<view class="invita-list-tit">
 				邀请记录
 			</view>
 			<scroll-view class="list-box" scroll-y>
-				<view class="firends-item">
+				<view class="nodata" v-if="!activeDesc.sharePeopleistList.length">
+					暂无邀请信息，快去邀请好友赚取福利吧～
+				</view>
+				<view class="firends-item" v-for="(item,index) in activeDesc.sharePeopleistList" :key="index">
 					<view class="user-pic">
-						<image></image>
-						<text>张嘻嘻</text>
+						<image :src="item.headUrl || '../../static/mohead.png'"></image>
+						<text>{{item.name}}</text>
 					</view>
-					<text class="span">3天前</text>
+					<text class="span">{{item.created}}</text>
 				</view>
 			</scroll-view>
 		</view>
@@ -53,16 +64,144 @@
 			</view>
 		</view>
 		<view class="blank"></view>
+		<author ref="authorM" @loginSuccess="loginSuccess"></author>
 	</view>
 </template>
 
 <script>
+	const app = getApp();
+	import api from '../../WXapi/api.js';
+	import author from '../../components/author.vue'
+	import {
+		refreshUserInfo,
+		userRegister,
+		ajaxUserLogin,
+		getMemberInfo
+	} from '../../utils/publicApi.js'
+	import {
+		mapState,
+		mapMutations
+	} from "vuex";
 	export default {
 		data() {
-			return {}
+			return {
+				memberinfo: null,
+				activityId: null, //活动id
+				profitinfo: {}, //自己的收益
+				activeDesc: {}, //活动详情
+			}
 		},
 		methods: {
 
+		},
+		onShareAppMessage(res) {
+			let data = {
+				path:'/pages/active/active'
+			}
+			if (res.from === 'button') { // 来自页面内分享按钮
+				data.path = '/pages/active/active?recommendedId='+this.memberinfo.id+'&activityId='+this.activityId;
+				data.title = '快来和我一起领取超多福利吧～',
+				data.imageUrl = this.activeDesc.imageUrl,
+				data.bgImgUrl = this.activeDesc.shareImageUrl
+			}
+			return data
+		},
+		computed: {
+			...mapState(['JSESSIONID', 'isLogin']),
+		},
+		components: {
+			author,
+		},
+		async onLoad(options) {
+			let memberinfo = uni.getStorageSync('memberinfo');
+			this.memberinfo = memberinfo;
+			if (options) {
+				app.globalData.activeParams = options; //保存推荐人id
+			}
+			if (!this.JSESSIONID) {
+				await ajaxUserLogin(); //先进行登录
+				// this.juideUserInfo(); //判断用户是否登录
+			}
+			let activityId = await this.getActiveInfo();
+			this.activityId = activityId;
+			if (memberinfo) {
+				this.cheackProfit(); //查看自己的收益
+				this.activeDescInfo(); //查询活动详情信息
+			}
+			// this.juideUserInfo(); //判断用户是否登录
+		},
+		methods: {
+			// async juideUserInfo() {
+			// 	if (!this.isLogin) {
+			// 		let userinfo = await refreshUserInfo(true);
+			// 		if (!userinfo || !userinfo.phone) {
+			// 			this.$refs.authorM.showPop();
+			// 		} else {
+			// 			this.cheackProfit(); //查看自己的收益
+			// 		}
+			// 	}
+			// },
+			//查询活动详情信息
+			async activeDescInfo() {
+				let data = {
+					cardId: this.memberinfo.id,
+					activityId: this.activityId
+				};
+				let res = await api.activityDesc(data);
+				if (res.code == 200) {
+					this.activeDesc = res.data;
+				}
+				console.log('活动详情', res)
+			},
+			async getActiveInfo(bol) {
+				let data = {};
+				if (this.memberinfo) {
+					data.cardId = this.memberinfo.id;
+				}
+				let res = await api.fissionActive(data);
+				if (res.code == 200) {
+					return res.data.id;
+				}
+			},
+			//查看自己的收益
+			async cheackProfit() {
+				let data = {
+					cardId: this.memberinfo.id,
+					activityId: this.activityId,
+				}
+				let res = await api.restulActivity(data);
+				if (res.code == 200) {
+					this.profitinfo = res.data
+				}
+			},
+			//新用户注册
+			async decryptPhoneNumber(res) {
+				if (res.detail.errMsg == 'getPhoneNumber:ok') {
+					let data = {
+						encryptedData: encodeURI(res.detail.encryptedData).replace(/\+/g, '%2B'),
+						iv: encodeURI(res.detail.iv).replace(/\+/g, '%2B'),
+					}
+					let result = await api.phoneLogin(data, true, true);
+					if (result && result.status == 1) {
+						this.$msg.showToast('登录成功');
+						this.$store.commit('changeLogin', true);
+						let userinfo = await refreshUserInfo(true); //刷新用户信息
+						let userdata = {
+							mobile: userinfo.phone,
+							openId: this.$store.state.openid,
+						}
+						let memberinfo = await userRegister(userdata);
+						this.memberinfo = memberinfo;
+						this.cheackProfit();  //查看自己的收益
+						this.activeDescInfo();   //获取活动详情
+						uni.setStorageSync('memberinfo', memberinfo);
+					}else{
+						this.$msg.showToast(result.msg);
+						let memberinfo = await getMemberInfo(true);
+						this.memberinfo = memberinfo;
+					}
+				}
+			},
 		}
 	}
 </script>
@@ -105,6 +244,16 @@
 			margin-top: 157upx;
 			margin-left: 60upx;
 
+			.not-login {
+				margin-top: 85upx;
+				font-size: 35upx;
+				text-align: center;
+
+				text {
+					color: rgba(255, 97, 50, 1);
+				}
+			}
+
 			.cont-head {
 				width: 100%;
 				display: flex;
@@ -145,7 +294,6 @@
 		}
 
 		.invitation-btn {
-			@extend %clear-button;
 			@include rect(575upx, 88upx);
 			border-radius: 44upx;
 			margin: 45upx auto 60upx auto;
@@ -153,6 +301,15 @@
 			@include text-allcenter(88upx);
 			color: $text-white;
 			font-size: 32upx;
+			position: relative;
+
+			.butt_item {
+				position: absolute;
+				top: 0upx;
+				left: 0upx;
+				@include rect(575upx, 88upx);
+				opacity: 0;
+			}
 		}
 
 	}
@@ -172,6 +329,13 @@
 		@include box-padding(50upx);
 		max-height: 600upx;
 		margin-top: 65upx;
+
+		.nodata {
+			font-size: 26upx;
+			color: #999999;
+			text-align: center;
+			margin-bottom: 50upx;
+		}
 
 		.firends-item {
 			width: 100%;
@@ -205,7 +369,8 @@
 		font-size: 25upx;
 		color: rgba(138, 138, 138, 1);
 	}
-	.blank{
+
+	.blank {
 		height: 150upx;
 	}
 </style>

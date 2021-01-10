@@ -65,6 +65,25 @@
 		</view>
 		<view class="blank"></view>
 		<author ref="authorM" @loginSuccess="loginSuccess"></author>
+		<view class="mask" v-if="notAuth">
+			<view class="author-info">
+				<image class="pop-top" src="../../static/POP_top.png"></image>
+				<view class="home-id">
+					<image src="../../static/active/invitation_coupons.png"></image>
+				</view>
+				<view class="juide-cont">
+					<view class="title">
+						{{shareCoupons.name}}
+					</view>
+					<view class="juide-content">
+						<text>实付满{{shareCoupons.moneyRestriction}}元后就可以使用</text>
+					</view>
+					<view class="autho_btn" @click="receiveCouponsBtn">
+						领取优惠卷
+					</view>
+				</view>
+			</view>
+		</view>
 	</view>
 </template>
 
@@ -93,17 +112,20 @@
 	import {
 		goUserAddress
 	} from '../../utils/goToPage.js'
+	import api from '../../WXapi/api.js';
 	export default {
 		data() {
 			return {
+				notAuth: false,
 				progressbar: '60%',
 				title: 'Hello',
 				sliderConfig: {
 					progresswidth: '272upx',
 					progressbar: '50%',
 				},
-				memberinfo:null,  //用户信息
+				memberinfo: null, //用户信息
 				bannerData: {}, //轮播图数据
+				shareCoupons: null, //分享的优惠卷
 				// config: {
 				// 	slideHeight: 400,
 				// 	hiddentit: false,
@@ -139,17 +161,22 @@
 						value: '',
 						bg: '../../static/homepage/home_card.png',
 					},
-				]
+
+				],
+				homeParams: {},
 			}
 		},
 		components: {
 			sildermine,
 			author,
 		},
-		async onLoad() {
+		async onLoad(options) {
 			uni.hideTabBar({});
 			if (!this.JSESSIONID) {
 				await ajaxUserLogin(); //先进行登录
+			}
+			if (options.giveCardId) {
+				this.homeParams = options;
 			}
 			uni.showTabBar({})
 			this.init(); //归纳函数
@@ -162,22 +189,59 @@
 				this.getBannerList();
 				this.juideUserInfo(); //判断用户是否登录
 			},
+			//点击领取优惠卷
+			async receiveCouponsBtn() {
+				let data = {
+					giveCardId: this.homeParams.giveCardId,
+					obtainCardId: this.memberinfo.id,
+					ticketId: this.homeParams.ticketId,
+				}
+				let res = await api.receiveCoupons(data);
+				this.notAuth = false
+				if (res.code == 200) {
+					this.$msg.showToast('领取成功')
+				} else {
+					this.$msg.showToast(res.message)
+				}
+			},
 			async juideUserInfo() {
-				if (!this.isLogin) {
+				let that = this;
+				if (!that.isLogin) {
 					let userinfo = await refreshUserInfo(true);
 					if (!userinfo || !userinfo.phone) {
-						this.$refs.authorM.showPop();
-					}else{
+						that.$refs.authorM.showPop();
+					} else {
 						let memberinfo = await getMemberInfo(true);
-						this.integralarr[0].value = memberinfo.point;
-						this.integralarr[3].value = memberinfo.coupons.length+'张';
-						this.memberinfo = memberinfo;
+						that.integralarr[0].value = memberinfo.point;
+						that.integralarr[3].value = memberinfo.coupons.length + '张';
+						that.memberinfo = memberinfo;
+						if (that.homeParams && that.homeParams.giveCardId) {
+							that.receiveCoupons(); //领取优惠卷
+						}
 					}
 				}
 			},
-			async loginSuccess(val){
+			//领取优惠卷
+			async receiveCoupons() {
+				let homeParams = this.homeParams;
+				if (this.memberinfo.id != homeParams.giveCardId) {
+					let data = {
+						ticketId: homeParams.ticketId,
+						giveCardId: homeParams.giveCardId,
+					}
+					let res = await api.confirmStutas(data);
+					if (res.code == 200) {
+						this.shareCoupons = res.data;
+						this.notAuth = true;
+					}
+				}
+			},
+			async loginSuccess(val) {
 				let memberinfo = await getMemberInfo(true);
 				this.memberinfo = memberinfo;
+				if (that.homeParams && that.homeParams.giveCardId) {
+					that.receiveCoupons(); //领取优惠卷
+				}
 			},
 			//跳转点单页，判断自取或外卖
 			jumpMenu(type) {
@@ -204,44 +268,44 @@
 				jumpAdvertise(item)
 			},
 			//跳转充值
-			jumpWallet(){
-				if(this.memberinfo){
+			jumpWallet() {
+				if (this.memberinfo) {
 					uni.navigateTo({
-						url:'../wallet/wallet'
+						url: '../wallet/wallet'
 					})
 				}
 			},
 			//跳转各个分类页面
-			jumpClissIfy(index){
-				if(!this.memberinfo){
+			jumpClissIfy(index) {
+				if (!this.memberinfo) {
 					return;
 				}
-				switch(index){
+				switch (index) {
 					case 0:
-					uni.switchTab({
-						url:'../mine/mine'
-					})
-					break;
+						uni.switchTab({
+							url: '../mine/mine'
+						})
+						break;
 					case 1:
-					uni.navigateTo({
-						url:'../shopping/shopping'
-					})
-					break;
+						uni.navigateTo({
+							url: '../shopping/shopping'
+						})
+						break;
 					case 2:
-					uni.switchTab({
-						url:'../ordermenu/ordermenu'
-					})
-					break;
+						uni.switchTab({
+							url: '../ordermenu/ordermenu'
+						})
+						break;
 					case 3:
-					uni.navigateTo({
-						url: '../coupons/coupons'
-					})
-					break;
+						uni.navigateTo({
+							url: '../coupons/coupons'
+						})
+						break;
 					case 4:
-					// uni.switchTab({
-					// 	url:'../mine/mine'
-					// })
-					break;
+						// uni.switchTab({
+						// 	url:'../mine/mine'
+						// })
+						break;
 				}
 			}
 		}
@@ -251,6 +315,74 @@
 <style lang="scss">
 	.blank {
 		height: 100upx;
+	}
+
+	.mask {
+		@extend %all-mask;
+
+		.author-info {
+
+			width: 580upx;
+			position: absolute;
+			top: 50%;
+			transform: translateY(-50%);
+			left: 85upx;
+			background-color: $bg-white;
+			border-radius: $radius-md;
+			position: relative;
+			// @include box-padding(32upx);
+			padding-top: 1upx;
+
+			.pop-top {
+				position: absolute;
+				@include rect(260upx, 56upx);
+				top: -52upx;
+				left: 160upx;
+			}
+		}
+
+		.home-id {
+			@include rect(100%, 140upx);
+			margin: 40upx auto;
+			display: flex;
+			justify-content: center;
+			border-bottom: 1upx #E2E2E2 solid;
+
+			image {
+				@include rect(88upx, 88upx);
+			}
+		}
+
+		.juide-cont {
+			width: 100%;
+			@include box-padding(32upx);
+			padding-bottom: 1upx;
+
+			.title {
+				font-size: 34upx;
+				text-align: center;
+			}
+
+			.juide-content {
+				text-align: center;
+				margin-top: 30upx;
+				font-size: 28upx;
+				line-height: 46upx;
+				color: #B5B5B5;
+
+			}
+
+			.autho_btn {
+				@extend %clear-button;
+				font-size: 28upx;
+				@include rect(300upx, 68upx);
+				border-radius: $radius-md;
+				background-color: $main-color;
+				@include text-allcenter(68upx);
+				color: $text-white;
+				margin: 50upx auto;
+			}
+		}
 	}
 
 	.content {

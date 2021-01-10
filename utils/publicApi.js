@@ -1,10 +1,12 @@
 import api from '../WXapi/api.js'
 import store from '../store/store.js'
+const app = getApp();
 
 //刷新用户信息
 export const refreshUserInfo = async callback => {
 	let res = await api.getUserInfo();
 	if (res && res.status == 1) {
+		console.log(res.data)
 		if (res.data.phone) {
 			store.commit('changeLogin', res.data.phone);
 			getMemberInfo();
@@ -23,6 +25,7 @@ export const getMemberInfo = async callback => {
 		mobile: store.state.isLogin,
 	}
 	let res = await api.getMemberInfo(data);
+	
 	if (res && res.code == 200) {
 		if(!store.state.cardNo){
 			store.commit('setCardNo', res.data[0].cardNo);
@@ -37,9 +40,15 @@ export const getMemberInfo = async callback => {
 
 //用户注册
 export const userRegister = async data => {
+	let activeParams = app.globalData.activeParams;
+	if(activeParams){
+		data.recommendedId = activeParams.recommendedId;
+		data.activityId = activeParams.activityId;
+	}
 	let res = await api.vUserLogin(data);
 	if (res && res.code == 200) {
 		uni.setStorageSync('memberinfo', res.data[0]);
+		return res.data[0];
 	}
 }
 

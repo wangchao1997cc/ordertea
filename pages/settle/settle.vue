@@ -260,7 +260,6 @@
 			},
 			async getWxaSubscribeTemplates() {
 				let res = await api.getWxaSubscribeTemplates({});
-				console.log(res);
 			},
 			//切换餐具数量
 			switchWrae(index, item) {
@@ -393,7 +392,7 @@
 					longitude: that.location.longitude,
 					latitude: that.location.latitude,
 					menuId: orderparams.menuId,
-					type: that.$store.state.businessType[0],
+					type: type,
 					selfGetTime: that.serviceTime,
 					payType: 2,
 					name: interest.card.name,
@@ -406,6 +405,9 @@
 					couponId: 0,
 					peopleNum: 0,
 				}
+				// if(type!=3){
+				// 	params.
+				// }
 				let tit = `是否前往【${storeInfo.storeName}】自提`;
 				if (type == 1) {
 					let address = this.address;
@@ -452,16 +454,13 @@
 						params.products = products;
 						params.memberPreferentials = memberPreferentials;
 						// params = JSON.parse(JSON.stringify(params))
-
-
-
 						let res = await api.placeOrder(params);
 						uni.hideLoading()
 						if (res.status == 1) {
+							app.globalData.orderSuccess = true;
 							this.getOrderDetail(res.data); //获取订单详情
 						} else {
 							this.$msg.showToast(res.msg);
-
 						}
 					}
 					uni.hideLoading()

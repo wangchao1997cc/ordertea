@@ -443,7 +443,6 @@
 			}
 		},
 		async onLoad(options) {
-
 			uni.hideTabBar({});
 			if (!this.JSESSIONID) {
 				await ajaxUserLogin(); //先进行登录
@@ -469,6 +468,10 @@
 				if (!that.nearList.length) {
 					that.goToChoseCity();
 				}
+			}
+			if(app.globalData.orderSuccess){  //下单成功
+				that.shopcar = []; //清空购物车
+				app.globalData.orderSuccess = false;
 			}
 			let chooseAddress = uni.getStorageSync('selectAddress');
 			if (chooseAddress) { //有地址

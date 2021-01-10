@@ -2,21 +2,39 @@
 	"pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
 		
 		{
+			"path": "pages/home/home",
+			"style": {
+				"navigationStyle": "custom"
+			}
+		},
+		{
+		    "path" : "pages/exchangecoupons/exchangecoupons",
+		    "style" :                                                                                    
+		    {
+		        "navigationBarTitleText": "兑换优惠卷",
+		        "enablePullDownRefresh": false
+		    }
+		},
+		{
 			"path": "pages/ordermenu/ordermenu",
 			"style": {
 				"navigationBarTitleText": "点餐"
 			}
 		},
 		{
+			"path": "pages/active/active",
+			"style": {
+				"navigationBarTitleText": "邀请活动",
+				"navigationBarBackgroundColor": "#A8D732",
+				"navigationBarTextStyle": "white"
+			}
+		
+		},
+		{
 		    "path" : "pages/blankpage/blankpage",
 		    "style" : {}
 		},
-		{
-			"path": "pages/home/home",
-			"style": {
-				"navigationStyle": "custom"
-			}
-		},
+		
 		{
 		    "path" : "pages/membercode/membercode",
 		    "style" : {
@@ -80,15 +98,7 @@
 				"navigationBarTitleText": "个人信息"
 			}
 		},
-		{
-			"path": "pages/active/active",
-			"style": {
-				"navigationBarTitleText": "邀请活动",
-				"navigationBarBackgroundColor": "#A8D732",
-				"navigationBarTextStyle": "white"
-			}
-
-		},
+		
 		{
 			"path": "pages/wallet/wallet",
 			"style": {
@@ -174,6 +184,7 @@
 		}
         
        
+        
     ],
 	"globalStyle": {
 		"navigationBarTextStyle": "black",
