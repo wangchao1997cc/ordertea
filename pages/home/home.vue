@@ -65,6 +65,7 @@
 		</view>
 		<view class="blank"></view>
 		<author ref="authorM" @loginSuccess="loginSuccess"></author>
+		<!-- 好友邀请模块 -->
 		<view class="mask" v-if="notAuth">
 			<view class="author-info">
 				<image class="pop-top" src="../../static/POP_top.png"></image>
@@ -84,6 +85,23 @@
 				</view>
 			</view>
 		</view>
+		<!-- 天将红包模块 -->
+		<view class="mask" v-if="redRewardInfo">
+			<view class="reward-box">
+				<view class="reward-head-box" :style="{backgroundImage:'url('+redRewardInfo.imageUrl +')'}">
+					<view class="reward-tit">
+						天将红包
+					</view>
+					<scroll-view class="reward-item-box" scroll-y="true">
+						<view class="reward-item" v-for="(item,index) in rewardarr">{{item}}</view>
+					</scroll-view>
+					<view class="recive-btn" @click="receiveReward">
+						{{memberinfo?'一键领取':'登陆/注册一键领取'}}
+					</view>
+				</view>
+			</view>
+		</view>
+
 	</view>
 </template>
 
@@ -116,7 +134,8 @@
 	export default {
 		data() {
 			return {
-				notAuth: false,
+				rewardarr: [], //奖励数组
+				notAuth: false, //好友邀请幕布
 				progressbar: '60%',
 				title: 'Hello',
 				sliderConfig: {
@@ -164,6 +183,7 @@
 
 				],
 				homeParams: {},
+				redRewardInfo: null, //天将红包信息
 			}
 		},
 		components: {
@@ -172,7 +192,7 @@
 		},
 		// computed:{
 		// 	...mapState(['isLogin']),
-			
+
 		// },
 		async onLoad(options) {
 			uni.hideTabBar({});
@@ -193,10 +213,28 @@
 				this.getBannerList();
 				this.juideUserInfo(); //判断用户是否登录
 			},
+			//领取天降红包
+			async receiveReward() {
+				let memberinfo = this.memberinfo;
+				if (!memberinfo) {
+					return that.$refs.authorM.showPop();
+				}
+				let data = {
+					cardId: this.memberinfo.id,
+					activityId: this.redRewardInfo.id,
+				}
+				let res = await api.receiveReward(data);
+				if (res.code == 200) {
+					this.redRewardInfo = null;
+					this.$msg.showToast('恭喜您领取成功～');
+				} else {
+					this.$msg.showToast(res.message);
+				}
+			},
 			//点击领取优惠卷
 			async receiveCouponsBtn() {
 				let memberinfo = this.memberinfo;
-				if(!memberinfo){
+				if (!memberinfo) {
 					return that.$refs.authorM.showPop();
 				}
 				let data = {
@@ -207,7 +245,7 @@
 				let res = await api.receiveCoupons(data);
 				this.notAuth = false
 				if (res.code == 200) {
-					this.$msg.showToast('领取成功')
+					this.$msg.showToast('领取成功～')
 				} else {
 					this.$msg.showToast(res.message)
 				}
@@ -219,10 +257,10 @@
 					if (!userinfo || !userinfo.phone) {
 						if (that.homeParams && that.homeParams.giveCardId) {
 							that.receiveCoupons(); //领取优惠卷
-						}else{
+						} else {
 							that.$refs.authorM.showPop();
 						}
-						that.redReaward();    //查询红包奖励
+						that.redReaward(); //查询红包奖励
 					} else {
 						let memberinfo = await getMemberInfo(true);
 						that.integralarr[0].value = memberinfo.point;
@@ -231,18 +269,26 @@
 						if (that.homeParams && that.homeParams.giveCardId) {
 							that.receiveCoupons(); //领取优惠卷
 						}
-						that.redReaward(memberinfo.id); 
+						that.redReaward(memberinfo.id);
 					}
 				}
 			},
 			//查询红包奖励
-			async redReaward(id){
+			async redReaward(id) {
 				let data = {}
-				if(id){
+				if (id) {
 					data.cardId = id
 				}
 				let res = await api.redRewardActive(data);
-				console.log("天将红包",res)
+				if (res.code == 200) {
+					if (res.data[0]) {
+						this.redRewardInfo = res.data[0];
+						let rewardarr = res.data[0].ticketName.split(',');
+						this.rewardarr = rewardarr;
+						
+						console.log('奖励数组', rewardarr)
+					}
+				}
 			},
 			//领取优惠卷
 			async receiveCoupons() {
@@ -256,7 +302,7 @@
 					if (res.code == 200) {
 						this.shareCoupons = res.data;
 						this.notAuth = true;
-					}else{
+					} else {
 						this.$msg.showToast(res.message)
 					}
 				}
@@ -264,6 +310,9 @@
 			async loginSuccess(val) {
 				let memberinfo = await getMemberInfo(true);
 				this.memberinfo = memberinfo;
+				if (this.redRewardInfo) {
+					return this.receiveReward();
+				}
 				if (that.homeParams && that.homeParams.giveCardId) {
 					that.receiveCouponsBtn(); //领取优惠卷
 				}
@@ -342,6 +391,56 @@
 		height: 100upx;
 	}
 
+	.reward-box {
+		position: absolute;
+		top: 20%;
+		left: 75upx;
+		width: 600upx;
+		background-color: $bg-white;
+		border-radius: $radius-md;
+		overflow: hidden;
+		z-index: 29;
+
+		.reward-head-box {
+			height: 720upx;
+			background-size: cover;
+			@include box-padding(28upx);
+			padding-top: 1upx;
+
+			.reward-tit {
+				font-weight: 700;
+				margin-top: 36upx;
+				text-align: center;
+				font-size: 34upx;
+			}
+
+			.reward-item-box {
+				@include rect(100%, 440upx);
+				margin-top: 60upx;
+
+				.reward-item {
+					@include rect(100%, 100upx);
+					line-height: 88upx;
+					border-radius: $radius-md;
+					background-color: $bg-white;
+					@include box-padding(30upx);
+					margin-bottom: 40upx;
+
+				}
+			}
+
+			.recive-btn {
+				@include rect(400upx, 88upx);
+				background-color: $main-color;
+				@include text-allcenter(88upx);
+				color: $text-white;
+				border-radius: 44upx;
+				margin: 20upx auto;
+
+			}
+		}
+	}
+
 	.mask {
 		@extend %all-mask;
 
@@ -357,6 +456,7 @@
 			position: relative;
 			// @include box-padding(32upx);
 			padding-top: 1upx;
+			z-index: 9;
 
 			.pop-top {
 				position: absolute;

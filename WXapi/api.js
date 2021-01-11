@@ -323,16 +323,15 @@ const redRewardActive = (data, isloading) => {
 	return service_v('v4_3/find/ticket/activity', 'post', data, isloading)
 }
 
-
-
-
-
-
-
+//领取天将红包
+const receiveReward = (data, isloading) => {
+	return service_v('v4_3/wxActivity/exchange', 'post', data, isloading)
+}
 
 
 
 module.exports = {
+	receiveReward:receiveReward,
 	redRewardActive:redRewardActive,
 	receiveCoupons:receiveCoupons,
 	confirmStutas:confirmStutas,

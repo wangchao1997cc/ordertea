@@ -1,6 +1,14 @@
 {
 	"pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
+		{
+			"path": "pages/active/active",
+			"style": {
+				"navigationBarTitleText": "邀请活动",
+				"navigationBarBackgroundColor": "#A8D732",
+				"navigationBarTextStyle": "white"
+			}
 		
+		},
 		{
 			"path": "pages/home/home",
 			"style": {
@@ -21,15 +29,7 @@
 				"navigationBarTitleText": "点餐"
 			}
 		},
-		{
-			"path": "pages/active/active",
-			"style": {
-				"navigationBarTitleText": "邀请活动",
-				"navigationBarBackgroundColor": "#A8D732",
-				"navigationBarTextStyle": "white"
-			}
 		
-		},
 		
 		{
 		    "path" : "pages/membercode/membercode",

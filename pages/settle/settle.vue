@@ -175,6 +175,7 @@
 				location: {}, //用户位置信息
 				address: null, //用户地址
 				forhere:null,  //堂食
+				templateIds:null,  //微信订阅消息
 			};
 		},
 		onLoad(options) {
@@ -260,6 +261,10 @@
 			},
 			async getWxaSubscribeTemplates() {
 				let res = await api.getWxaSubscribeTemplates({});
+				if(res.status==1){
+					this.templateIds = res.data.templateIds;
+				}
+				console.log('微信模版消息',res)
 			},
 			//切换餐具数量
 			switchWrae(index, item) {
@@ -453,6 +458,9 @@
 						})
 						params.products = products;
 						params.memberPreferentials = memberPreferentials;
+						if(that.type==3){
+							await that.requestSubscribeMessage();
+						}
 						// params = JSON.parse(JSON.stringify(params))
 						let res = await api.placeOrder(params);
 						uni.hideLoading()
@@ -466,6 +474,22 @@
 					uni.hideLoading()
 				}, '订单确认后无法更改', tit)
 			},
+			requestSubscribeMessage(){
+				return new Promise((result,ret) => {
+					uni.requestSubscribeMessage({
+					  tmplIds: this.templateIds,
+					  success(res){
+						  console.log(res)
+					  },
+					  complete (res) {
+						  console.log(res)
+						  result()
+					  }
+					})
+				})
+			},
+			
+			
 			//获取订单详情
 			async getOrderDetail(orderid) {
 				let data = {

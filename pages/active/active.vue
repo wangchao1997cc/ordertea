@@ -55,12 +55,7 @@
 				活动规则
 			</view>
 			<view class="rules-desc">
-				<text>
-					请您务必审慎阅读、充分理解本协议、预付卡章程及隐私权政策各条款内容,特别是免除或限制责任的相应条款,并选择接受或不接受。免除或限制责任条款可能以加粗形式提示您注意。除非您已阅读井接受本协议及预付卡章程所有条款,否则您将无法使用会员服务。您成功注册成为会员,即视为您已阅读并同意受本协议、预付卡章程、隐私权政策的约束。
-					请您务必审慎阅读、充分理解本协议、预付卡章程及隐私权政策各条款内容,特别是免除或限制责任的相应条款,并选择接受或不接受。免除或限制责任条款可能以加粗形式提示您注意。除非您已阅读井接受本协议及预付卡章程所有条款,否则您将无法使用会员服务。您成功注册成为会员,即视为您已阅读并同意受本协议、预付卡章程、隐私权政策的约束。
-					请您务必审慎阅读、充分理解本协议、预付卡章程及隐私权政策各条款内容,特别是免除或限制责任的相应条款,并选择接受或不接受。免除或限制责任条款可能以加粗形式提示您注意。除非您已阅读井接受本协议及预付卡章程所有条款,否则您将无法使用会员服务。您成功注册成为会员,即视为您已阅读并同意受本协议、预付卡章程、隐私权政策的约束。
-					请您务必审慎阅读、充分理解本协议、预付卡章程及隐私权政策各条款内容,特别是免除或限制责任的相应条款,并选择接受或不接受。免除或限制责任条款可能以加粗形式提示您注意。除非您已阅读井接受本协议及预付卡章程所有条款,否则您将无法使用会员服务。您成功注册成为会员,即视为您已阅读并同意受本协议、预付卡章程、隐私权政策的约束。
-				</text>
+				<jyf-parser :html="activeinfo.remark" selectable="true"></jyf-parser>
 			</view>
 		</view>
 		<view class="blank"></view>
@@ -72,6 +67,7 @@
 	const app = getApp();
 	import api from '../../WXapi/api.js';
 	import author from '../../components/author.vue'
+	import jyfParser from '@/components/jyf-parser/jyf-parser'; //富文本组件
 	import {
 		refreshUserInfo,
 		userRegister,
@@ -89,6 +85,7 @@
 				activityId: null, //活动id
 				profitinfo: {}, //自己的收益
 				activeDesc: {}, //活动详情
+				activeinfo:{},  //活动信息
 			}
 		},
 		methods: {
@@ -96,13 +93,13 @@
 		},
 		onShareAppMessage(res) {
 			let data = {
-				path:'/pages/active/active'
+				path: '/pages/active/active'
 			}
 			if (res.from === 'button') { // 来自页面内分享按钮
-				data.path = '/pages/active/active?recommendedId='+this.memberinfo.id+'&activityId='+this.activityId;
+				data.path = '/pages/active/active?recommendedId=' + this.memberinfo.id + '&activityId=' + this.activityId;
 				data.title = '快来和我一起领取超多福利吧～',
-				data.imageUrl = this.activeDesc.imageUrl,
-				data.bgImgUrl = this.activeDesc.shareImageUrl
+					data.imageUrl = this.activeDesc.imageUrl,
+					data.bgImgUrl = this.activeDesc.shareImageUrl
 			}
 			return data
 		},
@@ -111,6 +108,7 @@
 		},
 		components: {
 			author,
+			jyfParser,
 		},
 		async onLoad(options) {
 			let memberinfo = uni.getStorageSync('memberinfo');
@@ -124,6 +122,7 @@
 			}
 			let activityId = await this.getActiveInfo();
 			this.activityId = activityId;
+			console.log(1111, this.activityId)
 			if (memberinfo) {
 				this.cheackProfit(); //查看自己的收益
 				this.activeDescInfo(); //查询活动详情信息
@@ -159,7 +158,9 @@
 					data.cardId = this.memberinfo.id;
 				}
 				let res = await api.fissionActive(data);
+				console.log(res)
 				if (res.code == 200) {
+					this.activeinfo = res.data;
 					return res.data.id;
 				}
 			},
@@ -192,10 +193,10 @@
 						}
 						let memberinfo = await userRegister(userdata);
 						this.memberinfo = memberinfo;
-						this.cheackProfit();  //查看自己的收益
-						this.activeDescInfo();   //获取活动详情
+						this.cheackProfit(); //查看自己的收益
+						this.activeDescInfo(); //获取活动详情
 						uni.setStorageSync('memberinfo', memberinfo);
-					}else{
+					} else {
 						this.$msg.showToast(result.msg);
 						let memberinfo = await getMemberInfo(true);
 						this.memberinfo = memberinfo;
