@@ -318,6 +318,11 @@ const receiveCoupons = (data, isloading) => {
 	return service_v('v4_3/card/transfer/ticket/get', 'post', data, isloading)
 }
 
+//查询天将红包活动
+const redRewardActive = (data, isloading) => {
+	return service_v('v4_3/find/ticket/activity', 'post', data, isloading)
+}
+
 
 
 
@@ -328,6 +333,7 @@ const receiveCoupons = (data, isloading) => {
 
 
 module.exports = {
+	redRewardActive:redRewardActive,
 	receiveCoupons:receiveCoupons,
 	confirmStutas:confirmStutas,
 	codeByTicket:codeByTicket,

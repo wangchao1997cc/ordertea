@@ -30,10 +30,6 @@
 			}
 		
 		},
-		{
-		    "path" : "pages/blankpage/blankpage",
-		    "style" : {}
-		},
 		
 		{
 		    "path" : "pages/membercode/membercode",

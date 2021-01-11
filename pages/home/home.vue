@@ -222,6 +222,7 @@
 						}else{
 							that.$refs.authorM.showPop();
 						}
+						that.redReaward();    //查询红包奖励
 					} else {
 						let memberinfo = await getMemberInfo(true);
 						that.integralarr[0].value = memberinfo.point;
@@ -230,8 +231,18 @@
 						if (that.homeParams && that.homeParams.giveCardId) {
 							that.receiveCoupons(); //领取优惠卷
 						}
+						that.redReaward(memberinfo.id); 
 					}
 				}
+			},
+			//查询红包奖励
+			async redReaward(id){
+				let data = {}
+				if(id){
+					data.cardId = id
+				}
+				let res = await api.redRewardActive(data);
+				console.log("天将红包",res)
 			},
 			//领取优惠卷
 			async receiveCoupons() {

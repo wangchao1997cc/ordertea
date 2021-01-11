@@ -32,15 +32,4 @@
 	page {
 		background: #F8F8FA;
 	}
-	.el-table td,
-	.el-table th.is-leaf {
-	
-	  border-bottom: 1px solid #EBEEF5;
-	  border-right: 1px solid #EBEEF5;
-	}
-	
-	.el-table {
-	  border-left: 1px solid #EBEEF5;
-	  border-top: 1px solid #EBEEF5;
-	}
 </style>
