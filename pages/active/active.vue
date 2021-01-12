@@ -6,13 +6,14 @@
 			</view>
 			<view class="tips-cont">
 				<view class="not-login" v-if="!memberinfo">
-					您有 <text>8</text> 张优惠卷待领取
+					<text v-if="couponsNums">您有 <text>{{couponsNums}}</text> 张优惠卷待领取</text>
+					<text v-else>您有新的会员权益待领取</text>
 				</view>
 				<view class="cont-head" v-else>
 					<view class="cont-item">
 						<image src="../../static/active/invitation_coupons.png"></image>
 						<text>获得优惠卷</text>
-						<text>{{profitinfo.wxActivityReward.shareGiftTicketList.length || 0}}张</text>
+						<text>{{profitinfo.wxActivityReward.giftTicketList.length || 0}}张</text>
 					</view>
 					<view class="cont-item">
 						<image src="../../static/active/invita_money.png"></image>
@@ -78,6 +79,9 @@
 		mapState,
 		mapMutations
 	} from "vuex";
+	import {
+		accAdd,
+	} from '../../utils/utils.js'
 	export default {
 		data() {
 			return {
@@ -85,11 +89,9 @@
 				activityId: null, //活动id
 				profitinfo: {}, //自己的收益
 				activeDesc: {}, //活动详情
-				activeinfo:{},  //活动信息
-			}
-		},
-		methods: {
+				activeinfo: {}, //活动信息
 
+			}
 		},
 		onShareAppMessage(res) {
 			let data = {
@@ -105,6 +107,19 @@
 		},
 		computed: {
 			...mapState(['JSESSIONID', 'isLogin']),
+			couponsNums() {
+				let num = 0;
+				let activeinfo = this.activeinfo;
+				if (activeinfo.giftTicket) {
+					let couponsarr = activeinfo.giftTicket.split(',');
+					couponsarr.forEach(item => {
+						let numarr = item.split('x');
+						num = accAdd(num, Number(numarr[1]));
+						console.log(numarr)
+					})
+				}
+				return num;
+			}
 		},
 		components: {
 			author,
@@ -122,7 +137,6 @@
 			}
 			let activityId = await this.getActiveInfo();
 			this.activityId = activityId;
-			console.log(1111, this.activityId)
 			if (memberinfo) {
 				this.cheackProfit(); //查看自己的收益
 				this.activeDescInfo(); //查询活动详情信息
@@ -158,9 +172,9 @@
 					data.cardId = this.memberinfo.id;
 				}
 				let res = await api.fissionActive(data);
-				console.log(res)
 				if (res.code == 200) {
 					this.activeinfo = res.data;
+
 					return res.data.id;
 				}
 			},
@@ -251,7 +265,9 @@
 				text-align: center;
 
 				text {
-					color: rgba(255, 97, 50, 1);
+					text {
+						color: rgba(255, 97, 50, 1);
+					}
 				}
 			}
 

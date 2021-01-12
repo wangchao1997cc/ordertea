@@ -1,4 +1,5 @@
 <template>
+	<!-- 等级信息详情 -->
 	<view class="content">
 		<scroll-view class="head-scroll" scroll-x>
 			<view class="nav_item" :class="{changeC:currtab==index}" v-for="(item,index) in gradeinfo" :key="index" @click="changeNav(index)">

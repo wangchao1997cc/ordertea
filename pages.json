@@ -1,6 +1,12 @@
 {
 	"pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
 		{
+			"path": "pages/home/home",
+			"style": {
+				"navigationStyle": "custom"
+			}
+		},
+		{
 			"path": "pages/active/active",
 			"style": {
 				"navigationBarTitleText": "邀请活动",
@@ -8,12 +14,6 @@
 				"navigationBarTextStyle": "white"
 			}
 		
-		},
-		{
-			"path": "pages/home/home",
-			"style": {
-				"navigationStyle": "custom"
-			}
 		},
 		{
 		    "path" : "pages/exchangecoupons/exchangecoupons",
