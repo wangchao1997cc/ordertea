@@ -42,12 +42,12 @@
 					<view class="active" v-if="index==4">
 						<view class="active-juide">
 							<image class="sm-icon" src="../../static/homepage/home_milktea.png"></image>
-							<text>6 </text>
-							<text>/ 7</text>
+							<text>{{pointNum || 0}} </text>
+							<text>/ {{pointActive.number || 0}}</text>
 						</view>
 						<sildermine :config="sliderConfig"></sildermine>
 						<view class="active-desc">
-							再集4杯可获得好礼
+							再集{{(pointActive.number-pointNum) || 0}}杯可获得好礼
 							<image src="../../static/homepage/right.png"></image>
 						</view>
 					</view>
@@ -136,11 +136,10 @@
 			return {
 				rewardarr: [], //奖励数组
 				notAuth: false, //好友邀请幕布
-				progressbar: '60%',
 				title: 'Hello',
 				sliderConfig: {
 					progresswidth: '272upx',
-					progressbar: '50%',
+					progressbar: '0%',
 				},
 				memberinfo: null, //用户信息
 				bannerData: {}, //轮播图数据
@@ -184,6 +183,7 @@
 				],
 				homeParams: {},
 				redRewardInfo: null, //天将红包信息
+				pointActive:null,
 			}
 		},
 		components: {
@@ -206,12 +206,42 @@
 			this.init(); //归纳函数
 		},
 		computed: {
-			...mapState(['cityid', 'JSESSIONID', 'isLogin'])
+			...mapState(['cityid', 'JSESSIONID', 'isLogin']),
+			pointNum(){
+				let pointActive = this.pointActive;
+				let num = 0;
+				let percent = '0%';
+				if(pointActive){
+					if(pointActive.sumNumber>pointActive.number){
+						return pointActive.sumNumber%pointActive.number
+					}else{
+						num = pointActive.sumNumber;
+					}
+				}
+				if(num){
+					percent = Math.floor((num / pointActive.number) * 100);
+					console.log(8888,percent)
+				}
+				this.sliderConfig.progressbar = percent + '%';
+				console.log(this.sliderConfig)
+				return num
+			}
 		},
 		methods: {
 			init() {
 				this.getBannerList();
 				this.juideUserInfo(); //判断用户是否登录
+			},
+			//查看积点活动
+			async pointActivity(){
+				let data = {
+					cardId:this.memberinfo.id,
+				}
+				let res = await api.pointActivity(data);
+				if(res.code==200){
+					this.pointActive = res.data[0];
+				}
+				
 			},
 			//领取天降红包
 			async receiveReward() {
@@ -261,6 +291,7 @@
 							that.$refs.authorM.showPop();
 						}
 						that.redReaward(); //查询红包奖励
+						
 					} else {
 						let memberinfo = await getMemberInfo(true);
 						that.integralarr[0].value = memberinfo.point;
@@ -269,6 +300,7 @@
 						if (that.homeParams && that.homeParams.giveCardId) {
 							that.receiveCoupons(); //领取优惠卷
 						}
+						that.pointActivity();  //查询积点活动
 						that.redReaward(memberinfo.id);
 					}
 				}
@@ -310,6 +342,7 @@
 			async loginSuccess(val) {
 				let memberinfo = await getMemberInfo(true);
 				this.memberinfo = memberinfo;
+				that.pointActivity();  //查询积点活动
 				if (this.redRewardInfo) {
 					return this.receiveReward();
 				}

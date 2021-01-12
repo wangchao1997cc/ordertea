@@ -120,8 +120,6 @@ const cancelOrder = (data, isloading) => {
 
 
 
-
-
 //normoal请求区域
 //微信登录
 const getWxOpenid = (data, isPlicing, isloading) => {
@@ -328,9 +326,18 @@ const receiveReward = (data, isloading) => {
 	return service_v('v4_3/wxActivity/exchange', 'post', data, isloading)
 }
 
+//积点活动
+const pointActivity = (data, isloading) => {
+	return service_v('v4_3/find/point/activity', 'post', data, isloading)
+}
+
+
+
+
 
 
 module.exports = {
+	pointActivity:pointActivity,
 	receiveReward:receiveReward,
 	redRewardActive:redRewardActive,
 	receiveCoupons:receiveCoupons,
