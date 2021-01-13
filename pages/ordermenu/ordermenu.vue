@@ -25,7 +25,7 @@
 							<view>
 								{{item.title}}
 							</view>
-							<view>
+							<view @click="jumpActiveDesc(item)">
 								<text>查看详情 ></text>
 							</view>
 						</view>
@@ -158,16 +158,34 @@
 						</view>
 					</view>
 				</view>
+				<!-- 活动详情 -->
+				<view class="active-desc" :hidden="maskarr.activeDesc">
+					<view class="head-tit">
+						{{choseActive.title}}
+						<image @click="closeActiveMask" src="../../static/cha.png"></image>
+					</view>
+					<scroll-view scroll-y="true" class="desc-cont">
+						<view class="desc-time">{{choseActive.startTime}}</view>
+						<view class="desc-cont-o">
+							<text>{{choseActive.ruleDetail}}</text>
+						</view>
+					</scroll-view>
+					<!-- <button open-type="share" class="turnTo_btn" v-if="currtab==0 && choiceCoupons.isShare">
+						转增
+					</button> -->
+				</view>
 				<!-- 购物车 -->
 				<view class="shopcar-cont" :hidden="maskarr.shopCarCont">
 					<view class="head_juide">
-						<view @click="clearShopCar">
+						<view @click="reductionData">
 							<image src="../../static/clear.png"></image>
 							<text>
 								清空购物车
 							</text>
 						</view>
-						<image @click="closeAllMask" class="close-icon" src="../../static/cha.png"></image>
+						<view class="close-img" @click="closeAllMask">
+							<image class="close-icon" src="../../static/cha.png"></image>
+						</view>
 					</view>
 					<scroll-view scroll-y class="scroll-shopcar" :style="{maxHeight:popHeightInfo.low+'px'}">
 						<view class="shopcar-item" v-for="(item,index) in shopcar" :key="index">
@@ -310,6 +328,7 @@
 					orderDescMask: true, //点击商品规格信息等弹窗
 					shopCarCont: true, //购物车弹窗
 					shopCarShow: true, //底部购物车导航弹窗
+					activeDesc: true,
 				},
 				sliderConfig: { //进度条参数
 					progresswidth: '320upx',
@@ -317,6 +336,7 @@
 				},
 				isfullprice: null, //满减
 				menuId: null, //餐单id
+				choseActive:null,   //当前选则查看的活动
 			}
 		},
 
@@ -461,7 +481,7 @@
 			let that = this;
 			if (that.storeId) { //如果有storeId则刷新点餐
 				if (that.shopcar.length) {
-					this.reductionData(that.shopcar);
+					this.reductionData();
 				}
 				// that.shopcar = []; //清空购物车
 				that.getStoreMenu(that.storeId);
@@ -473,7 +493,7 @@
 				}
 			}
 			if (app.globalData.orderSuccess) { //下单成功
-				this.reductionData(that.shopcar);
+				this.reductionData();
 				// that.shopcar = []; //清空购物车
 				app.globalData.orderSuccess = false;
 			}
@@ -503,13 +523,20 @@
 				that.getBannerList(); //获取轮播图广告
 				that.getLocation(); //获取地理位置
 			},
+			//查看当前活动
+			jumpActiveDesc(item){
+				this.choseActive = item;
+				this.maskarr.activeDesc = false;
+				this.openAnimation();
+			},
 			//还原数据
 			reductionData() {
 				let shopcar = this.shopcar;
-				shopcar.forEach(item => {
-					this.products[item.indexarr.index].products[item.indexarr.idx].nums = 0; //同步餐单上的商品数据
-				})
+				for(let i in shopcar){
+					this.products[shopcar[i].indexarr.index].products[shopcar[i].indexarr.idx].nums = 0; //同步餐单上的商品数据
+				}
 				this.shopcar = [];
+				this.closeAllMask();
 			},
 			//获取当前门店信息
 			async getStore(storeId) {
@@ -595,13 +622,8 @@
 					this.bannerList = res.topBannerList;
 				}
 			},
-			//清空购物车
-			clearShopCar() {
-				let shopcar = this.shopcar;
-				shopcar.forEach(item => {
-					this.products[item.index].products[item.idx].nums = null;
-				})
-				this.shopcar = [];
+			//
+			closeActiveMask(){
 				this.closeAllMask();
 			},
 			//添加按钮
@@ -756,9 +778,8 @@
 			},
 			//点击商品打开幕布
 			openOrderMask(goods, index, idx) {
-				console.log(goods)
 				let that = this;
-				// if(goods.isInServiceTime || goods.isSoldOut){   //售罄和不在售时间内
+				// if (goods.isInServiceTime || goods.isSoldOut) { //售罄和不在售时间内
 				// 	return;
 				// }
 				// let popHeightInfo = that.popHeightInfo;
@@ -777,22 +798,20 @@
 			},
 			//选择规格
 			chooseAttr(index, idx) {
-				let attr = this.specarr[index].items[idx];
-				// this.$set(attr,'title',this.specarr[index].title);
-				// console.log(this.specarr[index].items[idx])
-				// console.log(attr)
+				let that = this;
+				let attr = that.specarr[index].items[idx];
 				let price = null
-				if (index == this.specarr.length - 1 && attr.hasOwnProperty('selected')) {
-					if (this.specarr[index].items[idx].selected) { //已经选中情况   减去价格
-						this.computeSpecPrice(attr.price, 0);
+				if (index == that.specarr.length - 1 && attr.hasOwnProperty('selected')) {
+					if (that.specarr[index].items[idx].selected) { //已经选中情况   减去价格
+						that.computeSpecPrice(attr.price, 0);
 					} else { //选中情况   增加价格
-						this.computeSpecPrice(0, attr.price);
+						that.computeSpecPrice(0, attr.price);
 					}
-					this.specarr[index].items[idx].selected = !attr.selected;
+					that.specarr[index].items[idx].selected = !attr.selected;
 				} else {
-					let price = this.specarr[index].items[this.currtabarr[index]].price;
-					this.computeSpecPrice(price, attr.price); //先减
-					this.currtabarr.splice(index, 1, idx);
+					let price = that.specarr[index].items[that.currtabarr[index]].price;
+					that.computeSpecPrice(price, attr.price); //先减
+					that.currtabarr.splice(index, 1, idx);
 				}
 			},
 			//计算商品的规格价格
@@ -850,12 +869,14 @@
 			},
 			//关闭所有的幕布
 			closeAllMask() {
-				this.allmask = false;
-				this.maskarr.orderDescMask = true;
-				this.maskarr.shopCarCont = true;
-				this.maskarr.shopCarShow = true;
-				let animation = this.animation;
-				this.animationData = animation.export();
+				let that = this;
+				that.allmask = false;
+				that.maskarr.orderDescMask = true;
+				that.maskarr.shopCarCont = true;
+				that.maskarr.shopCarShow = true;
+				that.maskarr.activeDesc = true;
+				let animation = that.animation;
+				that.animationData = animation.export();
 				uni.showTabBar({})
 			},
 			async getStoreMenu(storeId) {
@@ -1333,7 +1354,7 @@
 								line-height: 58upx;
 
 								&.choose_item {
-									border: 1upx $main-color solid;
+									border: 1px $main-color solid;
 									background-color: $bg-white;
 									color: $main-color;
 								}
@@ -1543,7 +1564,7 @@
 
 
 	.left-aside {
-		width: 212upx;
+		width: 196upx;
 		background-color: #f5f5f5;
 	}
 
@@ -1737,6 +1758,67 @@
 		}
 	}
 
+	.active-desc {
+		display: flex;
+		view{
+			display: flex;
+		}
+		width: 100%;
+		background: #F8F8FA;
+		flex-direction: column;
+		align-items: center;
+
+		.head-tit {
+			@include rect(100%, 100upx);
+			font-size: 35upx;
+			line-height: 100upx;
+			justify-content: center;
+			font-weight: 700;
+			position: relative;
+
+			image {
+				position: absolute;
+				@include rect(55upx, 55upx);
+				top: 22.5upx;
+				right: 33upx;
+			}
+		}
+
+		.desc-cont {
+			@include rect(698upx, 450upx);
+			background-color: $bg-white;
+			border-radius: $radius-md;
+			flex-direction: column;
+			@include box-padding(25upx);
+			padding-bottom: 48upx;
+			margin-bottom: 40upx;
+
+			.desc-time {
+				font-size: 28upx;
+				color: black;
+				line-height: 108upx;
+			}
+
+			.desc-cont-o {
+				width: 100%;
+				font-size: 25upx;
+				color: #8A8A8A;
+			}
+		}
+
+		.turnTo_btn {
+			@include rect(698upx, 88upx);
+			justify-content: cneter;
+			line-height: 88upx;
+			background-color: $main-color;
+			color: $text-white;
+			font-size: 32upx;
+			margin: 0upx auto 40upx auto;
+			border-radius: 44upx;
+			justify-content: center;
+		}
+	}
+
 	.shopcar-cont {
 		width: 100%;
 		background-color: $bg-white;
@@ -1820,7 +1902,7 @@
 		position: absolute;
 		width: 100%;
 		bottom: 0;
-		transform: translateY(100%);
+		/* transform: translateY(100%); */
 		background-color: #F5F5F5;
 		border-top-right-radius: 20upx;
 		border-top-left-radius: 20upx;
@@ -1834,7 +1916,12 @@
 
 		.close-icon {
 			@include rect(55upx, 55upx);
-			margin-right: 36upx;
+			margin-left: 22upx;
+		}
+		.close-img{
+			@include rect(100upx,100upx);
+			padding-top: 1upx;
+			margin-right: 12upx;
 		}
 
 		view {

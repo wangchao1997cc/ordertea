@@ -5,7 +5,7 @@
 				{{item.tit}}
 			</view>
 		</view>
-		<couponlist :coupons="couponsObj[currtab].list" :type="type" @checkCouponsDesc="checkCouponsDesc"></couponlist>
+		<couponlist :currtab="currtab" :coupons="couponsObj[currtab].list" :type="type" @checkCouponsDesc="checkCouponsDesc"></couponlist>
 		<view class="exchange" @click="jumpExchange">
 			兑换优惠卷
 		</view>
@@ -13,8 +13,10 @@
 			<view class="order-info" :animation="animationData">
 				<view class="desc-box">
 					<view class="head-tit">
-						全品类优惠卷
-						<image @click="closeMask" src="../../static/cha.png"></image>
+						{{choiceCoupons.name}}
+						<view class="close-pic" @click="closeMask">
+							<image src="../../static/cha.png"></image>
+						</view>
 					</view>
 					<scroll-view scroll-y="true" class="desc-cont">
 						<view class="desc-time">{{choiceCoupons.beginTime.slice(0,10) +'  '+choiceCoupons.endTime.slice(0,10)}}</view>
@@ -22,8 +24,8 @@
 							<jyf-parser :html="choiceCoupons.remark" selectable="true"></jyf-parser>
 						</view>
 					</scroll-view>
-					<button open-type="share" class="turnTo_btn" v-if="currtab==0 && choiceCoupons.isShare"> 
-						转增
+					<button open-type="share" class="turnTo_btn" v-if="currtab==0 && choiceCoupons.isShare">
+						转赠
 					</button>
 				</view>
 			</view>
@@ -48,7 +50,7 @@
 				couponsObj: [],
 				animationData: {}, //动画控件
 				maskShow: false, //幕布显示隐藏
-				memberinfo:{},  //用户信息
+				memberinfo: {}, //用户信息
 			}
 		},
 		components: {
@@ -56,10 +58,10 @@
 			jyfParser,
 			nodata,
 		},
-		computed:{
+		computed: {
 			config() {
 				let nodatashow = true;
-				if (this.couponsObj.length && !this.couponsObj[this.currtab].length) {
+				if (this.couponsObj.length && !this.couponsObj[this.currtab].list.length) {
 					nodatashow = false;
 				}
 				return {
@@ -71,20 +73,18 @@
 		onShareAppMessage(res) {
 			let that = this;
 			let data = {
-				path:'/pages/home/home',
-				success:function(res){
-					console.log('成功')
-				}
+				path: '/pages/home/home',
+				success: function(res) {}
 			}
 			if (res.from === 'button') { // 来自页面内分享按钮
-				data.path = '/pages/home/home?giveCardId='+that.memberinfo.id+'&ticketId='+that.choiceCoupons.id;
-				data.title = '我给你分享了一张' +"“"+ that.choiceCoupons.name+"”" + ',快来领取吧',
-				data.imageUrl = '../../static/share.png';
+				data.path = '/pages/home/home?giveCardId=' + that.memberinfo.id + '&ticketId=' + that.choiceCoupons.id;
+				data.title = '我给你分享了一张' + "“" + that.choiceCoupons.name + "”" + ',快来领取吧',
+					data.imageUrl = '../../static/share.png';
 			}
 			that.lockingCoupons(); //锁定优惠卷
-			console.log(data)
 			return data
 		},
+		
 		onLoad(options) {
 			let type = options.type;
 			let title = '我的优惠卷';
@@ -106,25 +106,26 @@
 			this.renderAnimation();
 		},
 		onShow() {
-			if(app.globalData.exchangeSuccess){
+			if (app.globalData.exchangeSuccess) {
 				app.globalData.exchangeSuccess = false;
 				this.getCoupons(); //刷新优惠卷
 			}
 		},
 		methods: {
-			async lockingCoupons(){  //锁定优惠卷
-			    let data = {
+			async lockingCoupons() { //锁定优惠卷
+				let data = {
 					ticketId: this.choiceCoupons.id,
 					giveCardId: this.memberinfo.id
 				}
 				let res = await api.lockingCoupons(data);
-				if(res.code==200){
-					this.maskShow = false;
+				if (res.code == 200) {
+					this.closeMask();
 					this.getCoupons();
-				}else{
+				} else {
 					this.$msg.showToast(res.message)
 				}
 			},
+
 			//定义动画
 			renderAnimation() {
 				let that = this;
@@ -134,10 +135,6 @@
 					delay: 0
 				})
 				that.animation = animation;
-				that.$nextTick(() => { //解决DOM更新异步问题
-					animation.translateY(0).step()
-					that.animationData = animation.export();
-				})
 			},
 			//获取我的优惠卷
 			async getCoupons() {
@@ -145,15 +142,23 @@
 					cardNo: this.$store.state.cardNo,
 					type: this.currtab
 				})
-				console.log('我的优惠卷', res.data)
 				this.handerCoupons(res.data);
 			},
 			checkCouponsDesc(val) {
-				this.maskShow = true;
-				this.choiceCoupons = val;
+				let that = this;
+				that.choiceCoupons = val;
+				that.maskShow = true;
+				let animation = that.animation;
+				that.$nextTick(() => { //解决DOM更新异步问题
+					animation.translateY(0).step()
+					that.animationData = animation.export();
+				})
 			},
 			closeMask() {
-				this.maskShow = false;
+				let that = this;
+				that.maskShow = false;
+				let animation = that.animation;
+				that.animationData = animation.export();
 			},
 			//处理优惠卷数据
 			handerCoupons(couponsList) {
@@ -207,9 +212,9 @@
 				}
 			},
 			//跳转兑换优惠卷页面
-			jumpExchange(){
+			jumpExchange() {
 				uni.navigateTo({
-					url:'../exchangecoupons/exchangecoupons'
+					url: '../exchangecoupons/exchangecoupons'
 				})
 			}
 		}
@@ -268,8 +273,7 @@
 			position: absolute;
 			width: 100%;
 			bottom: 0;
-			// height: 53%;
-			// transform: translateY(100%);
+			transform: translateY(100%);
 			background-color: #F5F5F5;
 			border-top-right-radius: 20upx;
 			border-top-left-radius: 20upx;
@@ -289,11 +293,17 @@
 					font-weight: 700;
 					position: relative;
 
-					image {
+					.close-pic {
 						position: absolute;
+						@include rect(100upx, 100upx);
+						right: 0upx;
+						top: 0upx;
+
+					}
+
+					image {
 						@include rect(55upx, 55upx);
-						top: 22.5upx;
-						right: 33upx;
+						margin: 23upx 33upx 0 0;
 					}
 				}
 

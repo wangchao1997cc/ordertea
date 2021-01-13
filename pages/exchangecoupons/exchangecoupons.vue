@@ -1,6 +1,13 @@
 <template>
 	<view class="content">
-		<input class="exchange-box" placeholder="请输入券码" v-model="ticketCode" />
+		<view class="exchange-box">
+			<input placeholder="请输入券码" v-model="ticketCode" />
+			<view class="qrcode-btn" @click="scanCode">
+				<image src="../../static/scan_code.png"></image>
+				扫码
+			</view>
+		</view>
+		
 		<view class="exchangeBtn" @click="begainExchange">
 			确定兑换
 		</view>
@@ -34,7 +41,16 @@
 					app.globalData.exchangeSuccess = true;
 					uni.navigateBack({})
 				}
-			}
+			},
+			//点击开始扫码
+			begainExchange(){
+				let that = this;
+				uni.scanCode({
+				    success: function (res) {
+						that.ticketCode = res.result;
+				    }
+				});
+			},
 		}
 	}
 </script>
@@ -50,6 +66,25 @@
 		margin: 30upx auto;
 		@include box-padding(34upx);
 		border-radius: $radius-md;
+		@extend %flex-alcent;
+		justify-content: space-between;
+		input{
+			@include rect(500upx,100%);
+		}
+		
+	}
+	.qrcode-btn {
+		@include rect(176upx, 76upx);
+		background-color: $main-color;
+		@extend %flex-alcent;
+		justify-content: center;
+		border-radius: 38upx;
+	
+		image {
+			@include rect(30upx, 30upx);
+			margin-right: 12upx;
+		}
+		color: $text-white;
 	}
 	.exchangeBtn{
 		@include rect(698upx, 88upx);

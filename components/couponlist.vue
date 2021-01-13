@@ -17,14 +17,11 @@
 					<view class="cou-times">
 						<text>{{item.beginTime.slice(0,10) +'  		 '+item.endTime.slice(0,10)}}</text>
 					</view>
-					<view class="cou-btn" :class="{on:item.canUse==2}" @click="controlCoupons(item)">
-						{{type?(item.canUse==1?'去使用':'不可使用'):'查看使用限制'}}
+					<view class="cou-btn" :class="{on:item.canUse==2 || currtab>0}" @click="controlCoupons(item)" >
+						{{type?(item.canUse==1?'去使用':'不可使用'):(currtab==0?'查看使用限制':(currtab==1?'已使用':'已过期'))}}
 					</view>
 				</view>
 			</view>
-		</view>
-		<view class="">
-			
 		</view>
 	</view>
 </template>
@@ -43,6 +40,10 @@
 				default:() =>[]
 			},
 			type:{
+				type:Number,
+				default:() => ''
+			},
+			currtab:{
 				type:Number,
 				default:() => ''
 			}

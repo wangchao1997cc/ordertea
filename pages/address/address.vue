@@ -3,8 +3,9 @@
 		<view class="list">
 			<view class="row-box" v-for="(item,index) in addressList" :key="index" @tap="select(item)">
 				<view class="name-tel">
-					<view>{{item.receiverAddress+item.appendReceiverAddress}}</view>
-					<view @click.stop="prentEvent">
+					
+					<view class="address-descinfo"><text>{{item.receiverAddress+item.appendReceiverAddress}}</text></view>
+					<view class="update-ad" @click.stop="prentEvent">
 						<image @click="addressEdit(item)" src="../../static/06_icon_编辑.png"></image>
 					</view>
 				</view>
@@ -32,7 +33,7 @@
 			return {
 				isSelect: false,
 				addressList: [], //用户地址数组
-				shopinfo:{},   //当前选择的店铺
+				shopinfo: {}, //当前选择的店铺
 			};
 		},
 		onShow() {
@@ -50,7 +51,7 @@
 				}
 			},
 		},
-		components:{
+		components: {
 			nodata
 		},
 		onLoad(e) {
@@ -68,7 +69,7 @@
 		// },
 		methods: {
 			//阻止默认事件
-			prentEvent(){
+			prentEvent() {
 				return;
 			},
 			//设为默认地址
@@ -92,7 +93,7 @@
 			 */
 			async getUserAddress() {
 				let res = await api.getUserAddress({});
-				if(res.status==1){
+				if (res.status == 1) {
 					this.addressList = res.data;
 				}
 			},
@@ -128,43 +129,53 @@
 						data: row,
 					})
 					let res = await api.getNearStore({
-						coordinate:[row.longitude,row.latitude],
+						coordinate: [row.longitude, row.latitude],
 						searchName: row.receiverAddress,
 						businessType: that.$store.state.businessType,
-					},true);
-					if(res.status == 1){
+					}, true);
+					if (res.status == 1) {
 						let shopinfo = res.data;
 						that.shopinfo = res.data;
 						let oldshopinfo = app.globalData.storeInfo;
-						if(oldshopinfo){
-							if(oldshopinfo.storeId != shopinfo.storeId){
-								that.switchJuide(shopinfo.storeName,shopinfo.storeId)
-							}else{
+						if (oldshopinfo) {
+							if (oldshopinfo.storeId != shopinfo.storeId) {
+								that.switchJuide(shopinfo.storeName, shopinfo.storeId)
+							} else {
 								that.jumpMenu(shopinfo.storeId)
 							}
-						}else{
-							that.switchJuide(shopinfo.storeName,shopinfo.storeId)
+						} else {
+							that.switchJuide(shopinfo.storeName, shopinfo.storeId)
 						}
-					}else{
+					} else {
 						that.$msg.showToast('该地址无配送门点，请选择其他地址')
 					}
+				}else{
+					uni.setStorage({
+						key: 'address',
+						data: row,
+						success() {
+							uni.navigateTo({
+								url: "edit/edit?type=edit"
+							})
+						}
+					});
 				}
 			},
 			//切换地址提示
-			switchJuide(storeName,storeId){
-				this.$msg.showModal((res) =>{
-					if(res==1){
+			switchJuide(storeName, storeId) {
+				this.$msg.showModal((res) => {
+					if (res == 1) {
 						this.jumpMenu(storeId);
 					}
-				},`是否将该地址切换到${storeName}店，是否继续`,'温馨提示',true)
+				}, `是否将该地址切换到${storeName}店，是否继续`, '温馨提示', true)
 			},
 			//跳转menu界面
-			jumpMenu(storeId){
+			jumpMenu(storeId) {
 				app.globalData.storeInfo = this.shopinfo;
-				this.$store.commit('copy',storeId);
-				this.$store.commit('changebussiness',[1])
+				this.$store.commit('copy', storeId);
+				this.$store.commit('changebussiness', [1])
 				uni.switchTab({
-					url:'../ordermenu/ordermenu'
+					url: '../ordermenu/ordermenu'
 				})
 			},
 			//删除地址
@@ -242,7 +253,7 @@
 			box-shadow: 5px 4px 6px 0px rgba(0, 0, 0, 0.1);
 			border-radius: 10px;
 			flex-wrap: wrap;
-			padding: 30upx 40upx;
+			padding: 30upx 0upx 0 40upx;
 			box-sizing: border-box;
 			font-size: 30upx;
 			margin: 30upx auto 0 auto;
@@ -250,22 +261,34 @@
 			.name-tel {
 				color: #000000;
 				font-size: $font-md;
-				@include rect(100%, 30upx) @extend %flex-alcent;
+				@include rect(100%, 30upx);
+				@extend %flex-alcent;
 				justify-content: space-between;
-				view:first-child{
+
+				.address-descinfo {
 					width: 550upx;
 					@include lineOnly();
+					text{
+						display: block;
+						width: 550upx;
+						@include lineOnly();
+					}
 				}
-				image{
-					@include rect(30upx,30upx);
-					margin-right: 7upx;
+				.update-ad{
+					@include rect(108upx,100upx);
+				}
+
+				image {
+					margin-top: 34upx;
+					margin-left: 31upx;
+					@include rect(30upx, 30upx);
 				}
 			}
 
 			.address-desc {
 				min-height: 76upx;
 				line-height: 38upx;
-				color:#87888B;
+				color: #87888B;
 				font-size: 24upx;
 				margin: 18upx 0;
 			}

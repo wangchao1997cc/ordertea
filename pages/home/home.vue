@@ -3,7 +3,7 @@
 		<swiper class="head-info" :autoplay="true" :circular="true" :interval="3000" :duration="1000">
 			<!-- <navbar :config="config"></navbar> -->
 			<swiper-item v-for="(item,index) in bannerData.topBannerList" :key="index" @click="jumpAdvertise(item)">
-				<image :src="item.picUrl"></image>
+				<image :src="item.picUrl" mode="aspectFill"></image>
 			</swiper-item>
 		</swiper>
 		<view class="home-cont">
@@ -17,8 +17,8 @@
 					<image class="take-btn" src="../../static/homepage/takeout_btn.png"></image>
 				</view>
 			</view>
-			<view class="blance-box" @click="jumpWallet">
-				<view class="blance-l">
+			<view class="blance-box">
+				<view class="blance-l" @click="jumpWallet">
 					<view>
 						<image src="../../static/money_icon.png"></image>
 						我的余额：{{memberinfo.balance?memberinfo.balance:0}}
@@ -28,7 +28,7 @@
 						<image src="../../static/07_icon_right.png"></image>
 					</view>
 				</view>
-				<image class="blance-icon" src="../../static/member_icon.png"></image>
+				<image class="blance-icon" src="../../static/member_icon.png" @click="jumpMembercode"></image>
 			</view>
 			<view class="integral">
 				<view class="integral-item" v-for="(item,index) in integralarr" :key="index" @click="jumpClissIfy(index)">
@@ -39,14 +39,14 @@
 							<text>{{item.value}}</text>
 						</view>
 					</view>
-					<view class="active" v-if="index==4">
+					<view class="active" v-if="index==4" @click="checkPonitDesc">
 						<view class="active-juide">
 							<image class="sm-icon" src="../../static/homepage/home_milktea.png"></image>
 							<text>{{pointNum || 0}} </text>
 							<text>/ {{pointActive.number || 0}}</text>
 						</view>
 						<sildermine :config="sliderConfig"></sildermine>
-						<view class="active-desc">
+						<view class="active-desc" >
 							再集{{(pointActive.number-pointNum) || 0}}杯可获得好礼
 							<image src="../../static/homepage/right.png"></image>
 						</view>
@@ -90,18 +90,40 @@
 			<view class="reward-box">
 				<view class="reward-head-box" :style="{backgroundImage:'url('+redRewardInfo.imageUrl +')'}">
 					<view class="reward-tit">
-						天将红包
+						天降红包
 					</view>
 					<scroll-view class="reward-item-box" scroll-y="true">
-						<view class="reward-item" v-for="(item,index) in rewardarr">{{item}}</view>
+						<view class="reward-item" v-for="(item,index) in rewardarr" :key="index">{{item}}</view>
 					</scroll-view>
 					<view class="recive-btn" @click="receiveReward">
 						{{memberinfo?'一键领取':'登陆/注册一键领取'}}
 					</view>
 				</view>
+				<view class="close-redReward" @click="closeRedward">
+					<image src="../../static/POP_close01.png"></image>
+				</view>
+			</view>
+
+		</view>
+		<!-- 集点卡活动 -->
+		<view class="mask" v-if="maskShow" @catchtouchmove="true">
+			<view class="order-info" :animation="animationData">
+				<view class="desc-box">
+					<view class="head-tit">
+						{{pointActive.title}}
+						<view class="close-pic" @click="closePointActive">
+							<image src="../../static/cha.png"></image>
+						</view>
+					</view>
+					<scroll-view scroll-y="true" class="desc-cont">
+						<view class="desc-time">{{pointActive.startTime+' '+pointActive.endTime}}</view>
+						<view class="desc-cont-o">
+							<text>活动内容：{{`每集齐${pointActive.number}杯，就可以获得赠饮一杯哦～`}}</text>
+						</view>
+					</scroll-view>
+				</view>
 			</view>
 		</view>
-
 	</view>
 </template>
 
@@ -134,6 +156,8 @@
 	export default {
 		data() {
 			return {
+				animationData: {}, //动画控件
+				maskShow: false, //集点卡活动介绍
 				rewardarr: [], //奖励数组
 				notAuth: false, //好友邀请幕布
 				title: 'Hello',
@@ -183,7 +207,7 @@
 				],
 				homeParams: {},
 				redRewardInfo: null, //天将红包信息
-				pointActive:null,
+				pointActive: null, //集点卡活动信息
 			}
 		},
 		components: {
@@ -207,41 +231,71 @@
 		},
 		computed: {
 			...mapState(['cityid', 'JSESSIONID', 'isLogin']),
-			pointNum(){
+			pointNum() {
 				let pointActive = this.pointActive;
 				let num = 0;
 				let percent = '0%';
-				if(pointActive){
-					if(pointActive.sumNumber>pointActive.number){
-						return pointActive.sumNumber%pointActive.number
-					}else{
+				if (pointActive) {
+					if (pointActive.sumNumber > pointActive.number) {
+						return pointActive.sumNumber % pointActive.number
+					} else {
 						num = pointActive.sumNumber;
 					}
 				}
-				if(num){
+				if (num) {
 					percent = Math.floor((num / pointActive.number) * 100);
-					console.log(8888,percent)
 				}
 				this.sliderConfig.progressbar = percent + '%';
-				console.log(this.sliderConfig)
-				return num
+				return num;
 			}
 		},
 		methods: {
 			init() {
 				this.getBannerList();
 				this.juideUserInfo(); //判断用户是否登录
+				this.renderAnimation(); //定义动画
+			},
+			//打开集点卡介绍幕布
+			checkPonitDesc(){
+				this.maskShow = true;
+				let animation = this.animation;
+				this.$nextTick(() => { //解决DOM更新异步问题
+					animation.translateY(0).step()
+					this.animationData = animation.export();
+				})
+			},
+			//关闭集点卡活动
+			closePointActive(){
+				let that = this;
+				that.maskShow = false;
+				let animation = that.animation;
+				that.animationData = animation.export();
+			},
+			//定义动画
+			renderAnimation() {
+				let that = this;
+				let animation = uni.createAnimation({ //定义动画
+					duration: 300,
+					timingFunction: 'linear',
+					delay: 0
+				})
+				that.animation = animation;
+			},
+			//关闭天降红包弹窗
+			closeRedward() {
+				this.redRewardInfo = null;
 			},
 			//查看积点活动
-			async pointActivity(){
+			async pointActivity() {
 				let data = {
-					cardId:this.memberinfo.id,
+					cardId: this.memberinfo.id,
 				}
 				let res = await api.pointActivity(data);
-				if(res.code==200){
+				if (res.code == 200) {
+					console.log(res.data[0])
 					this.pointActive = res.data[0];
 				}
-				
+
 			},
 			//领取天降红包
 			async receiveReward() {
@@ -260,6 +314,15 @@
 				} else {
 					this.$msg.showToast(res.message);
 				}
+			},
+			//跳转我的会员码
+			jumpMembercode() {
+				if (!this.memberinfo) {
+					return this.noLoginHander();
+				}
+				uni.navigateTo({
+					url: '../membercode/membercode'
+				})
 			},
 			//点击领取优惠卷
 			async receiveCouponsBtn() {
@@ -291,7 +354,7 @@
 							that.$refs.authorM.showPop();
 						}
 						that.redReaward(); //查询红包奖励
-						
+
 					} else {
 						let memberinfo = await getMemberInfo(true);
 						that.integralarr[0].value = memberinfo.point;
@@ -300,7 +363,7 @@
 						if (that.homeParams && that.homeParams.giveCardId) {
 							that.receiveCoupons(); //领取优惠卷
 						}
-						that.pointActivity();  //查询积点活动
+						that.pointActivity(); //查询积点活动
 						that.redReaward(memberinfo.id);
 					}
 				}
@@ -317,8 +380,6 @@
 						this.redRewardInfo = res.data[0];
 						let rewardarr = res.data[0].ticketName.split(',');
 						this.rewardarr = rewardarr;
-						
-						console.log('奖励数组', rewardarr)
 					}
 				}
 			},
@@ -342,7 +403,7 @@
 			async loginSuccess(val) {
 				let memberinfo = await getMemberInfo(true);
 				this.memberinfo = memberinfo;
-				that.pointActivity();  //查询积点活动
+				that.pointActivity(); //查询积点活动
 				if (this.redRewardInfo) {
 					return this.receiveReward();
 				}
@@ -380,12 +441,19 @@
 					uni.navigateTo({
 						url: '../wallet/wallet'
 					})
+				} else {
+					return this.noLoginHander();
 				}
+			},
+			noLoginHander() {
+				// 没有登录处理
+				this.$msg.showToast('亲，先登录哦～')
+				this.$refs.authorM.showPop();
 			},
 			//跳转各个分类页面
 			jumpClissIfy(index) {
 				if (!this.memberinfo) {
-					return;
+					return this.noLoginHander();
 				}
 				switch (index) {
 					case 0:
@@ -424,15 +492,27 @@
 		height: 100upx;
 	}
 
+	.close-redReward {
+		position: absolute;
+		top: -52upx;
+		right: -25upx;
+		@include rect(36upx, 36upx);
+
+		image {
+			@include rect(100%, 100%)
+		}
+	}
+
 	.reward-box {
+
 		position: absolute;
 		top: 20%;
 		left: 75upx;
 		width: 600upx;
 		background-color: $bg-white;
 		border-radius: $radius-md;
-		overflow: hidden;
 		z-index: 29;
+
 
 		.reward-head-box {
 			height: 720upx;
@@ -550,19 +630,21 @@
 	}
 
 	.head-info {
-		@include rect(100%, 640upx);
+		@include rect(100%, 422upx);
 
 		// background-color: $main-color;.
-		.swiper-item {
-			@include rect(100%, 100%);
+		swiper-item {
+			@include rect(100%, 422upx);
 
 			image {
+				
 				@include rect(100%, 100%);
 			}
 		}
 	}
 
 	.home-cont {
+		position: relative;
 		width: 100%;
 		@include box-padding(26upx);
 		margin-top: -80upx;
@@ -642,7 +724,7 @@
 		@extend %flex-list;
 
 		.integral-item {
-			@include rect(220upx, 268upx);
+			@include rect(220upx, 228upx);
 			margin: 0 19upx 19upx 0;
 			background-color: $bg-white;
 			border-radius: $radius-md;
@@ -724,13 +806,13 @@
 
 			.active {
 				width: 272upx;
-				margin: 40upx 0 0 30upx;
+				margin: 20upx 0 0 30upx;
 
 				.active-juide {
 					height: 44upx;
 					display: flex;
 					align-items: flex-end;
-					margin-bottom: 30upx;
+					margin-bottom: 20upx;
 
 					text {
 						line-height: 44upx;
@@ -769,24 +851,108 @@
 	.adver {
 		width: 100%;
 		background-color: $bg-white;
-		padding: 1upx 35upx;
+		padding-top: 1upx;
 		box-sizing: border-box;
 		border-radius: $radius-md;
 
 		.adver-tit {
 			font-size: $font-lg;
 			font-weight: 700;
-			margin: 40upx auto;
+			margin: 40upx 35upx;
+
 		}
 
 		.adver-item {
-			@include rect(628upx, 220upx);
+			@include rect(100%, 220upx);
 			border-radius: 8upx;
 			overflow: hidden;
 			margin-bottom: 28upx;
 
 			image {
 				@include rect(100%, 100%);
+			}
+		}
+	}
+
+
+
+	.order-info {
+		position: absolute;
+		width: 100%;
+		bottom: 0;
+		// height: 53%;
+		transform: translateY(100%);
+		background-color: #F5F5F5;
+		border-top-right-radius: 20upx;
+		border-top-left-radius: 20upx;
+		overflow: hidden;
+
+		.desc-box {
+			width: 100%;
+			background: #F8F8FA;
+			flex-direction: column;
+			align-items: center;
+			display: flex;
+
+			view {
+				display: flex;
+			}
+
+			.head-tit {
+				@include rect(100%, 100upx);
+				font-size: 35upx;
+				line-height: 100upx;
+				justify-content: center;
+				font-weight: 700;
+				position: relative;
+
+				.close-pic {
+					position: absolute;
+					@include rect(100upx, 100upx);
+					right: 0upx;
+					top: 0upx;
+
+					image {
+						@include rect(55upx, 55upx);
+						margin: 23upx 23upx 0 12upx;
+					}
+				}
+
+
+			}
+
+			.desc-cont {
+				@include rect(698upx, 450upx);
+				background-color: $bg-white;
+				border-radius: $radius-md;
+				flex-direction: column;
+				@include box-padding(25upx);
+				padding-bottom: 48upx;
+				margin-bottom: 40upx;
+
+				.desc-time {
+					font-size: 28upx;
+					color: black;
+					line-height: 108upx;
+				}
+
+				.desc-cont-o {
+					width: 100%;
+					font-size: 25upx;
+					color: #8A8A8A;
+				}
+			}
+
+			.turnTo_btn {
+				@include rect(698upx, 88upx);
+				justify-content: cneter;
+				line-height: 88upx;
+				background-color: $main-color;
+				color: $text-white;
+				font-size: 32upx;
+				margin: 0upx auto 40upx auto;
+				border-radius: 44upx;
+				justify-content: center;
 			}
 		}
 	}

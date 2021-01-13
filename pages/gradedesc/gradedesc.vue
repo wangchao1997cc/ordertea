@@ -29,10 +29,6 @@
 					<image src="../../static/v_lv.png"></image>
 					<text>{{item.levelName}}</text>
 				</view>
-				<view class="v-item" v-for="(item,index) in gradeinfo" :key="index">
-					<image src="../../static/v_lv.png"></image>
-					<text>{{item.levelName}}</text>
-				</view>
 			</view>
 		</view>
 	</view>

@@ -7,6 +7,18 @@
 			}
 		},
 		{
+			"path": "pages/ordermenu/ordermenu",
+			"style": {
+				"navigationBarTitleText": "点餐"
+			}
+		},
+		{
+		     "path" : "pages/mine/aboutM/aboutM",
+		     "style" : {
+						"navigationBarTitleText": "关于我们"
+					}
+		 },
+		{
 			"path": "pages/active/active",
 			"style": {
 				"navigationBarTitleText": "邀请活动",
@@ -23,12 +35,7 @@
 		        "enablePullDownRefresh": false
 		    }
 		},
-		{
-			"path": "pages/ordermenu/ordermenu",
-			"style": {
-				"navigationBarTitleText": "点餐"
-			}
-		},
+		
 		
 		
 		{
@@ -179,8 +186,7 @@
 			}
 		}
         
-       
-        
+      
     ],
 	"globalStyle": {
 		"navigationBarTextStyle": "black",

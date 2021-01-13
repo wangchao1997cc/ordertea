@@ -15,7 +15,7 @@
 					</view>
 					<view class="user-label">
 						<image :src="currentLev.background" mode="aspectFill"></image>
-						{{currentLev.levelName}}
+						{{currentLev.levelName || ''}}
 					</view>
 				</view>
 				<view class="user-detail">
@@ -23,7 +23,7 @@
 						{{memberinfo.name?memberinfo.name:'用户'}}
 					</view>
 					<view class="card-no">
-						卡号：{{memberinfo.cardNo}}
+						卡号：{{memberinfo.cardNo || ''}}
 					</view>
 					<view class="slider-box">
 						<view class="slider">
@@ -32,13 +32,13 @@
 						<view class="fl">{{`${memberinfo.experience?memberinfo.experience:0}`}}\{{`${currentLev.upperLimit?currentLev.upperLimit:0}`}}</view>
 					</view>
 					<view class="upgrade_juide">
-						在累计{{currentLev.upperLimit-memberinfo.experience}}经验值就可以升级
+						在累计{{(currentLev.upperLimit-memberinfo.experience) || 0}}经验值就可以升级
 					</view>
 				</view>
 			</view>
 			<view class="user-assets">
 				<view class="assets-item" @click="jumpShopping">
-					<text>{{memberinfo.point?memberinfo.couponsCount:0}}</text>
+					<text>{{memberinfo.point?memberinfo.point:0}}</text>
 					<text>商城</text>
 				</view>
 				<view class="assets-item" @click="jumpCoupons">
@@ -104,7 +104,7 @@
 				memberinfo: null,
 				sliderConfig: {
 					progresswidth: '320upx',
-					progressbar: this.silderW,
+					progressbar: '0%'
 				},
 				servicearr: [{
 					img: '../../static/my/pay-record.png',
@@ -137,15 +137,15 @@
 		onLoad() {
 
 		},
-		computed: {
-			silderW() {
-				let width = 0;
-				if (this.memberinfo && this.currentLev) {
-					width = Math.floor((this.memberinfo.experience / this.currentLev.upperLimit) * 100);
-				}
-				return width;
-			}
-		},
+		// computed: {
+		// 	silderW() {
+		// 		let width = 0;
+		// 		if (this.memberinfo && this.currentLev) {
+		// 			width = Math.floor((this.memberinfo.experience / this.currentLev.upperLimit) * 100);
+		// 		}
+		// 		return width+'%';
+		// 	}
+		// },
 		async onShow() {
 			let memberinfo = await getMemberInfo(true);
 			this.memberinfo = memberinfo;
@@ -167,9 +167,12 @@
 						return (experience == item.lowerLimit || experience > item.lowerLimit) && (experience < item.upperLimit ||
 							experience == item.lowerLimit)
 					})
-					console.log(333, lev)
+					let width = 0;
+					width = Math.floor((this.memberinfo.experience / lev[0].upperLimit) * 100);
+					if(width){
+						this.sliderConfig.progressbar = width +'%';
+					}
 					this.currentLev = lev[0];
-					console.log(1111, this.currentLev)
 				}
 			},
 			//用户授权信息
@@ -237,7 +240,7 @@
 						url = '../gradedesc/gradedesc';
 						break;
 					case 7:
-						url = '../address/address';
+						url = '../mine/aboutM/aboutM';
 						break;
 				}
 				uni.navigateTo({

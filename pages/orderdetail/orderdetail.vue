@@ -1,6 +1,6 @@
 <template>
 	<view class="content" v-if="orderdetails.orderProducts">
-		<view class="order-header-status">
+		<view class="order-header-status" >
 			<view class="status-juide">
 				{{orderdetails.progress[0].statusName}}
 			</view>
@@ -8,7 +8,7 @@
 				<!-- <view class="status-cont">
 					剩余支付时间：
 				</view> -->
-				<view class="status-cont">
+				<view class="status-cont" @click="callTel">
 					{{orderdetails.progress[0].clientTips}}
 				</view>
 				<view class="order-bt-box" v-if="orderdetails.progress[0].status==1">
@@ -163,7 +163,7 @@
 			timeOut(date) {
 				let that = this;
 				let dateEnd = TimeDown(date);
-				console.log(dateEnd)
+				
 				// that.timer = setInterval(() => {
 				// 	dateEnd = TimeDown(date);
 				// 	if (!dateEnd) {
@@ -171,6 +171,12 @@
 				// 		return;
 				// 	}
 				// }, 1000);
+			},
+			//拨打电话
+			callTel(){
+				uni.makePhoneCall({
+					phoneNumber:this.orderdetails.storePhone,
+				})
 			},
 			//取消订单
 			cancelOrder(){

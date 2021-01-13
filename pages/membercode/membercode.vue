@@ -99,12 +99,13 @@
 	}
 
 	.memberinfo {
-		@include rect(698upx, 989upx);
+		@include rect(698upx, 900upx);
 		margin: 130upx auto;
 		background-color: $bg-white;
 		border-radius: $radius-md;
 		@include box-padding(26upx);
 		padding-top: 1upx;
+		
 
 		.header-pic {
 			border-radius: 80upx;
@@ -137,11 +138,12 @@
 				}
 			}
 		}
+		
 	}
 
 	.qr-code {
 		@include rect(340upx, 340upx);
-		margin: 80upx auto 0 auto;
+		margin: -6upx auto 0 auto;
 
 		#qrcode {
 			@include rect(340upx, 340upx);

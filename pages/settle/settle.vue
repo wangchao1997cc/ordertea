@@ -56,7 +56,7 @@
 			<block v-for="(item,index) in interest.promotions" :key="index">
 				<view class="cost-item" v-if="item.type!=6">
 					<text>{{item.name}}</text>
-					<text>¥{{item.amount}}</text>
+					<text>-¥{{item.amount}}</text>
 				</view>
 				<view class="cost-item" v-else>
 					<text>{{item.name}}</text>
@@ -131,12 +131,12 @@
 						选择餐具
 						<image @click="closeMask" src="../../static/cha.png"></image>
 					</view>
-					<view class="tableware-box">
+					<scroll-view class="tableware-box" scroll-y>
 						<view class="tableware-item" :class="{change_bor:wareCurrtab==index}" v-for="(item,index) in tablewarearr" :key='index'
 						 @click="switchWrae(index,item)">
 							{{item + '份'}}
 						</view>
-					</view>
+					</scroll-view>
 				</view>
 			</view>
 		</view>
@@ -159,7 +159,7 @@
 				coupons: null,
 				wareCurrtab: 0, //选择餐具份数索引
 				peopleNum: 1, //就餐人数
-				tablewarearr: [1, 2, 3, 4],
+				tablewarearr: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
 				choosetime: 0, //选中的时间段索引
 				maskShow: false, //总幕布
 				chooseTimeShow: false, //预约时间幕布
@@ -264,7 +264,6 @@
 				if(res.status==1){
 					this.templateIds = res.data.templateIds;
 				}
-				console.log('微信模版消息',res)
 			},
 			//切换餐具数量
 			switchWrae(index, item) {
@@ -313,7 +312,6 @@
 			},
 			//计算预约时间
 			computedTIme(timeData) {
-				console.log(timeData);
 				timeData.forEach(item => {
 					item.times.forEach(aitem => {
 						let timearr = aitem.split('~');
@@ -331,10 +329,12 @@
 			//时间切段   15分钟为一个时间段
 			handerTime(date, startTime, endTime) {
 				let timerarr = [];
-				startTime = new Date(new Date(date + ' ' + startTime)); //加上45分钟
+				startTime = date + ' ' + startTime; //加上45分钟
+				startTime = new Date(startTime.replace(/-/g, '/'));
 				startTime = Date.parse(startTime) + (45 * 60000); //转为时间戳
 				timerarr.push(new Date(startTime).format("hh:mm:ss"));
-				endTime = new Date(new Date(date + ' ' + endTime));
+				endTime = date + ' ' + endTime;
+				endTime = new Date(endTime.replace(/-/g, '/'));
 				endTime = Date.parse(endTime); //转为时间戳
 				let totalnum = Math.floor((endTime - startTime) / 1000 / 60 / 15)
 				for (let i = 0; i < totalnum; i++) {
@@ -365,6 +365,7 @@
 				let res = await api.memberInterest(params)
 				uni.hideLoading();
 				if (res.code == 200 || res.code == 1901) {
+					
 					let orderinfo = res.data;
 					orderinfo.promotions.forEach((item, index) => {
 						if (item.type == 8) {

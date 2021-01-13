@@ -19,7 +19,7 @@
 					<text>{{` ${item.beginTime}-${item.endTime}`}}&nbsp;&nbsp;</text>
 				</block>
 			</view>
-			<text>门店电话：{{shopinfo.phoneNumberList[0]}}\n</text>
+			<text @click="callTel(shopinfo.phoneNumberList[0])">门店电话：{{shopinfo.phoneNumberList[0]}}\n</text>
 			<text>门店地址：{{shopinfo.storeAddress}}</text>
 		</view>
 	</view>
@@ -52,6 +52,12 @@
 			},
 			hideDetail() {
 				this.showdetail = true;
+			},
+			//拨打电话
+			callTel(tel){
+				uni.makePhoneCall({
+					 phoneNumber: tel 
+				})
 			}
 		}
 	}

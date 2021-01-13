@@ -41,7 +41,7 @@
 		data() {
 			return {
 				pageNow:0,   //当前页数
-				orderList:[],  //订单列表
+				orderList: null,  //订单列表
 				isNexPage:true,   //是否有下一页
 			}
 		},
@@ -51,7 +51,7 @@
 		computed:{
 			config() {
 				let nodatashow = true;
-				if (!this.orderList.length) {
+				if (this.orderList && !this.orderList.length) {
 					nodatashow = false;
 				}
 				return {
