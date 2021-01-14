@@ -1,8 +1,8 @@
 <template>
 	<!-- 添加备注 -->
 	<view class="content">
-		<textarea class="text-write" v-model="remark" placeholder="备注信息" />
-		<view class="add-btn" @click="confirmBtn">
+		<textarea class="text-write" v-model="remark" placeholder="备注信息" @confirm="confirmBtn" />
+		<view class="add-btn" @click="confirmBtn" >
 			确认添加
 		</view>
 	</view>

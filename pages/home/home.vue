@@ -46,7 +46,7 @@
 							<text>/ {{pointActive.number || 0}}</text>
 						</view>
 						<sildermine :config="sliderConfig"></sildermine>
-						<view class="active-desc" >
+						<view class="active-desc">
 							再集{{(pointActive.number-pointNum) || 0}}杯可获得好礼
 							<image src="../../static/homepage/right.png"></image>
 						</view>
@@ -227,7 +227,13 @@
 				this.homeParams = options;
 			}
 			uni.showTabBar({})
+			uni.showLoading({
+				mask:true
+			})
 			this.init(); //归纳函数
+		},
+		onShow(res) {
+			console.log('onshow',res)
 		},
 		computed: {
 			...mapState(['cityid', 'JSESSIONID', 'isLogin']),
@@ -256,7 +262,7 @@
 				this.renderAnimation(); //定义动画
 			},
 			//打开集点卡介绍幕布
-			checkPonitDesc(){
+			checkPonitDesc() {
 				this.maskShow = true;
 				let animation = this.animation;
 				this.$nextTick(() => { //解决DOM更新异步问题
@@ -265,7 +271,7 @@
 				})
 			},
 			//关闭集点卡活动
-			closePointActive(){
+			closePointActive() {
 				let that = this;
 				that.maskShow = false;
 				let animation = that.animation;
@@ -299,20 +305,26 @@
 			},
 			//领取天降红包
 			async receiveReward() {
-				let memberinfo = this.memberinfo;
+				let that = this;
+				let memberinfo = that.memberinfo;
 				if (!memberinfo) {
 					return that.$refs.authorM.showPop();
 				}
+				uni.showLoading({
+					title:'领取中'
+				})
 				let data = {
-					cardId: this.memberinfo.id,
-					activityId: this.redRewardInfo.id,
+					cardId: that.memberinfo.id,
+					activityId: that.redRewardInfo.id,
 				}
+				this.redRewardInfo = null;
 				let res = await api.receiveReward(data);
+				uni.hideLoading()
 				if (res.code == 200) {
-					this.redRewardInfo = null;
-					this.$msg.showToast('恭喜您领取成功～');
+					that.redRewardInfo = null;
+					that.$msg.showToast('恭喜您领取成功～');
 				} else {
-					this.$msg.showToast(res.message);
+					that.$msg.showToast(res.message);
 				}
 			},
 			//跳转我的会员码
@@ -344,29 +356,30 @@
 				}
 			},
 			async juideUserInfo() {
+				
 				let that = this;
 				if (!that.isLogin) {
 					let userinfo = await refreshUserInfo(true);
 					if (!userinfo || !userinfo.phone) {
-						if (that.homeParams && that.homeParams.giveCardId) {
-							that.receiveCoupons(); //领取优惠卷
+						let redReaward = await that.redReaward(); //查询红包奖励
+						if ((that.homeParams && that.homeParams.giveCardId) || redReaward) {
+							that.receiveCoupons(); //查询优惠卷
 						} else {
 							that.$refs.authorM.showPop();
 						}
-						that.redReaward(); //查询红包奖励
-
 					} else {
 						let memberinfo = await getMemberInfo(true);
 						that.integralarr[0].value = memberinfo.point;
 						that.integralarr[3].value = memberinfo.coupons.length + '张';
 						that.memberinfo = memberinfo;
 						if (that.homeParams && that.homeParams.giveCardId) {
-							that.receiveCoupons(); //领取优惠卷
+							that.receiveCoupons(); //查询优惠卷
 						}
 						that.pointActivity(); //查询积点活动
 						that.redReaward(memberinfo.id);
 					}
 				}
+				uni.hideLoading();
 			},
 			//查询红包奖励
 			async redReaward(id) {
@@ -380,35 +393,38 @@
 						this.redRewardInfo = res.data[0];
 						let rewardarr = res.data[0].ticketName.split(',');
 						this.rewardarr = rewardarr;
+						return rewardarr;
 					}
 				}
 			},
 			//领取优惠卷
 			async receiveCoupons() {
 				let homeParams = this.homeParams;
-				if (this.memberinfo.id != homeParams.giveCardId) {
-					let data = {
-						ticketId: homeParams.ticketId,
-						giveCardId: homeParams.giveCardId,
-					}
-					let res = await api.confirmStutas(data);
-					if (res.code == 200) {
-						this.shareCoupons = res.data;
-						this.notAuth = true;
-					} else {
-						this.$msg.showToast(res.message)
-					}
+				if (this.memberinfo && this.memberinfo.id == homeParams.giveCardId) {
+					return;
+				}
+				let data = {
+					ticketId: homeParams.ticketId,
+					giveCardId: homeParams.giveCardId,
+				}
+				let res = await api.confirmStutas(data);
+				if (res.code == 200) {
+					this.shareCoupons = res.data;
+					this.notAuth = true;
+				} else {
+					this.$msg.showToast(res.message)
 				}
 			},
 			async loginSuccess(val) {
+				this.$refs.authorM.hidePop();
 				let memberinfo = await getMemberInfo(true);
 				this.memberinfo = memberinfo;
-				that.pointActivity(); //查询积点活动
+				this.pointActivity(); //查询积点活动
 				if (this.redRewardInfo) {
 					return this.receiveReward();
 				}
 				if (that.homeParams && that.homeParams.giveCardId) {
-					that.receiveCouponsBtn(); //领取优惠卷
+					this.receiveCouponsBtn(); //领取优惠卷
 				}
 			},
 			//跳转点单页，判断自取或外卖
@@ -637,7 +653,7 @@
 			@include rect(100%, 422upx);
 
 			image {
-				
+
 				@include rect(100%, 100%);
 			}
 		}

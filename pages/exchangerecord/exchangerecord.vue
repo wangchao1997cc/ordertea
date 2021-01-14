@@ -35,6 +35,12 @@
 				<text>共一件商品&nbsp;&nbsp;&nbsp;合计：</text><text class="font-big">{{item.payType > 3?item.amount+'元 + '+item.point+'积分':(item.payType==3?(item.freight?item.amount+'元 + '+item.point+'积分':item.point)+'积分':item.amount+'元')}}</text>
 			</view>
 		</view>
+		<view class="no_record" v-if="nodataShow">
+			<view class="no-record-pic">
+				<image src="../../static/nodata/noRecord.png"></image>
+			</view>
+			<view class="no-record-juide">暂无兑换记录</view>
+		</view>
 	</view>
 </template>
 
@@ -43,6 +49,7 @@
 	export default {
 		data() {
 			return {
+				nodataShow:false,
 				page: 0,
 				totalPageindex: null, //总页数
 				records: [],
@@ -67,9 +74,9 @@
 			async getExchangeRecord() {
 				let that = this;
 				let data = {
+					cardNo: that.$store.state.cardNo,
 					page: that.page,
 					limit: 8,
-					cardNo: that.$store.cardNo,
 				}
 				let res = await api.exchangeRecord(data);
 				if (res.code == 200) {
@@ -78,6 +85,9 @@
 						that.totalPageindex = Math.floor(res.total / 10);
 					}else{
 						that.records = that.records.concat(res.data);
+					}
+					if(!that.records.length){
+						this.nodataShow = true;
 					}
 				}
 			}
@@ -90,6 +100,22 @@
 		color: $uni-text-color;
 		padding-top: 1upx;
 		font-size: $font-md;
+	}
+	
+	.no_record{
+		width: 100%;
+		.no-record-pic{
+			@include rect(400upx,384upx);
+			margin: 200upx auto 50upx auto;
+			image{
+				@include rect(100%,100%);
+			}
+		}
+		.no-record-juide{
+			color: #343434;
+			opacity: 0.5;
+			text-align: center;
+		}
 	}
 
 	.goods-info {

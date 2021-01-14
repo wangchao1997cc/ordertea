@@ -5,6 +5,7 @@
 			<image :src="config.img"></image>
 			<text>{{config.juide}}</text>
 		</view>
+		
 	</view>
 </template>
 
@@ -42,6 +43,7 @@
 						img = '../static/nodata/no_coupons.png';
 						juide = '暂无此类优惠卷～';
 					break;
+
 				}
 				return {
 					img: img,

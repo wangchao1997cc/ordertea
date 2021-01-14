@@ -43,7 +43,7 @@
 				}
 			},
 			//点击开始扫码
-			begainExchange(){
+			scanCode(){
 				let that = this;
 				uni.scanCode({
 				    success: function (res) {

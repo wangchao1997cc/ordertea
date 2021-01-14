@@ -29,7 +29,7 @@
 						<view class="slider">
 							<sildermine :config="sliderConfig"></sildermine>
 						</view>
-						<view class="fl">{{`${memberinfo.experience?memberinfo.experience:0}`}}\{{`${currentLev.upperLimit?currentLev.upperLimit:0}`}}</view>
+						<view class="fl">{{`${memberinfo.experience?memberinfo.experience:0}`}}/{{`${currentLev.upperLimit?currentLev.upperLimit:0}`}}</view>
 					</view>
 					<view class="upgrade_juide">
 						在累计{{(currentLev.upperLimit-memberinfo.experience) || 0}}经验值就可以升级

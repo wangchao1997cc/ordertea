@@ -247,7 +247,7 @@
 		<storeDetail :shopinfo="storeInfo" :shopBoxHeight="shopBoxHeight" :showdetail="showdetail"></storeDetail>
 		<choseStore :nearList="nearList" @switchStore="switchStore" ref="chosestore"></choseStore>
 		<loadpage :loadingState="loadingState"></loadpage>
-		<author ref="authorM"></author>
+		<author ref="authorM" @loginSuccess="loginSuccess"></author>
 	</view>
 </template>
 
@@ -487,7 +487,8 @@
 				that.getStoreMenu(that.storeId);
 				that.storeInfo = app.globalData.storeInfo;
 				that.$store.commit('copy', '');
-			} else if (newload) {
+				
+			} else if (newload && !that.storeInfo.storeId) {
 				if (!that.nearList.length) {
 					that.goToChoseCity();
 				}
@@ -522,6 +523,12 @@
 				that.computReftHe(); //计算右边商品列表的高度
 				that.getBannerList(); //获取轮播图广告
 				that.getLocation(); //获取地理位置
+			},
+			//授权成功关闭弹窗
+			async loginSuccess(){
+				this.$refs.authorM.hidePop();
+				let memberinfo = await getMemberInfo(true);
+				this.memberinfo = memberinfo;
 			},
 			//查看当前活动
 			jumpActiveDesc(item){
@@ -574,6 +581,9 @@
 			// },
 			async getActivity(menus) {
 				let memberinfo = uni.getStorageSync('memberinfo');
+				if(!memberinfo){
+					return false;
+				}
 				let data = {
 					cardId: memberinfo.id
 				};
@@ -935,8 +945,8 @@
 				let that = this;
 				let location = that.location;
 				let data = {
-					// coordinate: [location.longitude,location.latitude],
-					coordinate: [121.480555, 31.271416],
+					coordinate: [location.longitude,location.latitude],
+					// coordinate: [121.480555, 31.271416],
 					businessType: that.businessType,
 					pageNow: 0,
 					pageSize: 10
@@ -1056,34 +1066,13 @@
 					url: '../settle/settle?storeId=' + this.storeInfo.storeId,
 				})
 			},
-			//服务端设置缓存
-			// async setCacheData(cityName) {
-			// 	let data = {
-			// 		cityName: cityName,
-			// 		openId: this.openid,
-			// 	}
-			// 	let res = await api.setCache(data);
-			// 	if (res && res.status) {
-
-			// 	}
-			// },
-			//获取城市id
-			// async getCityId(cityname) {
-			// 	let data = {
-			// 		name: cityname
-			// 	}
-			// 	let res = await api.getCityId(data, false);
-			// 	if (res.status == 1) {
-			// 		let data = {
-			// 			cityid: res.data
-			// 		}
-			// 		this.$store.dispatch('changeFun', data);
-			// 	}
-			// },
 			//处理获取到的商铺菜单
 			async handleShopData(data) {
 				let that = this;
-				data = await that.getActivity(data); //获取活动信息
+				let newdata = await that.getActivity(data); //获取活动信息
+				if(newdata){
+					data = newdata;
+				}
 				that.products = data;
 				that.currentId = data[0].uid;
 				that.loadingState = true;
@@ -1093,9 +1082,6 @@
 						that.jumpProduct();
 					}
 				})
-				// setTimeout(() => { //页面绘图  延迟加载
-				// 	that.calcSize();
-				// }, 150)
 			},
 			//跳转到某一个一级分类
 			jumpProduct(productPrimaryTypeName) {

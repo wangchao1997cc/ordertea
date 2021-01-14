@@ -143,7 +143,7 @@
 		width: 100%;
 		.no-record-pic{
 			@include rect(400upx,384upx);
-			margin: 70upx auto;
+			margin: 200upx auto 50upx auto;
 			image{
 				@include rect(100%,100%);
 			}

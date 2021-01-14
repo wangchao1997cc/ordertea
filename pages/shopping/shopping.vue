@@ -59,7 +59,6 @@
 			}
 		},
 		onLoad() {
-			
 			this.getGoodsList();
 		},
 		onShow() {

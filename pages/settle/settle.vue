@@ -72,9 +72,9 @@
 				实付：<text class="black-text">￥{{interest.afterDiscountTotal?interest.afterDiscountTotal:0}}</text>
 			</view>
 		</view>
-		<view class="balance">
+		<view class="balance" @click="switchUseBalance">
 			<text>会员余额支付</text>
-			<view class="box-l" @click="switchUseBalance">
+			<view class="box-l" >
 				<text>{{interest.balancePay?'已使用余额':'可用余额'}}：<text>{{interest.balancePay?interest.balancePay:(interest.card.balance?interest.card.balance:0)}}</text>元</text>
 				<view class="chosebox" :class="{usebalance:interest.balancePay}">
 					<image v-if="interest.balancePay" src="../../static/choose_icon.png"></image>
@@ -250,6 +250,9 @@
 			},
 			//切换是否使用余额
 			switchUseBalance() {
+				if(!this.interest.card.balance){
+					return this.$msg.showToast('没有可用余额～')
+				}
 				if (this.useBalance == 1) {
 					this.useBalance = 0;
 				} else {

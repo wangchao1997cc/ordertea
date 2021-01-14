@@ -26,11 +26,11 @@
 				</view>
 			</view>
 		</view>
-		<mx-date-picker :show="showPicker" :type="type" :value="valuedate" :show-tips="true"
-		 :show-seconds="true" @confirm="onSelected" @cancel="onSelected" />
-		 <view class="save_btn" @click="saveUserInfo">
-		 	保存
-		 </view>
+		<mx-date-picker :show="showPicker" :type="type" :value="valuedate" :show-tips="true" :show-seconds="true" @confirm="onSelected"
+		 @cancel="onSelected" />
+		<view class="save_btn" @click="saveUserInfo">
+			保存
+		</view>
 	</view>
 
 </template>
@@ -46,8 +46,8 @@
 				value: null,
 				birthday: '',
 				showPicker: false,
-				type: ['1970/01/01','2020/01/01'],
-				valuedate:'2000/01/01',
+				type: ['1970/01/01', '2020/01/01'],
+				valuedate: '2000/01/01',
 			}
 		},
 		onLoad() {
@@ -65,44 +65,49 @@
 				this.value = e.detail.value;
 			},
 			//打开日期选择组件
-			chooseData(){
-				if(!this.userinfo.birthday){
+			chooseData() {
+				if (!this.userinfo.birthday) {
 					this.showPicker = true;
-				}else{
+				} else {
 					this.$msg.showToast('生日只能修改一次哦～')
 				}
 			},
 			//日期组件 确定或者取消
-			onSelected(val){
-				if(val){
+			onSelected(val) {
+				if (val) {
 					this.birthday = val.value;
 				}
 				this.showPicker = false;
 			},
 			//保存用户信息
-			 saveUserInfo(){
+			saveUserInfo() {
 				let userinfo = this.userinfo;
 				let data = {
 					name: userinfo.name,
 					sex: this.value,
 					cardId: userinfo.id,
 				}
-				if(!userinfo.birthday && this.birthday){
+				if (!userinfo.birthday && this.birthday) {
 					this.$msg.showModal(json => {
-						if(json==1){
+						if (json == 1) {
 							this.userInfoApi(data);
 						}
-					},'生日只能修改一次哦～')
+					}, '生日只能修改一次哦～')
 					data.birthday = this.birthday
-				}else{
+				} else {
 					this.userInfoApi(data);
 				}
 			},
-			async userInfoApi(data){
+			async userInfoApi(data) {
 				let res = await api.updateMember(data, true);
+				console.log(res)
 				if (res.code == 200) {
 					this.$msg.showToast('保存成功');
-					uni.navigateBack({})
+					setTimeout(() => {
+						uni.navigateBack({})
+					},200)
+				}else{
+					this.$msg.showToast(res.message);
 				}
 			}
 		}
@@ -114,8 +119,9 @@
 		font-size: 31upx;
 		padding-top: 1upx;
 	}
-	.save_btn{
-		@include rect(698upx,98upx);
+
+	.save_btn {
+		@include rect(698upx, 98upx);
 		border-radius: 49upx;
 		position: fixed;
 		bottom: 5.5%;

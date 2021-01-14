@@ -1,4 +1,3 @@
-
 import store from '../store/store.js';
 export const jumpAdvertise = item => {
 	switch (item.jumpType) {
@@ -8,13 +7,20 @@ export const jumpAdvertise = item => {
 			})
 			break;
 		case 2:
-		    console.log(item.productPrimaryTypeName)
-		    store.commit('adverStatus',item.productPrimaryTypeName)
+			console.log(item.productPrimaryTypeName)
+			store.commit('adverStatus', item.productPrimaryTypeName)
 			uni.switchTab({
 				url: '../../pages/ordermenu/ordermenu',
 			})
 			break;
 	}
+}
+
+//正则验证手机号码
+export const checkMobile = data => {
+	let checkphone = /^1\d{10}$/;
+	return checkphone.test(data);
+	
 }
 
 export const appshare = () => {

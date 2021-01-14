@@ -43,6 +43,7 @@
 						iv: encodeURI(res.detail.iv).replace(/\+/g, '%2B'),
 					}
 					let result = await api.phoneLogin(data,true,true);
+					let memberinfo = null;
 					if(result && result.status==1){
 						this.$msg.showToast('登录成功');
 						this.$store.commit('changeLogin',true);
@@ -51,10 +52,10 @@
 							mobile:userinfo.phone,
 							openId:this.$store.state.openid,
 						}
-						let memberinfo = await userRegister(userdata);
+						memberinfo = await userRegister(userdata);
 						uni.setStorageSync('memberinfo', memberinfo);
-						this.$emit('loginSuccess',memberinfo);
 					}
+					this.$emit('loginSuccess',memberinfo);
 				}
 			}
 			
@@ -65,6 +66,7 @@
 <style lang="scss">
 	.author-mask {
 		@extend %all-mask;
+		z-index: 299;
 	}
 
 	.author {

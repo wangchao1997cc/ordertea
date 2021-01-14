@@ -55,18 +55,18 @@
 			</view>
 		</view>
 		<view v-if="totalPrice!=0">
-			<view class="balance">
+			<view class="balance" @click="switchUseBalance">
 				<text>会员余额支付</text>
-				<view class="box-l" @click="switchUseBalance">
+				<view class="box-l" >
 					<text>{{balancePay?'已使用余额':'可用余额'}}：<text>{{balancePay?balancePayNums:memberinfo.balance}}</text>元</text>
 					<view class="chosebox" :class="{usebalance:balancePay}">
 						<image v-if="balancePay" src="../../static/choose_icon.png"></image>
 					</view>
 				</view>
 			</view>
-			<view class="balance">
+			<view class="balance" @click="switchUseWxPay">
 				<text>微信支付</text>
-				<view class="box-l" @click="switchUseWxPay">
+				<view class="box-l" >
 					<view class="chosebox" :class="{usebalance:wxPay}">
 						<image v-if="wxPay" src="../../static/choose_icon.png"></image>
 					</view>
@@ -86,6 +86,9 @@
 		refreshUserInfo,
 		wxPayment
 	} from '../../utils/publicApi.js'
+	import {
+		checkMobile
+	} from '../../utils/utils.js'
 	export default {
 		data() {
 			return {
@@ -167,6 +170,9 @@
 			},
 			//点击使用余额支付
 			switchUseBalance() {
+				if(!this.memberinfo.balance){
+					return this.$msg.showToast('暂无可用余额～')
+				}
 				this.balancePay = !this.balancePay;
 				if (this.balancePay) {
 					this.wxPay = false;
@@ -186,7 +192,6 @@
 				if (!goodsdesc.canBuy) {
 					this.$msg.showToast('您当前的等级不满')
 				}
-
 				let data = {
 					getWay: goodsdesc.getWay,
 					cardNo: that.memberinfo.cardNo,
@@ -196,6 +201,7 @@
 					data.freight = that.needfreight;
 				}
 				if (goodsdesc.getWay == 1) {
+					let businessinfo = this.businessinfo;
 					if (!businessinfo) {
 						return that.$msg.showToast('请先选择商家');
 					}
@@ -208,6 +214,10 @@
 							return that.$msg.showToast('请先填写您的收件信息')
 						}
 					}
+					if(!checkMobile(that.params.mobile)){
+						return this.$msg.showToast('请填写正确的手机号码～')
+					}
+					Object.assign(data,that.params);
 				}
 				switch (goodsdesc.payType) {
 					case 0:
@@ -249,6 +259,8 @@
 					} else {
 						that.completeOrder(res.pointExchangeGifts.id)
 					}
+				}else{
+					this.$msg.showToast('res.message')
 				}
 			},
 			//完成订单支付
@@ -283,7 +295,6 @@
 						this.$msg.showToast('支付失败');
 					})
 				}
-				console.log(res)
 			},
 			//跳转选择店铺
 			jumpPointStore() {
