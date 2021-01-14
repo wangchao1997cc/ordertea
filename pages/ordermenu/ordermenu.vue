@@ -996,9 +996,11 @@
 				this.closeAllMask();
 				let storeInfo = app.globalData.storeInfo;
 				let memberinfo = uni.getStorageSync('memberinfo');
+				if(!memberinfo){
+					return this.$refs.authorM.showPop();
+				}
 				let shopcar = this.shopcar;
 				let order = [];
-
 				shopcar.forEach((item, index) => {
 					let products = {
 						qty: item.nums,

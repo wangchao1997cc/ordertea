@@ -137,15 +137,6 @@
 		onLoad() {
 
 		},
-		// computed: {
-		// 	silderW() {
-		// 		let width = 0;
-		// 		if (this.memberinfo && this.currentLev) {
-		// 			width = Math.floor((this.memberinfo.experience / this.currentLev.upperLimit) * 100);
-		// 		}
-		// 		return width+'%';
-		// 	}
-		// },
 		async onShow() {
 			let memberinfo = await getMemberInfo(true);
 			this.memberinfo = memberinfo;
@@ -173,6 +164,8 @@
 						this.sliderConfig.progressbar = width +'%';
 					}
 					this.currentLev = lev[0];
+				}else{
+					this.$msg.showToast(res.message)
 				}
 			},
 			//用户授权信息
@@ -193,6 +186,8 @@
 						uni.navigateTo({
 							url: '../userdetail/userdetail'
 						})
+					}else{
+						this.$msg.showToast(res.message)
 					}
 				}
 			},
