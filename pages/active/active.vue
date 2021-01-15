@@ -13,7 +13,7 @@
 					<view class="cont-item">
 						<image src="../../static/active/invitation_coupons.png"></image>
 						<text>获得优惠卷</text>
-						<text>{{profitinfo.wxActivityReward.giftTicketList.length || 0}}张</text>
+						<text>{{profitinfo.earnings.ticketCount || 0}}张</text>
 					</view>
 					<view class="cont-item">
 						<image src="../../static/active/invita_money.png"></image>

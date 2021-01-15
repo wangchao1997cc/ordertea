@@ -39,7 +39,8 @@
 							<text>{{item.value}}</text>
 						</view>
 					</view>
-					<view class="active" v-if="index==4" @click="checkPonitDesc">
+					<!-- @click="checkPonitDesc" -->
+					<view class="active" v-if="index==4">
 						<view class="active-juide">
 							<image class="sm-icon" src="../../static/homepage/home_milktea.png"></image>
 							<text>{{pointNum || 0}} </text>
@@ -228,12 +229,12 @@
 			}
 			uni.showTabBar({})
 			uni.showLoading({
-				mask:true
+				mask: true
 			})
 			this.init(); //归纳函数
 		},
 		onShow(res) {
-			console.log('onshow',res)
+			console.log('onshow', res)
 		},
 		computed: {
 			...mapState(['cityid', 'JSESSIONID', 'isLogin']),
@@ -311,7 +312,7 @@
 					return that.$refs.authorM.showPop();
 				}
 				uni.showLoading({
-					title:'领取中'
+					title: '领取中'
 				})
 				let data = {
 					cardId: that.memberinfo.id,
@@ -356,7 +357,7 @@
 				}
 			},
 			async juideUserInfo() {
-				
+
 				let that = this;
 				if (!that.isLogin) {
 					let userinfo = await refreshUserInfo(true);
@@ -449,7 +450,11 @@
 				let location = await getLocation();
 			},
 			jumpAdvertise(item) {
-				jumpAdvertise(item)
+				let url = 'https://mp.weixin.qq.com/s/N6Uze-QHeO-ydeCS5cNHDA';
+				uni.navigateTo({
+					url:'../webview/webview?url='+url
+				})
+				// jumpAdvertise(item)
 			},
 			//跳转充值
 			jumpWallet() {
@@ -493,9 +498,7 @@
 						})
 						break;
 					case 4:
-						// uni.switchTab({
-						// 	url:'../mine/mine'
-						// })
+						this.checkPonitDesc();
 						break;
 				}
 			}

@@ -973,8 +973,12 @@
 			},
 			goToChoseCity() {
 				this.$msg.showModal(res => {
-					goChoseCity(); //前往选择省份
-				}, '您的附近没有小茶僮噢～，去其他地方看看吧', '温馨提示', false)
+					if(res==1){
+						goChoseCity(); //前往选择省份
+					}else{
+						this.getCategoryList(); //获取默认的商品列表
+					}
+				}, '您的附近没有小茶僮噢～，去其他地方看看吧', '温馨提示', true)
 			},
 			//位置选择
 			jumpaddress() {
