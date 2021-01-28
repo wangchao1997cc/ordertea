@@ -160,11 +160,10 @@
 					cardId: this.memberinfo.id,
 					activityId: this.activityId
 				};
-				let res = await api.activityDesc(data);
+				let res = await api.activityDesc(data,true);
 				if (res.code == 200) {
 					this.activeDesc = res.data;
 				}
-				console.log('活动详情', res)
 			},
 			async getActiveInfo(bol) {
 				let data = {};
@@ -198,7 +197,6 @@
 					}
 					let result = await api.phoneLogin(data, true, true);
 					if (result && result.status == 1) {
-						this.$msg.showToast('登录成功');
 						this.$store.commit('changeLogin', true);
 						let userinfo = await refreshUserInfo(true); //刷新用户信息
 						let userdata = {
@@ -207,10 +205,12 @@
 						}
 						let memberinfo = await userRegister(userdata);
 						this.memberinfo = memberinfo;
+						this.$msg.showToast('登录成功');
 						this.cheackProfit(); //查看自己的收益
 						this.activeDescInfo(); //获取活动详情
 						uni.setStorageSync('memberinfo', memberinfo);
-					} else {
+					} else if(result.status==2){
+						this.$store.commit('changeLogin', true);
 						this.$msg.showToast(result.msg);
 						let memberinfo = await getMemberInfo(true);
 						this.memberinfo = memberinfo;

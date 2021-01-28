@@ -2,7 +2,7 @@
 	<view class="content">
 		<swiper class="head-info" :autoplay="true" :circular="true" :interval="3000" :duration="1000">
 			<!-- <navbar :config="config"></navbar> -->
-			<swiper-item v-for="(item,index) in bannerData.topBannerList" :key="index" @click="jumpAdvertise(item)">
+			<swiper-item v-for="(item,index) in bannerData.topBannerList" :key="index" @click="jumpAdvertise(item,index)">
 				<image :src="item.picUrl" mode="aspectFill"></image>
 			</swiper-item>
 		</swiper>
@@ -59,8 +59,8 @@
 				<view class="adver-tit">
 					新鲜事
 				</view>
-				<view class="adver-item" v-for="(item,index) in bannerData.bottomBannerList" :key="index" @click="jumpAdvertise(item)">
-					<image :src="item.picUrl" mode="aspectFill"></image>
+				<view class="adver-item" v-for="(item,index) in newsImag" :key="index" @click="bootNewBtn(index)">
+					<image :src="item" mode="aspectFill"></image>
 				</view>
 			</view>
 		</view>
@@ -111,15 +111,16 @@
 			<view class="order-info" :animation="animationData">
 				<view class="desc-box">
 					<view class="head-tit">
-						{{pointActive.title}}
+						{{pointActive.title || '积点活动'}}
 						<view class="close-pic" @click="closePointActive">
 							<image src="../../static/cha.png"></image>
 						</view>
 					</view>
 					<scroll-view scroll-y="true" class="desc-cont">
-						<view class="desc-time">{{pointActive.startTime+' '+pointActive.endTime}}</view>
-						<view class="desc-cont-o">
-							<text>活动内容：{{`每集齐${pointActive.number}杯，就可以获得赠饮一杯哦～`}}</text>
+						<view v-if="pointActive"  class="desc-time">{{pointActive.startTime+' '+pointActive.endTime}}</view>
+						<text class="desc-time" v-else>非常抱歉，现在没有开启积点活动</text>
+						<view class="desc-cont-o" v-if="pointActive">
+							<text v-if="pointActive">活动内容：{{`每集齐${pointActive.number}杯，就可以获得赠饮一杯哦～`}}</text>
 						</view>
 					</scroll-view>
 				</view>
@@ -148,7 +149,8 @@
 	import {
 		ajaxUserLogin,
 		refreshUserInfo,
-		getMemberInfo
+		getMemberInfo,
+		getRecharge
 	} from '../../utils/publicApi.js'
 	import {
 		goUserAddress
@@ -157,6 +159,7 @@
 	export default {
 		data() {
 			return {
+				walletShow:false,  //充值套餐显示否
 				animationData: {}, //动画控件
 				maskShow: false, //集点卡活动介绍
 				rewardarr: [], //奖励数组
@@ -166,6 +169,10 @@
 					progresswidth: '272upx',
 					progressbar: '0%',
 				},
+				newsImag: ["https://fnb-merchants.oss-cn-shanghai.aliyuncs.com/7622/adsadasfefxxsdx_20210120165856.jpg",
+					"https://fnb-merchants.oss-cn-shanghai.aliyuncs.com/7622/banner20201118151452.png"
+				],
+
 				memberinfo: null, //用户信息
 				bannerData: {}, //轮播图数据
 				shareCoupons: null, //分享的优惠卷
@@ -217,11 +224,13 @@
 		},
 		// computed:{
 		// 	...mapState(['isLogin']),
-
 		// },
 		async onLoad(options) {
-			uni.hideTabBar({});
+			uni.showLoading({
+				mask: 'true'
+			})
 			if (!this.JSESSIONID) {
+				uni.hideTabBar({});
 				await ajaxUserLogin(); //先进行登录
 			}
 			if (options.giveCardId) {
@@ -233,9 +242,7 @@
 			})
 			this.init(); //归纳函数
 		},
-		onShow(res) {
-			console.log('onshow', res)
-		},
+		onShow(res) {},
 		computed: {
 			...mapState(['cityid', 'JSESSIONID', 'isLogin']),
 			pointNum() {
@@ -257,10 +264,11 @@
 			}
 		},
 		methods: {
-			init() {
+			async init() {
 				this.getBannerList();
 				this.juideUserInfo(); //判断用户是否登录
 				this.renderAnimation(); //定义动画
+				this.walletShow = await getRecharge();
 			},
 			//打开集点卡介绍幕布
 			checkPonitDesc() {
@@ -299,7 +307,6 @@
 				}
 				let res = await api.pointActivity(data);
 				if (res.code == 200) {
-					console.log(res.data[0])
 					this.pointActive = res.data[0];
 				}
 
@@ -324,6 +331,7 @@
 				if (res.code == 200) {
 					that.redRewardInfo = null;
 					that.$msg.showToast('恭喜您领取成功～');
+					this.memberinfo = await getMemberInfo(true);
 				} else {
 					that.$msg.showToast(res.message);
 				}
@@ -337,7 +345,7 @@
 					url: '../membercode/membercode'
 				})
 			},
-			//点击领取优惠卷
+			//领取好友赠送的优惠卷
 			async receiveCouponsBtn() {
 				let memberinfo = this.memberinfo;
 				if (!memberinfo) {
@@ -348,37 +356,38 @@
 					obtainCardId: this.memberinfo.id,
 					ticketId: this.homeParams.ticketId,
 				}
-				let res = await api.receiveCoupons(data);
+				let res = await api.receiveCoupons(data, true);
 				this.notAuth = false
 				if (res.code == 200) {
 					this.$msg.showToast('领取成功～')
+					this.memberinfo = await getMemberInfo(true);
 				} else {
 					this.$msg.showToast(res.message)
 				}
 			},
 			async juideUserInfo() {
-
 				let that = this;
-				if (!that.isLogin) {
-					let userinfo = await refreshUserInfo(true);
-					if (!userinfo || !userinfo.phone) {
-						let redReaward = await that.redReaward(); //查询红包奖励
-						if ((that.homeParams && that.homeParams.giveCardId) || redReaward) {
-							that.receiveCoupons(); //查询优惠卷
-						} else {
-							that.$refs.authorM.showPop();
+				let userinfo = await refreshUserInfo(true);
+				if (!userinfo || !userinfo.phone) { //是否注册 ，没有注册的情况下
+					let redReaward = await that.redReaward(); //查询红包奖励（天将红包）
+					if (that.homeParams.giveCardId || redReaward) { //用户赠送的优惠卷
+						if (that.homeParams.giveCardId) {
+							that.receiveCoupons(); //查询好友赠送的优惠卷
 						}
 					} else {
-						let memberinfo = await getMemberInfo(true);
-						that.integralarr[0].value = memberinfo.point;
-						that.integralarr[3].value = memberinfo.coupons.length + '张';
-						that.memberinfo = memberinfo;
-						if (that.homeParams && that.homeParams.giveCardId) {
-							that.receiveCoupons(); //查询优惠卷
-						}
-						that.pointActivity(); //查询积点活动
-						that.redReaward(memberinfo.id);
+						that.$refs.authorM.showPop();
 					}
+				} else {
+					let memberinfo = await getMemberInfo(true);
+					that.integralarr[0].value = memberinfo.point;
+					that.integralarr[3].value = memberinfo.coupons.length + '张';
+					that.memberinfo = memberinfo;
+					if (that.homeParams && that.homeParams.giveCardId) {
+						that.receiveCoupons(); //查询好友赠送的优惠卷优惠卷
+					}
+					that.pointActivity(); //查询积点活动
+					
+					that.redReaward(memberinfo.id);
 				}
 				uni.hideLoading();
 			},
@@ -398,7 +407,7 @@
 					}
 				}
 			},
-			//领取优惠卷
+			//查询好友赠送的优惠卷
 			async receiveCoupons() {
 				let homeParams = this.homeParams;
 				if (this.memberinfo && this.memberinfo.id == homeParams.giveCardId) {
@@ -422,10 +431,10 @@
 				this.memberinfo = memberinfo;
 				this.pointActivity(); //查询积点活动
 				if (this.redRewardInfo) {
-					return this.receiveReward();
+					return this.receiveReward(); //注册成功领取天降红包
 				}
 				if (that.homeParams && that.homeParams.giveCardId) {
-					this.receiveCouponsBtn(); //领取优惠卷
+					this.receiveCouponsBtn(); //注册成功领取好友赠送的优惠卷
 				}
 			},
 			//跳转点单页，判断自取或外卖
@@ -449,15 +458,34 @@
 			async getLocation() {
 				let location = await getLocation();
 			},
-			jumpAdvertise(item) {
-				let url = 'https://mp.weixin.qq.com/s/N6Uze-QHeO-ydeCS5cNHDA';
+			bootNewBtn(index){
+				let url = '';
+				switch(index){
+					case 0:
+					url = 'https://mp.weixin.qq.com/s/9IwlGzzYR0cM3baI_Xstpw';
+					break
+					case 1:
+					url = 'https://mp.weixin.qq.com/s/zc3Gb3zEeWtHzm1-DHMNwQ';
+					break;
+				}
 				uni.navigateTo({
-					url:'../webview/webview?url='+url
+					url:'../webview/webview?url='+url,
 				})
-				// jumpAdvertise(item)
+			},
+			jumpAdvertise(item,index) {
+				if(index==0){
+					uni.switchTab({
+						url:'../mine/mine'
+					})
+					return;
+				}
+				jumpAdvertise(item)
 			},
 			//跳转充值
 			jumpWallet() {
+				if(!this.walletShow){
+					return this.$msg.showToast('非常抱歉，现在没有开启充值活动')
+				}
 				if (this.memberinfo) {
 					uni.navigateTo({
 						url: '../wallet/wallet'

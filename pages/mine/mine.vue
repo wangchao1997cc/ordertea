@@ -1,6 +1,7 @@
 <template>
 	<view class="content">
 		<view class="header_info">
+			<image src="../../static/my/mine_bg.png" mode="aspectFill"></image>
 			<!-- <navbar :config="config"></navbar> -->
 			<view class="member-code" @click="jumpMemberCoed">
 				<image src="../../static/member_icon.png"></image>
@@ -31,7 +32,10 @@
 						</view>
 						<view class="fl">{{`${memberinfo.experience?memberinfo.experience:0}`}}/{{`${currentLev.upperLimit?currentLev.upperLimit:0}`}}</view>
 					</view>
-					<view class="upgrade_juide">
+					<view class="upgrade_juide" v-if="currentLev.upperLimit-memberinfo.experience<0">
+						恭喜您，已经达到最高等级
+					</view>
+					<view class="upgrade_juide" v-else>
 						在累计{{(currentLev.upperLimit-memberinfo.experience) || 0}}经验值就可以升级
 					</view>
 				</view>
@@ -92,7 +96,8 @@
 	import api from '../../WXapi/api.js'
 	import sildermine from '../../components/minesilder.vue'
 	import {
-		getMemberInfo
+		getMemberInfo,
+		getRecharge
 	} from '../../utils/publicApi.js'
 	import {
 		subtr
@@ -100,6 +105,7 @@
 	export default {
 		data() {
 			return {
+				walletShow: false, //是否可以前往充值
 				notAuth: false,
 				memberinfo: null,
 				sliderConfig: {
@@ -132,10 +138,12 @@
 					text: '关于我们'
 				}, ],
 				currentLev: null,
+				activeinfo:null,   //裂变活动
 			}
 		},
-		onLoad() {
-
+		async onLoad() {
+			this.walletShow = await getRecharge();
+			this.getActiveInfo();   //查询是否有裂变活动
 		},
 		async onShow() {
 			let memberinfo = await getMemberInfo(true);
@@ -149,6 +157,15 @@
 			sildermine,
 		},
 		methods: {
+			//查询裂变活动
+			async getActiveInfo(bol) {
+				let res = await api.fissionActive({},true);
+				if (res.code == 200) {
+					if(res.data){
+						this.activeinfo = res.data;
+					}
+				}
+			},
 			//获取当前等级信息
 			async getGradeInfo() {
 				let res = await api.getLevel({});
@@ -158,13 +175,17 @@
 						return (experience == item.lowerLimit || experience > item.lowerLimit) && (experience < item.upperLimit ||
 							experience == item.lowerLimit)
 					})
+					console.log(lev)
+					if (lev.length == 0) {
+						lev.push(res.data[res.data.length - 1])
+					}
 					let width = 0;
 					width = Math.floor((this.memberinfo.experience / lev[0].upperLimit) * 100);
-					if(width){
-						this.sliderConfig.progressbar = width +'%';
+					if (width) {
+						this.sliderConfig.progressbar = width + '%';
 					}
 					this.currentLev = lev[0];
-				}else{
+				} else {
 					this.$msg.showToast(res.message)
 				}
 			},
@@ -186,7 +207,7 @@
 						uni.navigateTo({
 							url: '../userdetail/userdetail'
 						})
-					}else{
+					} else {
 						this.$msg.showToast(res.message)
 					}
 				}
@@ -205,6 +226,9 @@
 			},
 			//跳转钱包页面
 			jumpWallet() {
+				if (!this.walletShow) {
+					return this.$msg.showToast('非常抱歉，现在没有开启充值活动')
+				}
 				uni.navigateTo({
 					url: '../wallet/wallet'
 				})
@@ -223,12 +247,18 @@
 						url = '../userdetail/userdetail';
 						break;
 					case 3:
+						if (!this.walletShow) {
+							return this.$msg.showToast('非常抱歉，现在没有开启充值活动')
+						}
 						url = '../wallet/wallet';
 						break;
 					case 4:
 						url = '../shopping/shopping';
 						break;
 					case 5:
+					    if(!this.activeinfo){
+							return this.$msg.showToast('非常抱歉，现在没有开启裂变活动，敬请期待！')
+						}
 						url = '../active/active';
 						break;
 					case 6:
@@ -243,9 +273,9 @@
 				})
 			},
 			//跳转会员码
-			jumpMemberCoed(){
+			jumpMemberCoed() {
 				uni.navigateTo({
-					url:'../membercode/membercode'
+					url: '../membercode/membercode'
 				})
 			}
 		}
@@ -328,9 +358,13 @@
 
 	.header_info {
 		@include rect(750upx, 542upx);
-		border: 1upx $main-color solid;
 		position: relative;
-		background-color: $main-color;
+
+		// background: url('https://fnb-merchants.oss-cn-shanghai.aliyuncs.com/7622/top_bg.png');
+		// background-size: 750upx 542upx;
+		image {
+			@include rect(100%, 100%)
+		}
 
 		.member-code {
 			position: absolute;

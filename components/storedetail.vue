@@ -22,6 +22,9 @@
 			<text @click="callTel(shopinfo.phoneNumberList[0])">门店电话：{{shopinfo.phoneNumberList[0]}}\n</text>
 			<text>门店地址：{{shopinfo.storeAddress}}</text>
 		</view>
+		<view class="blank-box">
+			
+		</view>
 	</view>
 </template>
 
@@ -75,7 +78,6 @@
 		margin-top: 80upx;
 		font-size: 24upx;
 		color: #A0A0A0;
-		
 	}
 	.detail_title{
 		color: $uni-text-color;
@@ -84,5 +86,8 @@
 	}
 	.store_detail_title>text{
 		line-height: 40upx;
+	}
+	.blank-box{
+		height: 150upx;
 	}
 </style>

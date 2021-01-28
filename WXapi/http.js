@@ -1,14 +1,21 @@
 //定义环境 请求封装
-const base_url_m = 'https://qc.can-dao.com:7776/'; //测试环境
-const baseurl_v43 = 'https://api.vi-ni.com/openapi/' //测试环境	
-// const baseurl_v43 = 'https://api.v-ka.com/openapi/'    //生产环境
-const default_value_f = 'Action?' + 'key=93ba9db2f9f4f0e4'
-const default_value_s = 'SecretAction?' + 'key=93ba9db2f9f4f0e4'
+const base_url_m = 'https://open6-wxa.can-dao.com/'; //测试环境   餐道
+//正式环境   "https://open6-wxa.can-dao.com/";
+//测试环境  'https://qc.can-dao.com:7776/
+
+const baseurl_v43 = 'https://crmapi.fnb-tech.com/openapi/' //测试环境	会员
+// 正式环境    'https://crmapi.fnb-tech.com/openapi/' 
+//测试环境    'https://api.vi-ni.com/openapi/'
+
+const default_value_f = 'Action?' + 'key=6886173bf669d7bc'
+const default_value_s = 'SecretAction?' + 'key=6886173bf669d7bc'
+
+//key  //正式：‘6886173bf669d7bc’ //测试‘93ba9db2f9f4f0e4’
+
 import store from '../store/store.js';
 const app = getApp();
-const key = 'jdhajshdjf871238767o';
-
-
+const key = 'rc09pv1O21dfY01nx8wx';   //正式环境
+// const key = 'jdhajshdjf871238767o';   //测试环境
 
 var JSESSIONID = store.state.JSESSIONID;
 
@@ -43,8 +50,7 @@ import md5 from 'blueimp-md5'
 
 const timestmpParams = {
 	method: 'get',
-	header: {
-	},
+	header: {},
 	url: baseurl_v43 + 'v4_3/getCurrentTimeMilli',
 }
 export async function service_v(url, method, data, isloading) {
@@ -53,28 +59,28 @@ export async function service_v(url, method, data, isloading) {
 		// "content-type": method === 'get' ? 'application/x-www-form-urlencoded' : 'application/json',
 		"brandId": app.globalData.brandId,
 		"clientId": app.globalData.clientId,
-		"timestamp":timestamp.data,
+		"timestamp": timestamp.data,
 	}
 	let storeCode = app.globalData.storeInfo.extraStoreId;
-	if(storeCode){
+	if (storeCode) {
 		header.storeCode = storeCode;
 	}
-	let md5Params = Object.assign({},header);
+	let md5Params = Object.assign({}, header);
 	header.key = key;
-	Object.assign(md5Params,data);
+	Object.assign(md5Params, data);
 	md5Params = handleSingn(md5Params);
 	url = baseurl_v43 + url;
 	header.sign = md5Params;
 	return nrequest(method, header, url, data, isloading)
 }
 //处理   md5 sign参数
-function handleSingn(data){
+function handleSingn(data) {
 	let newData = {};
 	Object.keys(data).sort().map(key => {
-		if(typeof(data[key])=='object'){
+		if (typeof(data[key]) == 'object') {
 			data[key] = JSON.stringify(data[key])
 		}
-	   newData[key] = data[key]
+		newData[key] = data[key]
 	})
 	newData.key = key;
 	newData = jsonToUrlForm(newData);
@@ -108,16 +114,16 @@ function nrequest(method, header, url, data, isloading) {
 			async success(e) {
 				if (isloading) uni.hideLoading();
 				if (e.statusCode === 200) {
-					resolve(e.data);
 					if (!JSESSIONID) {
 						// JSESSIONID = "cc8bef60-c231-4a26-b0e3-6c3e13549cbf; path=/; expires=Fri, 01-Jan-2021 02:47:00 GMT"
 						JSESSIONID = e.header["Set-Cookie"].match(/JSESSIONID=(.*)?;/)[1];
 						// console.log(JSESSIONID)
-						let data = {
-							"JSESSIONID": JSESSIONID
-						};
-						store.dispatch('changeFun', data);
+						// let data = {
+						// 	"JSESSIONID": JSESSIONID
+						// };
+						store.commit('jessionid', JSESSIONID);
 					}
+					resolve(e.data);
 				}
 			},
 			fail(e) {

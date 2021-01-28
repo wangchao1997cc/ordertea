@@ -17,8 +17,8 @@
 					<view class="cou-times">
 						<text>{{item.beginTime.slice(0,10) +'  		 '+item.endTime.slice(0,10)}}</text>
 					</view>
-					<view class="cou-btn" :class="{on:item.canUse==2 || currtab>0}" @click="controlCoupons(item)" >
-						{{type?(item.canUse==1?'去使用':'不可使用'):(currtab==0?'查看使用限制':(currtab==1?'已使用':'已过期'))}}
+					<view class="cou-btn" :class="{on:item.canUse==2 || currtab>0}"  >
+						{{type?(item.canUse==1?'使用':'不可使用'):(currtab==0?'查看使用限制':(currtab==1?'已使用':'已过期'))}}
 					</view>
 				</view>
 			</view>
@@ -49,19 +49,25 @@
 			}
 		},
 		methods:{
-			controlCoupons(item){
-				if(this.type==1){
+			// controlCoupons(item){
+			// 	if(this.type==1){
+			// 		if(item.canUse==2){
+			// 			return 
+			// 		}
+			// 		app.globalData.orderinfo.ticketId = item.id;
+			// 		uni.navigateBack({})
+			// 	}
+			// },
+			//查看优惠卷详情
+			checkCouponsDesc(item){
+				if(!this.type){
+					this.$emit('checkCouponsDesc',item)
+				}else{
 					if(item.canUse==2){
 						return 
 					}
 					app.globalData.orderinfo.ticketId = item.id;
 					uni.navigateBack({})
-				}
-			},
-			//查看优惠卷详情
-			checkCouponsDesc(item){
-				if(!this.type){
-					this.$emit('checkCouponsDesc',item)
 				}
 			}
 		}

@@ -1,9 +1,8 @@
 <template>
-	<!-- 等级信息详情 -->
 	<view class="content">
 		<scroll-view class="head-scroll" scroll-x>
 			<view class="nav_item" :class="{changeC:currtab==index}" v-for="(item,index) in gradeinfo" :key="index" @click="changeNav(index)">
-				{{item.levelName}}
+				<image :src="'../../static/my/level'+(index+1)+'.png'"></image> {{item.levelName}}
 			</view>
 		</scroll-view>
 		<view class="lv-pic">
@@ -93,12 +92,21 @@
 		}
 
 		.nav_item {
-			display: inline-block;	
+			display: inline-block;
 			font-size: 32upx;
 			@include nav-line($main-color, 56upx, 5upx);
 			color: #9A9A9A;
 			margin-right: 70upx;
 			line-height: 74upx;
+			height: 74upx;
+
+			// height: 40upx;
+			image{
+				vertical-align: middle;
+				margin-bottom: 11upx;
+				// margin-top: 16upx;
+				@include rect(40upx,40upx)
+			}
 			&.changeC {
 				color: $main-color;
 			

@@ -6,7 +6,6 @@ const app = getApp();
 export const refreshUserInfo = async callback => {
 	let res = await api.getUserInfo();
 	if (res && res.status == 1) {
-		console.log(res.data)
 		if (res.data.phone) {
 			store.commit('changeLogin', res.data.phone);
 			getMemberInfo();
@@ -18,14 +17,28 @@ export const refreshUserInfo = async callback => {
 	}
 }
 
+//获取充值套餐
+export const getRecharge = async callback => {
+	let res =  await api.getRecharge({});
+	if (res && res.code == 200) {
+		let data = false;
+		if(res.data.length){
+			data = res.data;
+		}
+		return data;
+	}
+}
+
 
 //获取会员用户信息
 export const getMemberInfo = async callback => {
+	if(!store.state.isLogin){
+		return null;
+	}
 	let data = {
 		mobile: store.state.isLogin,
 	}
 	let res = await api.getMemberInfo(data);
-	
 	if (res && res.code == 200) {
 		if(!store.state.cardNo){
 			store.commit('setCardNo', res.data[0].cardNo);
@@ -47,7 +60,6 @@ export const userRegister = async data => {
 	}
 	let res = await api.vUserLogin(data);
 	if (res && res.code == 200) {
-		uni.setStorageSync('memberinfo', res.data[0]);
 		return res.data[0];
 	}
 }
@@ -85,13 +97,11 @@ export const getCityId = async (cityname, isboolean) => {
 
 //小程序登录获取openid
 export const ajaxUserLogin = async (takeit) => {
-	console.log(1111)
 	let wxCode = await wxLogin();
 	let data = {
 		code: wxCode,
 	};
 	let res = await api.getWxOpenid(data, true);
-	console.log(res)
 	refreshUserInfo();
 	if (res.status == 1) {
 		delete res.data.errcode;

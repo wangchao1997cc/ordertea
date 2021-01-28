@@ -3,7 +3,7 @@ import {
 	normoal,
 	service_v
 } from './http.js';
-const key = '&key=93ba9db2f9f4f0e4';
+const key = '&key=6886173bf669d7bc';
 
 //service请求区域
 //获取城市id
@@ -13,21 +13,25 @@ const getCityId = (data, isloading) => {
 
 //获取附近门店列表
 const getNearStoreList = (data, isPlicing, isloading) => {
+	data.posId = 72;
 	return service('candao.storeStandard.getNearStoreList', 'post', data, isloading)
 }
 
 //获取门店列表
 const getStoreList = (data, isPlicing, isloading) => {
+	data.posId = 72;
 	return service('candao.storeStandard.getStoreList', 'post', data, isloading)
 }
 
 //获取门店信息
 const getStore = (data, isPlicing, isloading) => {
+	data.posId = 72;
 	return service('candao.storeStandard.getStore', 'post', data, isloading)
 }
 
 //获取最近的一家门店
 const getNearStore = (data, isPlicing, isloading) => {
+	data.posId = 72;
 	return service('candao.storeStandard.getNearStore', 'post', data, isloading)
 }
 

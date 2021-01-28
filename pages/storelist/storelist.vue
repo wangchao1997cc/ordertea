@@ -29,7 +29,7 @@
 		data() {
 			return {
 				address: {},
-				pageindex: 1,
+				pageindex: 0,
 				storeList: [],
 				currtab: 0,
 				markers: [],
@@ -51,7 +51,6 @@
 		},
 		onLoad() {
 			let data = getRouteParams();
-			console.log(data)
 			this.address = data;
 			this.getStoreList(data); //获取地区对应的门店列表
 		},
@@ -72,10 +71,8 @@
 					businessType: that.businessType,
 					coordinate: [location.longitude, location.latitude],
 					pageNow: that.pageindex,
-					pageSize: 5
+					pageSize: 30
 				}
-				
-				
 				data.districtId ? params.districtId = data.districtId : '';
 				let res = await api.getStoreList(params);
 				if (res.status == 1) {

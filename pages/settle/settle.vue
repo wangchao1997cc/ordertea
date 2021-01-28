@@ -65,7 +65,7 @@
 			</block>
 
 			<view class="cost-item" @click="jumpUseCoupons">
-				<text>{{couponJuide.tit}}</text>
+				<view class="coupons-juide">{{couponJuide.tit}}</view>
 				<view class="span">{{couponJuide.cont}}</view>
 			</view>
 			<view class="summary">
@@ -365,7 +365,7 @@
 			async memberInterest(params) { //会员权益计算
 				let that = this;
 				!params ? params = this.orderparams : '';
-				let res = await api.memberInterest(params)
+				let res = await api.memberInterest(params,true)
 				uni.hideLoading();
 				if (res.code == 200 || res.code == 1901) {
 					
@@ -380,7 +380,9 @@
 					if (res.code == 1901) {
 						this.$msg.showModal((result) => {
 							if (result == 1) {
-								console.log('前去充值页面')
+								uni.navigateTo({
+									url:'../wallet/wallet'
+								})
 							}
 						}, '您的可用余额不足，是否前去充值')
 					}
@@ -391,7 +393,6 @@
 			//创建订单
 			addOrder() {
 				let that = this;
-
 				let orderparams = that.orderparams;
 				let interest = that.interest;
 				let storeInfo = that.storeInfo;
@@ -763,6 +764,10 @@
 			@extend %flex-alcent;
 			justify-content: space-between;
 			border-bottom: 1upx $line-color solid;
+			.coupons-juide{
+				width: 400upx;
+				@include lineOnly();
+			}
 
 			text {
 				font-size: 32upx;

@@ -28,6 +28,7 @@ export const getLocation = () => {
 				} else if (res.errMsg == "getLocation:fail authorize no response") { //微信定位服务未开启
 					openSet(); //打开微信授权
 				}
+				resolve(false)
 			}
 		})
 	})
@@ -70,13 +71,13 @@ function openSet() {
 				if (json == 1) {
 					uni.openSetting({ //打开微信设置授权
 						success(re) {
-							console.log('打开设置', re)
+							showToast('授权成功，请点击右上角选择重新进入小程序')
 						}
 					})
 				} else { //前往选择城市页面
 					goChoseCity();
 				}
-			}, '如需使用小茶僮点餐，请开启微信小程序的定位授权。', '地理位置未授权', true);
+			}, '如需使用迷客夏点餐，请开启微信小程序的定位授权。', '地理位置未授权', true);
 		}
 
 	})

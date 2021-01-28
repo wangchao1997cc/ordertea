@@ -30,9 +30,9 @@ function setRouteParams(parms) {
 
 export function getRouteParams(){
 	let data = uni.getStorageSync(ROUTEPARAMS);
-	uni.removeStorage({   //获取后删除
-			key:ROUTEPARAMS
-    })
+	// uni.removeStorage({   //获取后删除
+	// 		key:ROUTEPARAMS
+ //    })
 	return data;
 }
 

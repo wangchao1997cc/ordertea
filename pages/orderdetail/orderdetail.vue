@@ -1,24 +1,24 @@
 <template>
 	<view class="content" v-if="orderdetails.orderProducts">
-		<view class="order-header-status" >
+		<view class="order-header-status">
 			<view class="status-juide">
 				{{orderdetails.progress[0].statusName}}
 			</view>
 			<!-- <view v-if="orderdetails.progress[0].status==1"> -->
-				<!-- <view class="status-cont">
+			<!-- <view class="status-cont">
 					剩余支付时间：
 				</view> -->
-				<view class="status-cont" @click="callTel">
-					{{orderdetails.progress[0].clientTips}}
+			<view class="status-cont" @click="callTel">
+				{{orderdetails.progress[0].clientTips}}
+			</view>
+			<view class="order-bt-box" v-if="orderdetails.progress[0].status==1">
+				<view class="order-btn" @click="cancelOrder">
+					取消订单
 				</view>
-				<view class="order-bt-box" v-if="orderdetails.progress[0].status==1">
-					<view class="order-btn" @click="cancelOrder">
-						取消订单
-					</view>
-					<view class="order-btn" @click="getPayParams">
-						去支付
-					</view>
+				<view class="order-btn" @click="getPayParams">
+					去支付
 				</view>
+			</view>
 			<!-- </view>
 			<view class="status-cont" v-else>
 				{{orderdetails.progress[0].clientTips}}
@@ -43,7 +43,7 @@
 			</view>
 			<view class="takemeal-time">
 				<text>{{orderdetails.sendType==1 || orderdetails.sendType==4?'商家地址':'取餐地址'}}</text>
-				<text>{{orderdetails.storeAddress}}</text>
+				<text class="ad-txt">{{orderdetails.storeAddress}}</text>
 			</view>
 			<view class="takemeal-time">
 				<text>订单编号</text>
@@ -54,7 +54,7 @@
 				<text>{{orderdetails.orderDate}}</text>
 			</view>
 		</view>
-		<view class="list"v-if="orderdetails.sendType==1 || orderdetails.sendType==4">
+		<view class="list" v-if="orderdetails.sendType==1 || orderdetails.sendType==4">
 			<view class="row-box">
 				<view class="name-tel">
 					<view>{{orderdetails.address}}</view>
@@ -89,9 +89,9 @@
 				<text>餐盒费</text>
 				<text>¥{{orderdetails.mealFee?orderdetails.mealFee:0}}</text>
 			</view>
-			<block v-for="(item,index) in orderdetails.orderPreferentials" :key="index">
+			<block v-for="(item,index) in orderPreferentials" :key="index">
 				<view class="cost-item">
-					<text>{{item.content}}</text>
+					<text>{{item.content == 'promotions'?(subview&&item.sub!='undefined'?item.sub:'优惠活动'):(item.content == 'levelDiscount'?'会员等级折扣':(item.content == 'card'?'余额支付':(item.content == '0'?'现金券':(item.content == '1'?'折扣券':(item.content == '2'?'商品券':'买N送M券')))))}}</text>
 					<text>-¥ {{-(item.price)}}</text>
 				</view>
 			</block>
@@ -99,7 +99,7 @@
 				实付：<text class="black-text">￥{{orderdetails.totalPrice?orderdetails.totalPrice:0}}</text>
 			</view>
 		</view>
-		
+
 		<view class="otherinfo">
 			<view class="other-item">
 				<text>订单备注</text>
@@ -117,13 +117,15 @@
 			</view>
 		</view>
 		<view class="blank"></view>
-		
+
 	</view>
 </template>
 
 <script>
 	import api from '../../WXapi/api.js'
-	import {TimeDown} from '../../utils/utils.js'   //时间倒计时
+	import {
+		TimeDown
+	} from '../../utils/utils.js' //时间倒计时
 	import {
 		wxPayment
 	} from '../../utils/publicApi.js'
@@ -131,27 +133,53 @@
 	export default {
 		data() {
 			return {
-				orderdetails:{},  //订单详情数据
+				orderdetails: {}, //订单详情数据
+				orderPreferentials: [],
+				subview: false,
 			};
 		},
-		onLoad(options){
+		onLoad(options) {
 			this.orderId = options.orderId;
-			this.getOrderDetail();   //获取订单详情
+			this.getOrderDetail(); //获取订单详情
 		},
 		onShow() {
-			
+
 		},
 		// computed: {
-		
+
 		// },
 		methods: {
-			async getOrderDetail(){
+			async getOrderDetail() {
 				let data = {
 					orderId: this.orderId
 				}
 				let res = await api.getOrderDetail(data);
 				if (res && res.status == 1) {
-					this.orderdetails = res.data
+					this.orderdetails = res.data;
+					let orderPreferentials = res.data.orderPreferentials;
+					for (var i = 0; i < orderPreferentials.length; i++) {
+						if (orderPreferentials[i].content) {
+							var index = orderPreferentials[i].content.indexOf('#');
+							orderPreferentials[i].content = orderPreferentials[i].content.substring(index + 1, orderPreferentials[i].content
+								.length);
+							var index1 = orderPreferentials[i].content.indexOf('#');
+							if (orderPreferentials[i].content.includes('￥') == '' | orderPreferentials[i].content.indexOf('￥') == undefined) {
+								this.subview = true;
+								orderPreferentials[i].sub = orderPreferentials[i].content.substring(index1 + 1);
+							} else if (orderPreferentials[i].content.indexOf('￥') != '' | orderPreferentials[i].content.indexOf('￥') !=
+								undefined) {
+								this.subview = true;
+								var index2 = orderPreferentials[i].content.indexOf('￥');
+								orderPreferentials[i].sub = orderPreferentials[i].content.substring(index1 + 1, index2);
+								orderPreferentials[i].sub = orderPreferentials[i].content.substring(index1 + 1, index2);
+								if (orderPreferentials[i].sub.length > 20) {
+									orderPreferentials[i].sub = orderPreferentials[i].sub.substring(0, 20) + '...'
+								}
+							}
+							orderPreferentials[i].content = orderPreferentials[i].content.substring(0, index1);
+						}
+					}
+					this.orderPreferentials = orderPreferentials;
 					// if(res.data.progress[0].status==1){
 					// 	let createdtime = res.data.progress[0].createTime;
 					// 	var enddate = new Date(createdtime) + (15 * 60000);
@@ -163,7 +191,7 @@
 			timeOut(date) {
 				let that = this;
 				let dateEnd = TimeDown(date);
-				
+
 				// that.timer = setInterval(() => {
 				// 	dateEnd = TimeDown(date);
 				// 	if (!dateEnd) {
@@ -173,25 +201,25 @@
 				// }, 1000);
 			},
 			//拨打电话
-			callTel(){
+			callTel() {
 				uni.makePhoneCall({
-					phoneNumber:this.orderdetails.storePhone,
+					phoneNumber: this.orderdetails.storePhone,
 				})
 			},
 			//取消订单
-			cancelOrder(){
+			cancelOrder() {
 				this.$msg.showModal(async json => {
-					if(json==1){
+					if (json == 1) {
 						let data = {
-							orderId:this.orderId,
+							orderId: this.orderId,
 						}
 						let res = await api.cancelOrder(data);
-						if(res.status==1){
+						if (res.status == 1) {
 							this.$msg.showToast('取消成功')
 							this.getOrderDetail();
 						}
 					}
-				},'是否取消该订单')
+				}, '是否取消该订单')
 			},
 			//开始支付
 			async getPayParams() {
@@ -219,37 +247,42 @@
 	.blank {
 		height: 200upx;
 	}
-	
-	.order-header-status{
+
+	.order-header-status {
 		width: 698upx;
 		@extend %box-style;
-		.status-juide{
+
+		.status-juide {
 			margin-top: 40upx;
 			font-size: 38upx;
 			font-weight: 700;
 			text-align: center;
 		}
-		.status-cont{
+
+		.status-cont {
 			font-size: 30upx;
 			margin-top: 20upx;
 			text-align: center;
 			margin-bottom: 42upx;
 		}
-		.order-bt-box{
+
+		.order-bt-box {
 			margin-bottom: 40upx;
 			height: 60upx;
 			@extend %flex-alcent;
 			justify-content: center;
-			
+
 		}
-		.order-btn{
-			@include rect(160upx,60upx);
+
+		.order-btn {
+			@include rect(160upx, 60upx);
 			border: 2upx #999999 solid;
 			border-radius: 8upx;
 			@include text-allcenter(60upx);
 			color: #999999;
 			margin: 0 40upx;
-			&:last-child{
+
+			&:last-child {
 				background-color: $main-color;
 				color: $bg-white;
 				border: none;
@@ -321,7 +354,7 @@
 	}
 
 
-	
+
 
 	.cost-price {
 		width: 698upx;
@@ -399,11 +432,13 @@
 			}
 
 			.takemeal-time {
-				@include rect(100%, 105upx);
+				width: 100%;
 				@extend %flex-alcent;
 				font-size: 31upx;
 				border-bottom: 1upx $line-color solid;
 				justify-content: space-between;
+				padding: 35upx 0;
+				box-sizing: border-box;
 
 				&:last-child {
 					border: none;
@@ -411,9 +446,12 @@
 
 				text {
 					&:last-child {
-
 						color: #A3A3A3;
 					}
+				}
+				.ad-txt{
+					width: 460upx;
+					display: block;
 				}
 			}
 		}
@@ -444,11 +482,12 @@
 			}
 		}
 	}
+
 	.list {
 		view: {
 			display: flex;
 		}
-	
+
 		.row-box {
 			@include rect(698upx, 145upx);
 			background: #FFFFFF;
@@ -458,24 +497,24 @@
 			box-sizing: border-box;
 			font-size: 30upx;
 			margin: 30upx auto 0 auto;
-	
+
 			.name-tel {
 				color: #000000;
 				font-size: $font-md;
 				@include rect(100%, 30upx) @extend %flex-alcent;
 				justify-content: space-between;
-	
+
 				view:first-child {
 					width: 400upx;
 					@include lineOnly();
 				}
-	
+
 				image {
 					@include rect(30upx, 30upx);
 					margin-right: 7upx;
 				}
 			}
-	
+
 			.address-desc {
 				min-height: 76upx;
 				line-height: 38upx;

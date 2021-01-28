@@ -31,7 +31,8 @@
 	import mswiper from '../../components/m-swiper/m-swiper.vue'
 	import {
 		getMemberInfo,
-		wxPayment
+		wxPayment,
+		getRecharge
 	} from '../../utils/publicApi.js'
 	export default {
 		data() {
@@ -63,11 +64,9 @@
 				this.memberinfo = memberinfo;
 			},
 			async getPackage(){
-
-				let res =  await api.getRecharge({});
+				let res =  await getRecharge();
 				if(res.code==200){
-					console.log(11,res)
-					res.data.forEach(item => {
+					res.forEach(item => {
 						let lvarr = '';
 						if(item.needLevel){
 							item.needLevel.forEach((aitem,index) => {
@@ -80,12 +79,10 @@
 						}else{
 							lvarr = '不限制等级哦！'
 						}
-						
 						item.lvarr = lvarr
 					})
-					this.currtabData = res.data[0];
-					this.imgList = res.data;
-					
+					this.currtabData = res[0];
+					this.imgList = res;
 				}
 			},
 			//点击充值

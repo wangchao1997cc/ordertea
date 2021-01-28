@@ -36,6 +36,9 @@ const store = new Vuex.Store({
 		changebussiness(state,cont){
 			state.businessType = cont;
 		},
+		jessionid(state,cont){
+			state.JSESSIONID = cont;
+		},
         change(state,contObj){
             //通过传入的变量去改变对应的全局变量
            Object.assign(state,contObj)

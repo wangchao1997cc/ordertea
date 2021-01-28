@@ -41,7 +41,7 @@
 		data() {
 			return {
 				pageNow:0,   //当前页数
-				orderList: null,  //订单列表
+				orderList: [],  //订单列表
 				isNexPage:true,   //是否有下一页
 			}
 		},

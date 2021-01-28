@@ -6,8 +6,11 @@
 			</view>
 		</view>
 		<view class="addressinfo">
-			<view class="address-item" v-for="(item,index) in addressData[currtab]" :key='index' @click="switchRegion(item)">
+			<view class="address-item" v-for="(item,index) in addressData[currtab]" :key='index'>
 				{{item.name}}
+				<view class="tab-click" @click="switchRegion(item)">
+					
+				</view>
 			</view>
 		</view>
 	</view>
@@ -166,8 +169,17 @@
 			align-items: center;
 
 			.address-item {
+				width: 100%;
+				justify-content: center;
 				height: 100upx;
 				line-height: 80upx;
+				position: relative;
+				.tab-click{
+					@include rect(750upx,100%);
+					position: absolute;
+					top: 0;
+					left: 0;
+				}
 			}
 		}
 	}

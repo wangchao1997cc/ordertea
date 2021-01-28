@@ -23,10 +23,10 @@
 					</view>
 					<!-- <text>10:00-24:00</text> -->
 				</view>
-				<view class="busy-l">
+				<!-- <view class="busy-l">
 					<minesilder :config="sliderConfig"></minesilder>
 					<text>前面还有<text>8</text>笔订单，预计还要20分钟</text>
-				</view>
+				</view> -->
 			</view>
 			<view class="single_r" :class="{on:type}">
 				<view class="go-look" @click="jumpSoreMenu(item)">

@@ -26,7 +26,7 @@
 			</view>
 			<view class="lv-box">
 				<view class="v-item" v-for="(item,index) in gradeinfo" :key="index">
-					<image src="../../static/v_lv.png"></image>
+					<image :src="'../../static/my/level'+(index+1)+'.png'"></image>
 					<text>{{item.levelName}}</text>
 				</view>
 			</view>
@@ -42,6 +42,7 @@
 				memberinfo:{},
 				interest:[],   //当前所享受权益
 				gradeinfo:[],   //当前等级信息
+				// imgs:['../../static/my/level1.png','../../static/my/level1.png','../../static/my/level1.png','../../static/my/level1.png',]
 			}
 		},
 		onLoad() {
@@ -116,16 +117,17 @@
 			
 			.v-item{
 				image{
-					@include rect(40upx,35upx)
+					@include rect(80upx,80upx)
 				}
 				margin-bottom: 60upx;
-				width: 25%;
 				display: flex;
 				justify-content: center;
+				align-items: center;
+				margin-right: 40upx;
 				// margin-right: 100upx;
-				// &:nth-of-type(n+4){
-				// 	margin-top: 80upx;
-				// }
+				&:nth-of-type(3n){
+					margin-right: 0upx;
+				}
 				text{
 					font-size: 24upx;
 					color: $main-color;
