@@ -91,7 +91,7 @@
 			</view>
 			<block v-for="(item,index) in orderPreferentials" :key="index">
 				<view class="cost-item">
-					<text>{{item.content == 'promotions'?(subview&&item.sub!='undefined'?item.sub:'优惠活动'):(item.content == 'levelDiscount'?'会员等级折扣':(item.content == 'card'?'余额支付':(item.content == '0'?'现金券':(item.content == '1'?'折扣券':(item.content == '2'?'商品券':'买N送M券')))))}}</text>
+					<text>{{item.content == 'promotions'?(subview && item.sub!='undefined'?item.sub:'优惠活动'):(item.content == 'levelDiscount'?'会员等级折扣':(item.content == 'card'?'余额支付':(item.content == '0'?'现金券':(item.content == '1'?'折扣券':(item.content == '2'?'商品券':(item.content == '3'?'买N送M券':'活动折扣'))))))}}</text>
 					<text>-¥ {{-(item.price)}}</text>
 				</view>
 			</block>
@@ -157,6 +157,7 @@
 				if (res && res.status == 1) {
 					this.orderdetails = res.data;
 					let orderPreferentials = res.data.orderPreferentials;
+					console.log(11111,orderPreferentials)
 					for (var i = 0; i < orderPreferentials.length; i++) {
 						if (orderPreferentials[i].content) {
 							var index = orderPreferentials[i].content.indexOf('#');

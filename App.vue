@@ -15,13 +15,12 @@
 			activeParams:null,   //推荐人参数
 			orderSuccess:false,   //下单成功清除购物车
 			exchangeSuccess:false, //兑换成功
+			
 		},
 		onLaunch: async function() {},
 		onShow: function() {
-			console.log('App Show')
 		},
 		onHide: function() {
-			console.log('App Hide')
 		}
 	}
 </script>

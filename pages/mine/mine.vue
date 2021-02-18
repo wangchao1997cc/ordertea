@@ -105,7 +105,6 @@
 	export default {
 		data() {
 			return {
-				walletShow: false, //是否可以前往充值
 				notAuth: false,
 				memberinfo: null,
 				sliderConfig: {
@@ -138,12 +137,10 @@
 					text: '关于我们'
 				}, ],
 				currentLev: null,
-				activeinfo:null,   //裂变活动
 			}
 		},
-		async onLoad() {
-			this.walletShow = await getRecharge();
-			this.getActiveInfo();   //查询是否有裂变活动
+		onLoad() {
+			// this.getActiveInfo();   //查询是否有裂变活动
 		},
 		async onShow() {
 			let memberinfo = await getMemberInfo(true);
@@ -158,11 +155,12 @@
 		},
 		methods: {
 			//查询裂变活动
-			async getActiveInfo(bol) {
-				let res = await api.fissionActive({},true);
+			async getActiveInfo() {
+				let res = await api.fissionActive({}, true);
 				if (res.code == 200) {
-					if(res.data){
-						this.activeinfo = res.data;
+					if (res.data) {
+						return res.data;
+						// this.activeinfo = res.data;
 					}
 				}
 			},
@@ -175,7 +173,6 @@
 						return (experience == item.lowerLimit || experience > item.lowerLimit) && (experience < item.upperLimit ||
 							experience == item.lowerLimit)
 					})
-					console.log(lev)
 					if (lev.length == 0) {
 						lev.push(res.data[res.data.length - 1])
 					}
@@ -203,7 +200,6 @@
 					}
 					let res = await api.updateMember(data, true);
 					if (res.code == 200) {
-						this.notAuth = false;
 						uni.navigateTo({
 							url: '../userdetail/userdetail'
 						})
@@ -211,6 +207,7 @@
 						this.$msg.showToast(res.message)
 					}
 				}
+				this.notAuth = false;
 			},
 			//跳转优惠卷
 			jumpCoupons() {
@@ -225,8 +222,9 @@
 				})
 			},
 			//跳转钱包页面
-			jumpWallet() {
-				if (!this.walletShow) {
+			async jumpWallet() {
+				let walletShow = await getRecharge();
+				if (!walletShow) {
 					return this.$msg.showToast('非常抱歉，现在没有开启充值活动')
 				}
 				uni.navigateTo({
@@ -234,7 +232,7 @@
 				})
 			},
 			//跳转分类页面
-			jumpClassIfyPage(index) {
+			async jumpClassIfyPage(index) {
 				let url = '';
 				switch (index) {
 					case 0:
@@ -247,7 +245,8 @@
 						url = '../userdetail/userdetail';
 						break;
 					case 3:
-						if (!this.walletShow) {
+						let walletShow = await getRecharge();
+						if (!walletShow) {
 							return this.$msg.showToast('非常抱歉，现在没有开启充值活动')
 						}
 						url = '../wallet/wallet';
@@ -256,7 +255,8 @@
 						url = '../shopping/shopping';
 						break;
 					case 5:
-					    if(!this.activeinfo){
+						let activeinfo = await this.getActiveInfo();
+						if (!activeinfo) {
 							return this.$msg.showToast('非常抱歉，现在没有开启裂变活动，敬请期待！')
 						}
 						url = '../active/active';
@@ -355,6 +355,7 @@
 			}
 		}
 	}
+
 
 	.header_info {
 		@include rect(750upx, 542upx);

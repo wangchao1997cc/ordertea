@@ -8,7 +8,6 @@ export const refreshUserInfo = async callback => {
 	if (res && res.status == 1) {
 		if (res.data.phone) {
 			store.commit('changeLogin', res.data.phone);
-			getMemberInfo();
 		}
 		if (callback) {
 			return res.data;
@@ -19,7 +18,7 @@ export const refreshUserInfo = async callback => {
 
 //获取充值套餐
 export const getRecharge = async callback => {
-	let res =  await api.getRecharge({});
+	let res =  await api.getRecharge({},true);
 	if (res && res.code == 200) {
 		let data = false;
 		if(res.data.length){
@@ -54,7 +53,7 @@ export const getMemberInfo = async callback => {
 //用户注册
 export const userRegister = async data => {
 	let activeParams = app.globalData.activeParams;
-	if(activeParams){
+	if(activeParams && !data.activityId){
 		data.recommendedId = activeParams.recommendedId;
 		data.activityId = activeParams.activityId;
 	}
@@ -101,7 +100,7 @@ export const ajaxUserLogin = async (takeit) => {
 	let data = {
 		code: wxCode,
 	};
-	let res = await api.getWxOpenid(data, true);
+	let res = await api.getWxOpenid(data,true);
 	refreshUserInfo();
 	if (res.status == 1) {
 		delete res.data.errcode;

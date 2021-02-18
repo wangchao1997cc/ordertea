@@ -59,7 +59,6 @@ export function goOrderDeatails(parms,bollean) {
 		})
 		return;
 	}
-	console.log(222)
 	uni.navigateTo({
 		url: url + parms,
 	})

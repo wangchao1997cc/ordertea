@@ -3,8 +3,9 @@
 		<view class="single-store" :class="{change_border:currtab==index}" v-for="(item,index) in nearList" :key="index" @click="choseStore(index,item)">
 			<view class="single-l-info">
 				<view class="single-store-name">
-					<view class="single-store-label" v-if="type">
-						营业中
+					<view class="single-store-label" v-if="type" :class="{greybg:!item.isServiceTime}">
+						{{item.isServiceTime?(item.isBusy?'繁忙中':'营业中'):'休息中'}}
+						isServiceTime
 					</view>
 					<text>{{item.storeName}}</text>
 				</view>
@@ -73,6 +74,7 @@
 		methods:{
 			//点击选择店铺
 			choseStore(index,item) {
+				
 				if (this.currtab == index) {
 					return
 				}
@@ -97,6 +99,9 @@
 			},
 			//前往此店铺的点餐页
 			jumpSoreMenu(item) {
+				if(item.isBusy){
+					return this.$msg.showToast('门店忙碌中，请选择其他门店')
+				}
 				app.globalData.storeInfo = item;
 				if(this.type){
 					this.$store.commit('copy', item.storeId);
@@ -123,6 +128,7 @@
 		font-size: 25upx;
 		background-color: $bg-white;
 		border-radius: $radius-md;
+		
 
 	}
 	
@@ -158,6 +164,9 @@
 		background-color: $main-color;
 		font-size: 21upx;
 		margin-right: 23upx;
+		&.greybg{
+			background-color: #ACACAC;
+		}
 	}
 
 	.single-address {

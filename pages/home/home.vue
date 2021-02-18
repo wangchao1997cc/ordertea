@@ -48,7 +48,7 @@
 						</view>
 						<sildermine :config="sliderConfig"></sildermine>
 						<view class="active-desc">
-							再集{{(pointActive.number-pointNum) || 0}}杯可获得好礼
+							再集{{(pointActive.number - pointNum) || 0}}单可获得好礼
 							<image src="../../static/homepage/right.png"></image>
 						</view>
 					</view>
@@ -117,10 +117,11 @@
 						</view>
 					</view>
 					<scroll-view scroll-y="true" class="desc-cont">
-						<view v-if="pointActive"  class="desc-time">{{pointActive.startTime+' '+pointActive.endTime}}</view>
+						<view v-if="pointActive" class="desc-time"> <text v-if="timelimit">{{pointActive.startTime + ' ' + pointActive.endTime}}</text>
+							<text v-else>长期有效</text> </view>
 						<text class="desc-time" v-else>非常抱歉，现在没有开启积点活动</text>
 						<view class="desc-cont-o" v-if="pointActive">
-							<text v-if="pointActive">活动内容：{{`每集齐${pointActive.number}杯，就可以获得赠饮一杯哦～`}}</text>
+							<jyf-parser :html="pointActive.description" selectable="true"></jyf-parser>
 						</view>
 					</scroll-view>
 				</view>
@@ -130,6 +131,8 @@
 </template>
 
 <script>
+	import jyfParser from '@/components/jyf-parser/jyf-parser'; //富文本组件
+
 	const app = getApp();
 	import author from '../../components/author.vue'
 	import {
@@ -137,7 +140,8 @@
 	} from '../../utils/publicApi.js'
 	import sildermine from '../../components/minesilder.vue'
 	import {
-		jumpAdvertise
+		jumpAdvertise,
+		appshare
 	} from '../../utils/utils.js'
 	import {
 		getLocation,
@@ -159,7 +163,8 @@
 	export default {
 		data() {
 			return {
-				walletShow:false,  //充值套餐显示否
+				timelimit: true, //积点时间限制
+				// walletShow:false,  //充值套餐显示否
 				animationData: {}, //动画控件
 				maskShow: false, //集点卡活动介绍
 				rewardarr: [], //奖励数组
@@ -221,6 +226,7 @@
 		components: {
 			sildermine,
 			author,
+			jyfParser
 		},
 		// computed:{
 		// 	...mapState(['isLogin']),
@@ -243,6 +249,10 @@
 			this.init(); //归纳函数
 		},
 		onShow(res) {},
+		
+		onShareAppMessage(res) {
+			return appshare()
+		},
 		computed: {
 			...mapState(['cityid', 'JSESSIONID', 'isLogin']),
 			pointNum() {
@@ -268,7 +278,7 @@
 				this.getBannerList();
 				this.juideUserInfo(); //判断用户是否登录
 				this.renderAnimation(); //定义动画
-				this.walletShow = await getRecharge();
+
 			},
 			//打开集点卡介绍幕布
 			checkPonitDesc() {
@@ -307,9 +317,16 @@
 				}
 				let res = await api.pointActivity(data);
 				if (res.code == 200) {
-					this.pointActive = res.data[0];
+					if (res.data[0]) {
+						if (!res.data[0].description) {
+							res.data[0].description = '<div>暂无内容</div>'
+						}
+						this.pointActive = res.data[0];
+						if (res.data[0].endTime.slice(0, 4) > 2099) {
+							this.timelimit = false
+						}
+					}
 				}
-
 			},
 			//领取天降红包
 			async receiveReward() {
@@ -386,7 +403,6 @@
 						that.receiveCoupons(); //查询好友赠送的优惠卷优惠卷
 					}
 					that.pointActivity(); //查询积点活动
-					
 					that.redReaward(memberinfo.id);
 				}
 				uni.hideLoading();
@@ -407,6 +423,7 @@
 					}
 				}
 			},
+			
 			//查询好友赠送的优惠卷
 			async receiveCoupons() {
 				let homeParams = this.homeParams;
@@ -458,32 +475,33 @@
 			async getLocation() {
 				let location = await getLocation();
 			},
-			bootNewBtn(index){
+			bootNewBtn(index) {
 				let url = '';
-				switch(index){
+				switch (index) {
 					case 0:
-					url = 'https://mp.weixin.qq.com/s/9IwlGzzYR0cM3baI_Xstpw';
-					break
+						url = 'https://mp.weixin.qq.com/s/vK-cBUCVqIaH8WS7zHgJGQ';
+						break
 					case 1:
-					url = 'https://mp.weixin.qq.com/s/zc3Gb3zEeWtHzm1-DHMNwQ';
-					break;
+						url = 'https://mp.weixin.qq.com/s/zc3Gb3zEeWtHzm1-DHMNwQ';
+						break;
 				}
 				uni.navigateTo({
-					url:'../webview/webview?url='+url,
+					url: '../webview/webview?url=' + url,
 				})
 			},
-			jumpAdvertise(item,index) {
-				if(index==0){
+			jumpAdvertise(item, index) {
+				if (index == 0) {
 					uni.switchTab({
-						url:'../mine/mine'
+						url: '../mine/mine'
 					})
 					return;
 				}
 				jumpAdvertise(item)
 			},
 			//跳转充值
-			jumpWallet() {
-				if(!this.walletShow){
+			async jumpWallet() {
+				let walletShow = await getRecharge();
+				if (!walletShow) {
 					return this.$msg.showToast('非常抱歉，现在没有开启充值活动')
 				}
 				if (this.memberinfo) {
@@ -578,14 +596,16 @@
 				@include rect(100%, 440upx);
 				margin-top: 60upx;
 
+
 				.reward-item {
 					@include rect(100%, 100upx);
-					line-height: 88upx;
+					line-height: 100upx;
 					border-radius: $radius-md;
-					background-color: $bg-white;
+					background-color: rgba(255, 255, 255, 0.9);
 					@include box-padding(30upx);
 					margin-bottom: 40upx;
-
+					text-align: center;
+					font-size: 30upx;
 				}
 			}
 

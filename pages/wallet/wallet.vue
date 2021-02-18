@@ -65,7 +65,7 @@
 			},
 			async getPackage(){
 				let res =  await getRecharge();
-				if(res.code==200){
+				if(res && res.length){
 					res.forEach(item => {
 						let lvarr = '';
 						if(item.needLevel){
@@ -81,6 +81,7 @@
 						}
 						item.lvarr = lvarr
 					})
+					
 					this.currtabData = res[0];
 					this.imgList = res;
 				}
@@ -89,7 +90,6 @@
 			async begainRecharge(){
 				// let memberinfo = this.memberinfo;
 				let currtabData = this.currtabData;
-				console.log()
 				let data = {
 					cardId: this.memberinfo.id,
 					amount: currtabData.amount*100,
@@ -107,6 +107,8 @@
 					}).catch(ret => {
 						console.log(ret)
 					})
+				}else{
+					this.$msg.showToast(res.message)
 				}
 			},
 			//跳转充值记录

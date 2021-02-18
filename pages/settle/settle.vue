@@ -1,7 +1,7 @@
 <template>
 	<view class="content" v-if="storeInfo">
 		<view class="table-num" v-if="forhere">
-			<text>30</text>
+			<text>{{forhere.deskId}}</text>
 			您的桌号
 		</view>
 		<view class="times-cont" v-if="!forhere">
@@ -36,7 +36,7 @@
 			<view class="goods-item" v-for="(item,index) in interest.products" :key="index">
 				<view class="goods-info-t">
 					<text>{{item.name}}</text>
-					<text>￥{{item.orderTotal}}</text>
+					<text>￥{{item.total}}</text>
 				</view>
 				<view class="goods-info-t">
 					<text>{{item.condiments[0]?item.condiments[0].name:'常规'}}</text>
@@ -74,7 +74,7 @@
 		</view>
 		<view class="balance" @click="switchUseBalance">
 			<text>会员余额支付</text>
-			<view class="box-l" >
+			<view class="box-l">
 				<text>{{interest.balancePay?'已使用余额':'可用余额'}}：<text>{{interest.balancePay?interest.balancePay:(interest.card.balance?interest.card.balance:0)}}</text>元</text>
 				<view class="chosebox" :class="{usebalance:interest.balancePay}">
 					<image v-if="interest.balancePay" src="../../static/choose_icon.png"></image>
@@ -174,8 +174,8 @@
 				type: null,
 				location: {}, //用户位置信息
 				address: null, //用户地址
-				forhere:null,  //堂食
-				templateIds:null,  //微信订阅消息
+				forhere: null, //堂食
+				templateIds: null, //微信订阅消息
 			};
 		},
 		onLoad(options) {
@@ -188,9 +188,9 @@
 			that.memberInterest(orderparams); //会员权益计算
 			that.type = that.$store.state.businessType[0]; //当前的模式
 			that.renderAnimation(); //定义动画
-			if(that.type==3){
+			if (that.type == 3) {
 				this.forhere = app.globalData.forhere;
-			}else{
+			} else {
 				that.getStore(options.storeId); //获取门店信息
 				if (that.type == 1 || that.type == 4) {
 					this.address = uni.getStorageSync('selectAddress');
@@ -201,8 +201,8 @@
 			let remark = app.globalData.remark;
 			let orderparams = app.globalData.orderinfo;
 			if (orderparams.ticketId) { //如果有优惠卷
-				this.memberInterest(orderparams); //会员权益计算
 				this.orderparams = orderparams;
+				this.memberInterest(orderparams); //会员权益计算
 			}
 			if (remark) {
 				this.remark = remark;
@@ -229,7 +229,7 @@
 		},
 		methods: {
 			//选择餐具份数
-			choseTableware(){
+			choseTableware() {
 				this.maskShow = true; //总幕布
 				this.chooseWareShow = true;
 			},
@@ -250,7 +250,7 @@
 			},
 			//切换是否使用余额
 			switchUseBalance() {
-				if(!this.interest.card.balance){
+				if (!this.interest.card.balance) {
 					return this.$msg.showToast('没有可用余额～')
 				}
 				if (this.useBalance == 1) {
@@ -264,7 +264,7 @@
 			},
 			async getWxaSubscribeTemplates() {
 				let res = await api.getWxaSubscribeTemplates({});
-				if(res.status==1){
+				if (res.status == 1) {
 					this.templateIds = res.data.templateIds;
 				}
 			},
@@ -326,15 +326,17 @@
 						}
 					})
 				})
+				
 				this.serviceTime = timeData[0].date + ' ' + timeData[0].timearr[0];
 				this.timeData = timeData;
 			},
 			//时间切段   15分钟为一个时间段
 			handerTime(date, startTime, endTime) {
 				let timerarr = [];
-				startTime = date + ' ' + startTime; //加上45分钟
+				startTime = date + ' ' + startTime; //自取开始时间
 				startTime = new Date(startTime.replace(/-/g, '/'));
-				startTime = Date.parse(startTime) + (45 * 60000); //转为时间戳
+				startTime = Date.parse(startTime); //转为时间戳
+				 // + (45 * 60000)
 				timerarr.push(new Date(startTime).format("hh:mm:ss"));
 				endTime = date + ' ' + endTime;
 				endTime = new Date(endTime.replace(/-/g, '/'));
@@ -344,7 +346,9 @@
 					startTime += (15 * 60000);
 					timerarr.push(new Date(startTime).format("hh:mm:ss"))
 				}
+				
 				return timerarr;
+				
 			},
 			//前往使用优惠卷页面
 			jumpUseCoupons() {
@@ -365,10 +369,9 @@
 			async memberInterest(params) { //会员权益计算
 				let that = this;
 				!params ? params = this.orderparams : '';
-				let res = await api.memberInterest(params,true)
+				let res = await api.memberInterest(params, true)
 				uni.hideLoading();
 				if (res.code == 200 || res.code == 1901) {
-					
 					let orderinfo = res.data;
 					orderinfo.promotions.forEach((item, index) => {
 						if (item.type == 8) {
@@ -381,7 +384,7 @@
 						this.$msg.showModal((result) => {
 							if (result == 1) {
 								uni.navigateTo({
-									url:'../wallet/wallet'
+									url: '../wallet/wallet'
 								})
 							}
 						}, '您的可用余额不足，是否前去充值')
@@ -454,6 +457,13 @@
 								childType: 0
 							})
 						}
+						if (that.coupons) {
+							memberPreferentials.push({
+								content: that.coupons.id+'#0#'+that.coupons.name,
+								prePrice: -that.coupons.amount,
+								type: 7,
+							})
+						}
 						interest.promotions.forEach(item => {
 							memberPreferentials.push({
 								content: item.name,
@@ -461,11 +471,12 @@
 								type: 7,
 							})
 						})
+						// childType
 						params.products = products;
 						params.memberPreferentials = memberPreferentials;
-						if(that.type==3){
-							await that.requestSubscribeMessage();
-						}
+						// if (that.type == 3) {
+						await that.requestSubscribeMessage();
+						// }
 						// params = JSON.parse(JSON.stringify(params))
 						let res = await api.placeOrder(params);
 						uni.hideLoading()
@@ -479,22 +490,22 @@
 					uni.hideLoading()
 				}, '订单确认后无法更改', tit)
 			},
-			requestSubscribeMessage(){
-				return new Promise((result,ret) => {
+			requestSubscribeMessage() {
+				return new Promise((result, ret) => {
 					uni.requestSubscribeMessage({
-					  tmplIds: this.templateIds,
-					  success(res){
-						  console.log(res)
-					  },
-					  complete (res) {
-						  console.log(res)
-						  result()
-					  }
+						tmplIds: this.templateIds,
+						success(res) {
+							console.log(res)
+						},
+						complete(res) {
+							console.log(res)
+							result()
+						}
 					})
 				})
 			},
-			
-			
+
+
 			//获取订单详情
 			async getOrderDetail(orderid) {
 				let data = {
@@ -544,9 +555,9 @@
 	.mask {
 		@extend %all-mask;
 	}
-	
-	.table-num{
-		@include rect(145upx,145upx);
+
+	.table-num {
+		@include rect(145upx, 145upx);
 		border-radius: 50%;
 		background-color: $main-color;
 		margin: 42upx auto;
@@ -554,7 +565,8 @@
 		justify-content: center;
 		font-size: 20upx;
 		color: $text-white;
-		text{
+
+		text {
 			font-size: 44upx;
 			margin-bottom: 4upx;
 		}
@@ -764,7 +776,8 @@
 			@extend %flex-alcent;
 			justify-content: space-between;
 			border-bottom: 1upx $line-color solid;
-			.coupons-juide{
+
+			.coupons-juide {
 				width: 400upx;
 				@include lineOnly();
 			}

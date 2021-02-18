@@ -20,14 +20,14 @@ export const jumpAdvertise = item => {
 export const checkMobile = data => {
 	let checkphone = /^1\d{10}$/;
 	return checkphone.test(data);
-	
+
 }
 
 export const appshare = () => {
-	let userId = uni.getStorageSync('userinfo').clientId;
 	return {
-		title: "富必达欢迎您！",
-		path: '/pages/menu/menu?id=' + userId,
+		title: '欢迎来到迷客夏', // 分享标题
+		desc: '迷客夏欢迎您！', // 分享描述
+		path: '/pages/ordermenu/ordermenu' // 分享路径
 	}
 }
 /*

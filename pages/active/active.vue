@@ -47,7 +47,7 @@
 						<image :src="item.headUrl || '../../static/mohead.png'"></image>
 						<text>{{item.name}}</text>
 					</view>
-					<text class="span">{{item.created}}</text>
+					<text class="span">{{item.createdString}}</text>
 				</view>
 			</scroll-view>
 		</view>
@@ -60,14 +60,33 @@
 			</view>
 		</view>
 		<view class="blank"></view>
-		<author ref="authorM" @loginSuccess="loginSuccess"></author>
+		
+		<!-- <author ref="authorM" @loginSuccess="loginSuccess"></author> -->
+		<view class="mask" v-if="notAuth">
+			<view class="popup">
+				<view class="title">
+					授权提示
+				</view>
+				<view class="juide-cont" scroll-y>
+					<text>请授权您的个人信息，让我们更好的为您服务</text>
+				</view>
+				<view class="hide-pop">
+					<view class="author-btn" @click="cancelBtn">
+						取消
+					</view>
+					<button class="author-btn" open-type="getUserInfo" @getuserinfo="getUserInfo">
+						确认授权
+					</button>
+				</view>
+			</view>
+		</view>
 	</view>
 </template>
 
 <script>
 	const app = getApp();
 	import api from '../../WXapi/api.js';
-	import author from '../../components/author.vue'
+	// import author from '../../components/author.vue'
 	import jyfParser from '@/components/jyf-parser/jyf-parser'; //富文本组件
 	import {
 		refreshUserInfo,
@@ -80,7 +99,7 @@
 		mapMutations
 	} from "vuex";
 	import {
-		accAdd,
+		accAdd,subtr
 	} from '../../utils/utils.js'
 	export default {
 		data() {
@@ -90,12 +109,16 @@
 				profitinfo: {}, //自己的收益
 				activeDesc: {}, //活动详情
 				activeinfo: {}, //活动信息
-
+				notAuth:false,
+				userdata:{},
 			}
 		},
-		onShareAppMessage(res) {
+		async onShareAppMessage(res) {
 			let data = {
 				path: '/pages/active/active'
+			}
+			if(!this.activityId){
+				this.activityId = await this.getActiveInfo();
 			}
 			if (res.from === 'button') { // 来自页面内分享按钮
 				data.path = '/pages/active/active?recommendedId=' + this.memberinfo.id + '&activityId=' + this.activityId;
@@ -115,21 +138,24 @@
 					couponsarr.forEach(item => {
 						let numarr = item.split('x');
 						num = accAdd(num, Number(numarr[1]));
-						console.log(numarr)
 					})
 				}
 				return num;
 			}
 		},
 		components: {
-			author,
+			// author,
 			jyfParser,
 		},
 		async onLoad(options) {
+			uni.showLoading({
+				mask:'true'
+			})
 			let memberinfo = uni.getStorageSync('memberinfo');
 			this.memberinfo = memberinfo;
 			if (options) {
 				app.globalData.activeParams = options; //保存推荐人id
+				this.userdata = options;
 			}
 			if (!this.JSESSIONID) {
 				await ajaxUserLogin(); //先进行登录
@@ -140,10 +166,16 @@
 			if (memberinfo) {
 				this.cheackProfit(); //查看自己的收益
 				this.activeDescInfo(); //查询活动详情信息
+				if(!memberinfo.name){
+					this.notAuth = true;
+				}
 			}
 			// this.juideUserInfo(); //判断用户是否登录
 		},
 		methods: {
+			cancelBtn(){
+				this.notAuth = false
+			},
 			// async juideUserInfo() {
 			// 	if (!this.isLogin) {
 			// 		let userinfo = await refreshUserInfo(true);
@@ -165,15 +197,38 @@
 					this.activeDesc = res.data;
 				}
 			},
+			//用户授权信息
+			async getUserInfo(e) {
+				if (e.detail.errMsg == 'getUserInfo:ok') {
+					let userInfo = e.detail.userInfo;
+					userInfo.gender = subtr(userInfo.gender,1);
+					let memberinfo = this.memberinfo;
+					let data = {
+						name: userInfo.nickName,
+						headUrl: userInfo.avatarUrl,
+						sex: userInfo.gender,
+						cardId: memberinfo.id,
+					}
+					let res = await api.updateMember(data, true);
+					this.notAuth = false;
+					if (res.code == 200) {
+					} else {
+						this.$msg.showToast(res.message)
+					}
+				}else{
+					this.$msg.showToast('取消授权');
+					this.notAuth = false;
+				}
+				
+			},
 			async getActiveInfo(bol) {
 				let data = {};
 				if (this.memberinfo) {
 					data.cardId = this.memberinfo.id;
 				}
-				let res = await api.fissionActive(data);
+				let res = await api.fissionActive(data,true);
 				if (res.code == 200) {
 					this.activeinfo = res.data;
-
 					return res.data.id;
 				}
 			},
@@ -202,9 +257,12 @@
 						let userdata = {
 							mobile: userinfo.phone,
 							openId: this.$store.state.openid,
+							recommendedId: this.userdata.recommendedId,
+							activityId: this.userdata.activityId,
 						}
 						let memberinfo = await userRegister(userdata);
 						this.memberinfo = memberinfo;
+						this.notAuth = true;
 						this.$msg.showToast('登录成功');
 						this.cheackProfit(); //查看自己的收益
 						this.activeDescInfo(); //获取活动详情
@@ -224,6 +282,59 @@
 <style lang="scss">
 	page {
 		background-color: $main-color;
+	}
+	
+	.mask {
+		@extend %all-mask;
+
+		.popup {
+			@include rect(580upx, 400upx);
+			position: absolute;
+			left: 85upx;
+			top: 33%;
+			background-color: $bg-white;
+			border-radius: 8upx;
+			line-height: 48upx;
+			font-size: 32upx;
+		
+			.title {
+				margin-top: 48upx;
+				text-align: center;
+				font-weight: 700;
+			}
+		
+			.juide-cont {
+				width: 100%;
+				@include box-padding(40upx);
+				padding-top: 40upx;
+				margin-top: 16upx;
+				font-size: 32upx;
+				color: rgba(0, 0, 0, 0.6);
+				max-height: 490upx;
+				text-align: center;
+			}
+		
+			.hide-pop {
+				@include rect(100%, 96upx);
+				@extend  %flex-alcent;
+				border-top: 1upx rgba(0, 0, 0, 0.08) solid;
+				// @include text-allcenter(96upx);
+				color: $main-color;
+				position: absolute;
+				bottom: 0upx;
+				line-height: 96upx;
+				font-weight: 700;
+				.author-btn{
+					@include rect(50%,96upx);
+					text-align: center;
+				}
+				button{
+					@extend %clear-button;
+					color: $main-color;
+					line-height: 96upx;
+				}
+			}
+		}
 	}
 
 	.content {

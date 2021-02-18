@@ -84,7 +84,7 @@
 			
 			//展现弹窗
 			showChoseprop() {
-				uni.hideTabBar({})
+				// uni.hideTabBar({})
 				this.hiddenChoseStore = true;
 			},
 			//关闭弹窗
@@ -100,6 +100,9 @@
 			},
 			//确认选择所选店铺
 			async confirmStore() {
+				if(this.storeInfo.isBusy){
+					return this.$msg.showToast('门店忙碌中，请选择其他门店')
+				}
 				this.closeChoseprop();
 				this.$emit('switchStore', this.storeInfo);
 			},
@@ -111,6 +114,7 @@
 	.chose-store {
 		font-size: 28upx;
 		@extend %all-mask;
+		
 	}
 
 	.chose-store>.order-info {
@@ -124,6 +128,7 @@
 		font-weight: 700;
 		position: relative;
 		border-bottom: 1upx #C0BFBF solid;
+		
 	}
 
 	.chose-store-head>image {

@@ -45,12 +45,15 @@
 
 		<view class="menu-cont" v-if="showdetail">
 			<!-- 左侧导航栏 -->
-			<scroll-view scroll-y class="left-aside">
+			<scroll-view scroll-y class="left-aside" :style="{height:shopBoxHeight + 'rpx'}" :scroll-into-view="leftCurrtab"
+			 scroll-with-animation>
 				<view v-for="(item, index) in products" :key="index" class="f-item" :class="{active: item.uid === currentId}"
-				 @click="tabtap(item)">
+				 @click="tabtap(item)" :id="'left'+item.uid">
+					<!-- {{'leftm-'+item.uid}} -->
 					<image :src="item.typeImage" mode="aspectFill"></image>{{item.name}}
 				</view>
 			</scroll-view>
+
 			<!-- 右侧饮品列表栏 -->
 			<scroll-view scroll-with-animation @scroll-into-view="currentId" scroll-y class="right-aside" @scroll="asideScroll"
 			 :scroll-top="tabScrollTop" :style="{height:shopBoxHeight + 'rpx'}" binddragend="touchEnd">
@@ -116,7 +119,7 @@
 				<!-- 商品介绍规格参数等 -->
 				<view class="order_info_box" :hidden="maskarr.orderDescMask">
 					<view class="goods-pic">
-						<image :src="chooseGoods.logo?chooseGoods.logo:'../../static/menu/logo.png'" mode="aspectFill"></image>
+						<image :src="chooseGoods.logo?chooseGoods.logo:'../../static/menu/logo.png'"></image>
 						<view class="close-mask" @click="closeAllMask">
 							<image src="../../static/cha.png"></image>
 						</view>
@@ -254,6 +257,13 @@
 				<text v-for="(item,index) in storeInfo.businessTimes" :key="index">营业时间：{{' '+item.beginTime+'-'+item.endTime}}</text>
 			</view>
 		</view>
+		<view class="nobusiness" v-if="storeInfo.isBusy">
+			<text>茶饮制作繁忙</text>
+			<view class="bussiness-time">
+				<text>门店忙碌中，请选择其他门店</text>
+				<!-- <text v-for="(item,index) in storeInfo.businessTimes" :key="index">营业时间：{{' '+item.beginTime+'-'+item.endTime}}&nbsp;&nbsp;</text> -->
+			</view>
+		</view>
 	</view>
 </template>
 
@@ -291,7 +301,8 @@
 		accMul,
 		subtr,
 		accAdd,
-		jumpAdvertise
+		jumpAdvertise,
+		appshare
 	} from '../../utils/utils.js';
 	//排序函数
 	function compare(key) {
@@ -304,13 +315,14 @@
 	export default {
 		data() {
 			return {
+				leftCurrtab: 'left',
 				forhere: null,
 				computedHeight: null, //系统高度
 				activelist: [], //活动list
 				bannerList: [], //轮播图广告
 				allmask: false,
 				nums: '1', //mask 中的nums
-				defaultS:false,   //是否为默认餐单
+				defaultS: false, //是否为默认餐单
 				// model: 2, //2为自取模式， 1为外卖模式
 				// shopBoxHeight: null,
 				tabScrollTop: 0, //滚动条与顶部的距离
@@ -355,6 +367,9 @@
 			author,
 			sildermine
 		},
+		onShareAppMessage(res) {
+			return appshare()
+		},
 		computed: {
 			...mapState(['openid', 'businessType', 'storeId', 'JSESSIONID', 'isLogin', 'productPrimaryTypeName']),
 			headerInfo() {
@@ -366,14 +381,14 @@
 				}
 				return name;
 			},
-			
+
 			shopBoxHeight() {
 				let height = 0;
 				let computedHeight = this.computedHeight;
 				if (computedHeight) {
 					height = computedHeight - 216;
 					if (!this.activelist.length) {
-						height = computedHeight + 106;
+						height = computedHeight - 105;
 					}
 				}
 				return height;
@@ -481,8 +496,8 @@
 			}
 		},
 		async onLoad(options) {
-			uni.hideTabBar({});
 			if (!this.JSESSIONID) {
+				uni.hideTabBar({});
 				await ajaxUserLogin(); //先进行登录
 			}
 			if (options && options.deskId) {
@@ -500,6 +515,9 @@
 			if (that.storeId) { //如果有storeId则刷新点餐
 				if (that.shopcar.length) {
 					this.reductionData();
+				}
+				if (this.$children[2].hiddenChoseStore) { //选择其他门店   关闭附近门店选择弹窗
+					this.$children[2].hiddenChoseStore = false;
 				}
 				// that.shopcar = []; //清空购物车
 				that.storeInfo = app.globalData.storeInfo;
@@ -534,10 +552,10 @@
 			// 		this.productPrimaryTypeName = app.globalData.productPrimaryTypeName;
 			// 	}
 			// },
-			noBussinessTime(){
+			noBussinessTime() {
 				let storeInfo = this.storeInfo;
 				this.$msg.showModal((res) => {
-					if(res==1){
+					if (res == 1) {
 						goChoseStore({
 							cityId: storeInfo.cityId,
 							cityName: storeInfo.cityName,
@@ -545,7 +563,7 @@
 							districtName: storeInfo.districtName,
 						})
 					}
-				},'本门店休息中，您可切换门店','门店休息中',true,false,'切换门店')
+				}, '本门店休息中，您可切换门店', '门店休息中', true, false, '切换门店')
 			},
 			init() {
 				let that = this;
@@ -763,21 +781,23 @@
 				if (goods.activePrice) {
 					shopitem.price = goods.activePrice;
 					shopitem.discounted = 1;
+					shopitem.orginalPrice = goods.price;
 				}
 				if (goods.property) { // 如果是选规格   将选中规格参数添加到购物车变量中
 					let property = [];
 					for (let i in that.specarr) {
-						if (i != that.specarr.length - 1) {
-							that.specarr[i].items[currtabarr[i]].title = that.specarr[i].title;
-							property.push(that.specarr[i].items[currtabarr[i]])
-						} else {
-							that.specarr[i].items.forEach(item => {
-								item.title = that.specarr[i].title;
-								if (item.selected) {
-									property.push(item)
-								}
-							})
-						}
+						// if (i != that.specarr.length - 1) {
+						that.specarr[i].items[currtabarr[i]].title = that.specarr[i].title;
+						property.push(that.specarr[i].items[currtabarr[i]])
+
+						// } else {    //加料店铺
+						// 	that.specarr[i].items.forEach(item => {
+						// 		item.title = that.specarr[i].title;
+						// 		if (item.selected) {
+						// 			property.push(item)
+						// 		}
+						// 	})
+						// }
 					}
 					let descinfo = '';
 					// let qty = 0;
@@ -828,6 +848,12 @@
 			//点击商品打开幕布
 			openOrderMask(goods, index, idx) {
 				let that = this;
+				if (!this.storeInfo.isServiceTime) {
+					return this.$msg.showToast('门店休息中')
+				}
+				if (this.storeInfo.isBusy) {
+					return this.$msg.showToast('茶饮制作繁忙中')
+				}
 				if (!goods.isInServiceTime || goods.isSoldOut) { //售罄和不在售时间内
 					return;
 				}
@@ -849,7 +875,10 @@
 			chooseAttr(index, idx) {
 				let that = this;
 				let attr = that.specarr[index].items[idx];
-				let price = null
+				let price = null;
+				if(that.specarr[index].items[idx].isSoldOut){
+					return this.$msg.showToast('很抱歉！'+that.specarr[index].items[idx].name+'已经售罄了哦，正在加紧补货中～')
+				}
 				if (index == that.specarr.length - 1 && attr.hasOwnProperty('selected')) {
 					if (that.specarr[index].items[idx].selected) { //已经选中情况   减去价格
 						that.computeSpecPrice(attr.price, 0);
@@ -878,7 +907,9 @@
 			handleData(data) {
 				let specarr = [];
 				let currtabarr = [];
-				specarr.push(data.standard);
+				if (data.standard) {
+					specarr.push(data.standard);
+				}
 				for (let i in data.propertys) {
 					specarr.push(data.propertys[i]);
 				}
@@ -889,7 +920,6 @@
 				this.currtabarr = currtabarr;
 				if (data.choices) {
 					data.choices.items.forEach(item => {
-						// item.title = data.choices.title;
 						this.$set(item, 'selected', false);
 					})
 					specarr.push(data.choices)
@@ -937,11 +967,10 @@
 				}
 				let res = await api.getProductMenu(data);
 				if (res && res.status == 1) {
-					console.log(this.storeInfo.businessStatus[0],this.model)
-					if(this.model==1 && this.storeInfo.businessStatus[0].busy){
+					if (this.model == 1 && this.storeInfo.businessStatus[0].busy) {
 						this.noTakeOut();
 					}
-					if(!this.storeInfo.isServiceTime){
+					if (!this.storeInfo.isServiceTime) {
 						this.noBussinessTime();
 					}
 					this.menuId = res.data.menuId;
@@ -950,10 +979,10 @@
 				}
 			},
 			//不支持外卖提示
-			noTakeOut(){
+			noTakeOut() {
 				let storeInfo = this.storeInfo;
 				this.$msg.showModal((res) => {
-					if(res==1){
+					if (res == 1) {
 						goChoseStore({
 							cityId: storeInfo.cityId,
 							cityName: storeInfo.cityName,
@@ -961,19 +990,17 @@
 							districtName: storeInfo.districtName,
 						})
 					}
-				},'目前因门店现状问题，我们暂时关闭了小程序外卖，非常抱歉，敬请谅解！','门店繁忙',true,false,'切换门店')
+				}, '目前因门店现状问题，我们暂时关闭了小程序外卖，非常抱歉，敬请谅解！', '门店繁忙', true, false, '切换门店')
 			},
 			//计算左边商品分类的高度
 			computReftHe() {
 				const sysinfo = uni.getSystemInfoSync();
-				console.log(sysinfo)
 				let windowHeight = sysinfo.windowHeight;
 				this.popHeightInfo = {
 					hei: windowHeight * 1,
 					low: windowHeight * 0.5,
 				};
 				this.computedHeight = windowHeight * (750 / sysinfo.windowWidth); //系统高度rpx
-				console.log(111, this.computedHeight)
 				let animation = uni.createAnimation({ //定义动画
 					duration: 300,
 					timingFunction: 'linear',
@@ -983,7 +1010,6 @@
 			},
 			//获取地理位置
 			async getLocation() {
-
 				let that = this;
 				let location = await getLocation();
 				let lat = location.latitude;
@@ -1008,20 +1034,23 @@
 				let location = that.location;
 				let data = {
 					coordinate: [location.longitude, location.latitude],
-					// coordinate: [121.480555, 31.271416],
+					// coordinate: ['120.68000030517578', '31.316667556762695'],
 					businessType: that.businessType,
 					pageNow: 0,
 					pageSize: 10
 				}
 				let res = await api.getNearStoreList(data);
+				console.log(res)
 				newload = true; //第二次从onshow刷新地理位置
 				if (res && res.status == 1) {
+
 					let nearList = res.data.rows;
 					nearList.forEach(item => {
 						item.newdistance = conversion(item.distance) //换算距离
 					})
 					if (nearList.length > 1) { //如果附近多个店铺则展示选择店铺弹窗
-						// that.$refs.chosestore.showChoseprop();
+						that.loadingState = false;
+						that.$refs.chosestore.showChoseprop();
 					} else if (nearList.length == 1) { //只有一个则展现这个店铺
 						that.storeInfo = nearList[0];
 						that.getStoreMenu(nearList[0].storeId);
@@ -1062,7 +1091,7 @@
 			},
 			//跳转订单页面
 			jumpOrder() {
-				if(this.model==1 && this.storeInfo.businessStatus[0].busy){
+				if (this.model == 1 && this.storeInfo.businessStatus[0].busy) {
 					this.noTakeOut();
 					return;
 				}
@@ -1085,6 +1114,9 @@
 						typeId: item.typeId,
 						listRequirements: [],
 					}
+					if (item.orginalPrice) {
+						products.price = item.orginalPrice;
+					}
 
 					if (item.property) {
 						let quirements = {
@@ -1095,10 +1127,10 @@
 						let price = 0;
 						item.property.forEach(aitem => {
 							price = accAdd(price, aitem.price)
+
 							quirements.propertys.push({
 								pid: aitem.pid,
 								title: aitem.title,
-
 								items: [{
 									index: index,
 									uid: aitem.uid,
@@ -1199,6 +1231,7 @@
 				if (tabs.length > 0) {
 					if (that.currentId != tabs[0].uid) {
 						that.currentId = tabs[0].uid;
+						that.leftCurrtab = 'left' + tabs[0].uid;
 					}
 				}
 			},
@@ -1224,7 +1257,7 @@
 			},
 			//查看店铺详细信息
 			checkDetail() {
-				if(this.defaultS){
+				if (this.defaultS) {
 					return this.$msg.showToast('请先选择下单店铺哦～')
 				}
 				this.showdetail = !this.showdetail;
@@ -1247,9 +1280,9 @@
 		width: $screen-width;
 		color: $uni-text-color;
 	}
-	
-	.nobusiness{
-		@include rect(100%,140upx);
+
+	.nobusiness {
+		@include rect(100%, 140upx);
 		background-color: $main-color;
 		position: fixed;
 		bottom: 0;
@@ -1259,10 +1292,12 @@
 		padding-top: 20upx;
 		box-sizing: border-box;
 		font-size: 32upx;
-		.bussiness-time{
+
+		.bussiness-time {
 			font-size: 28upx;
 			margin-top: 10upx;
-			text{
+
+			text {
 				margin-right: 12upx;
 			}
 		}
@@ -1369,12 +1404,18 @@
 			position: relative;
 
 			.goods-pic {
-				@include rect(100%, 372upx);
+				width: 100%;
+				background-color: $bg-white;
+				height: 372upx;
 				/* border: 1upx $main-color solid; */
 				position: relative;
+				margin: 0 auto;
+				@extend %flex-alcent;
+				justify-content: center;
+				border-radius: $radius-md;
 
 				image {
-					@include rect(100%, 100%) border-radius: $radius-md;
+					@include rect(372upx, 100%);
 				}
 
 				.close-mask {
@@ -1401,39 +1442,44 @@
 
 				.arrt-cont {
 					margin-top: 22upx;
-					padding: 20upx 40upx;
+					padding: 20upx 10upx 20upx 40upx;
 					box-sizing: border-box;
 					background-color: $bg-white;
 					border-radius: $radius-md;
 
 
 					.arrt-item {
-						/* height: 60upx; */
-						/* 		@extend %flex-alcent; */
 						line-height: 50upx;
 						display: flex;
 						margin-bottom: 20upx;
+						padding-top: 1px;
 
 						.arrt_name {
 							width: 100upx;
 							font-size: $font-md;
-							line-height: 58upx;
+							line-height: 38upx;
+							padding-right: 30upx;
+							box-sizing: border-box;
+							margin-top: 14upx;
 							/* font-size: upx; */
 						}
 
 						.arrt_Iitem-cont {
 							/* margin-left: 40upx; */
-							width: 510upx;
+							width: 530upx;
 							@extend %flex-list;
 
 							.arrt_Iitem {
 								font-size: 26upx;
-								@include rect(155upx, 58upx);
+								/* @include rect(155upx, 58upx); */
+								height: 58upx;
+								min-width: 155upx;
+								@include box-padding(16upx);
 								text-align: center;
 								background-color: #F5F5F5;
 								color: #616161;
 								border-radius: 50upx;
-								margin-right: 24upx;
+								margin-right: 23upx;
 								margin-bottom: 15upx;
 								box-sizing: border-box;
 								line-height: 58upx;
@@ -1444,9 +1490,9 @@
 									color: $main-color;
 								}
 
-								&:nth-of-type(3) {
+								/* &:nth-of-type(3) {
 									margin-right: 0upx;
-								}
+								} */
 							}
 						}
 					}
