@@ -69,7 +69,7 @@
 <style lang="scss">
 	.store_detail {
 		width: $screen-width;
-		height: 100%;
+		// height: 100%;
 		padding: 20upx 40upx;
 		box-sizing: border-box;
 		background-color: $bg-white;

@@ -36,7 +36,7 @@
 			<view class="goods-item" v-for="(item,index) in interest.products" :key="index">
 				<view class="goods-info-t">
 					<text>{{item.name}}</text>
-					<text>￥{{item.total}}</text>
+					<text>￥{{item.price}}</text>
 				</view>
 				<view class="goods-info-t">
 					<text>{{item.condiments[0]?item.condiments[0].name:'常规'}}</text>
@@ -53,7 +53,7 @@
 				<text>餐盒费</text>
 				<text>¥{{interest.boxFee?interest.boxFee:0}}</text>
 			</view>
-			<block v-for="(item,index) in interest.promotions" :key="index">
+			<block v-for="(item,index) in interest.promotions" :key="index" v-if="member">
 				<view class="cost-item" v-if="item.type!=6">
 					<text>{{item.name}}</text>
 					<text>-¥{{item.amount}}</text>
@@ -64,7 +64,7 @@
 				</view>
 			</block>
 
-			<view class="cost-item" @click="jumpUseCoupons">
+			<view class="cost-item" @click="jumpUseCoupons" v-if="member">
 				<view class="coupons-juide">{{couponJuide.tit}}</view>
 				<view class="span">{{couponJuide.cont}}</view>
 			</view>
@@ -72,7 +72,7 @@
 				实付：<text class="black-text">￥{{interest.afterDiscountTotal?interest.afterDiscountTotal:0}}</text>
 			</view>
 		</view>
-		<view class="balance" @click="switchUseBalance">
+		<view class="balance" @click="switchUseBalance" v-if="member">
 			<text>会员余额支付</text>
 			<view class="box-l">
 				<text>{{interest.balancePay?'已使用余额':'可用余额'}}：<text>{{interest.balancePay?interest.balancePay:(interest.card.balance?interest.card.balance:0)}}</text>元</text>
@@ -148,6 +148,7 @@
 	import {
 		wxPayment
 	} from '../../utils/publicApi.js'
+	import {subtr} from '../../utils/utils.js'
 	import {
 		goOrderDeatails
 	} from '../../utils/goToPage.js'
@@ -176,16 +177,22 @@
 				address: null, //用户地址
 				forhere: null, //堂食
 				templateIds: null, //微信订阅消息
+				member:false,   //当前门店是否需要会员部分
 			};
 		},
 		onLoad(options) {
 			let that = this;
 			let orderparams = app.globalData.orderinfo;
-			this.storeInfo = app.globalData.storeInfo; //先渲染页面
+			that.member = app.globalData.member;
+			that.storeInfo = app.globalData.storeInfo; //先渲染页面
 			that.getWxaSubscribeTemplates() //获取微信订阅消息列表
-			uni.showLoading({})
 			that.orderparams = orderparams;
-			that.memberInterest(orderparams); //会员权益计算
+			if(that.member){
+				uni.showLoading({})
+				that.memberInterest(orderparams); //会员权益计算
+			}else{
+				that.handleShowData(orderparams);  //不使用会员部分
+			}
 			that.type = that.$store.state.businessType[0]; //当前的模式
 			that.renderAnimation(); //定义动画
 			if (that.type == 3) {
@@ -213,7 +220,7 @@
 		},
 		computed: {
 			couponJuide() {
-				let tit = '优惠卷';
+				let tit = '优惠券';
 				let cont = '';
 				if (this.coupons) {
 					tit = this.coupons.name;
@@ -232,6 +239,15 @@
 			choseTableware() {
 				this.maskShow = true; //总幕布
 				this.chooseWareShow = true;
+			},
+			//处理不使用会员的展示信息
+			handleShowData(data){
+				let interest = {};
+				interest.products = data.order.products;   //商品数据
+				interest.afterDiscountTotal = data.priceArr.totalPrice;   //实付价格
+				interest.orderTotal = subtr(data.priceArr.totalPrice,data.priceArr.lunchboxfee);  //餐饮费
+				interest.boxFee = data.priceArr.lunchboxfee;   //餐盒费
+				this.interest = interest;
 			},
 			//获取当前门店信息
 			async getStore(storeId) {
@@ -393,9 +409,31 @@
 					that.$msg.showToast(res.message)
 				}
 			},
+			judgeUseCoupons(){
+				return new Promise((reso,ret) => {
+					let that = this;
+					if(that.interest.canUseTotal && !that.coupons){
+						this.$msg.showModal((res) => {
+							if (res == 1) {
+								reso(1)
+							}else{
+								reso(2)
+							}
+						}, '您当前订单有'+that.interest.canUseTotal+'张可使用的优惠券，是否前往使用。', '温馨提示', true,'不使用','去使用')
+					}else{
+						reso(2)
+					}
+				})
+				
+			},
 			//创建订单
-			addOrder() {
+			async addOrder() {
 				let that = this;
+				let reso = await that.judgeUseCoupons();
+				if(reso==1){
+					that.jumpUseCoupons();   //去选择优惠券
+					return;
+				}
 				let orderparams = that.orderparams;
 				let interest = that.interest;
 				let storeInfo = that.storeInfo;
@@ -408,8 +446,8 @@
 					type: type,
 					selfGetTime: that.serviceTime,
 					payType: 2,
-					name: interest.card.name,
-					phone: interest.card.mobile,
+					// name: interest.card.name,
+					// phone: interest.card.mobile,
 					address: that.storeInfo.storeAddress,
 					randomCode: new Date(new Date()).format("yyyyMMddhhmmss"),
 					userNote: that.remark ? that.remark : '无',
@@ -417,6 +455,10 @@
 					isInvoice: false,
 					couponId: 0,
 					peopleNum: 0,
+				}
+				if(that.member){
+					params.name = interest.card.name;
+					params.phone = interest.card.mobile;
 				}
 				// if(type!=3){
 				// 	params.
@@ -464,13 +506,16 @@
 								type: 7,
 							})
 						}
-						interest.promotions.forEach(item => {
-							memberPreferentials.push({
-								content: item.name,
-								prePrice: -item.amount,
-								type: 7,
+						if(this.member){
+							interest.promotions.forEach(item => {
+								memberPreferentials.push({
+									content: item.name,
+									prePrice: -item.amount,
+									type: 7,
+								})
 							})
-						})
+						}
+						
 						// childType
 						params.products = products;
 						params.memberPreferentials = memberPreferentials;
@@ -793,6 +838,8 @@
 
 		.span {
 			color: $main-color;
+			font-weight: 500;
+			font-size: 32upx;
 		}
 
 		.summary {
@@ -827,7 +874,7 @@
 			margin-top: 26upx;
 
 			.address {
-				height: 168upx;
+				// height: 168upx;
 				padding: 38upx 0;
 				box-sizing: border-box;
 				border-bottom: 1upx $line-color solid;

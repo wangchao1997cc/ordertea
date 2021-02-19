@@ -18,6 +18,7 @@
 </template>
 
 <script>
+	const app = getApp();
 	import api from '../WXapi/api.js'
 	import {refreshUserInfo,userRegister,ajaxUserLogin} from '../utils/publicApi.js'
 	export default {
@@ -25,6 +26,9 @@
 			return {
 				isauthorPhone: false,
 			};
+		},
+		mounted() {
+			this.member = app.globalData.member;
 		},
 		methods: {
 			moveHandle() {
@@ -48,6 +52,9 @@
 						this.$msg.showToast('登录成功');
 						this.$store.commit('changeLogin',true);
 						let userinfo = await refreshUserInfo(true);   //刷新用户信息
+						if(!this.member){    //如果不需要会员部分
+							return
+						}
 						let userdata = {
 							mobile:userinfo.phone,
 							openId:this.$store.state.openid,

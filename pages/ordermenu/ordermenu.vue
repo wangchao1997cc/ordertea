@@ -52,6 +52,8 @@
 					<!-- {{'leftm-'+item.uid}} -->
 					<image :src="item.typeImage" mode="aspectFill"></image>{{item.name}}
 				</view>
+				<view class="blank-fill">
+				</view>
 			</scroll-view>
 
 			<!-- 右侧饮品列表栏 -->
@@ -356,6 +358,7 @@
 				isfullprice: null, //满减
 				menuId: null, //餐单id
 				choseActive: null, //当前选则查看的活动
+				member: false,    //当前门店是否需要会员部分
 			}
 		},
 
@@ -507,6 +510,7 @@
 			}
 			// this.juideOptions(options); //判断路径参数
 			uni.showTabBar({})
+			this.member = app.globalData.member;
 			this.init();
 		},
 
@@ -563,7 +567,7 @@
 							districtName: storeInfo.districtName,
 						})
 					}
-				}, '本门店休息中，您可切换门店', '门店休息中', true, false, '切换门店')
+				}, '本门店休息中，您可切换门店', '门店休息中...', true, false, '切换门店')
 			},
 			init() {
 				let that = this;
@@ -876,8 +880,8 @@
 				let that = this;
 				let attr = that.specarr[index].items[idx];
 				let price = null;
-				if(that.specarr[index].items[idx].isSoldOut){
-					return this.$msg.showToast('很抱歉！'+that.specarr[index].items[idx].name+'已经售罄了哦，正在加紧补货中～')
+				if (that.specarr[index].items[idx].isSoldOut) {
+					return this.$msg.showToast('很抱歉！' + that.specarr[index].items[idx].name + '已经售罄了哦，正在加紧补货中～')
 				}
 				if (index == that.specarr.length - 1 && attr.hasOwnProperty('selected')) {
 					if (that.specarr[index].items[idx].selected) { //已经选中情况   减去价格
@@ -1034,7 +1038,7 @@
 				let location = that.location;
 				let data = {
 					coordinate: [location.longitude, location.latitude],
-					// coordinate: ['120.68000030517578', '31.316667556762695'],
+					// coordinate: ['120.68000030517578', '31.316667556762695'],   //测试地理位置
 					businessType: that.businessType,
 					pageNow: 0,
 					pageSize: 10
@@ -1098,7 +1102,7 @@
 				this.closeAllMask();
 				let storeInfo = app.globalData.storeInfo;
 				let memberinfo = uni.getStorageSync('memberinfo');
-				if (!memberinfo) {
+				if (!memberinfo && this.member) {
 					return this.$refs.authorM.showPop();
 				}
 				let shopcar = this.shopcar;
@@ -1150,21 +1154,26 @@
 					}
 					order.push(products);
 				})
-
 				let orderinfo = {
-					member: {
-						cardId: memberinfo.id,
-						usePoint: 0,
-						useBalance: 1,
-						useRestriction: 1,
-						cardNo: memberinfo.cardNo,
-					},
 					menuId: this.menuId,
 					boxFee: this.priceArr.lunchboxfee,
 					fee: storeInfo.fee,
 					order: {
 						products: [],
 					},
+				}
+				if (this.member) {
+					orderinfo.member = {
+						cardId: memberinfo.id,
+						usePoint: 0,
+						useBalance: 1,
+						useRestriction: 1,
+						cardNo: memberinfo.cardNo,
+					};
+				}else{
+					orderinfo.priceArr = this.priceArr;   //餐饮总价
+					// .totalPrice;
+					// orderinfo.lunchboxfee = this.priceArr.lunchboxfee
 				}
 				orderinfo.order.products = order;
 				app.globalData.orderinfo = orderinfo;
@@ -1176,10 +1185,13 @@
 			//处理获取到的商铺菜单
 			async handleShopData(data) {
 				let that = this;
-				let newdata = await that.getActivity(data); //获取活动信息
-				if (newdata) {
-					data = newdata;
+				if (that.member) { //如果有会员部分就查看活动信息
+					let newdata = await that.getActivity(data); //获取活动信息
+					if (newdata) {
+						data = newdata;
+					}
 				}
+
 				that.products = data;
 				that.currentId = data[0].uid;
 				that.loadingState = true;
@@ -1697,6 +1709,11 @@
 	.left-aside {
 		width: 196upx;
 		background-color: #f5f5f5;
+	}
+
+	.blank-fill {
+		width: 100%;
+		height: 300upx;
 	}
 
 	.menu-cont {

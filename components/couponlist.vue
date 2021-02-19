@@ -1,6 +1,6 @@
 <template>
 	<view class="coupons-box">
-		<view class="coupons" v-for="(item,index) in coupons" :key="index" @click="checkCouponsDesc(item)">
+		<view class="coupons" :style="{backgroundImage:'url('+(item.url || 'https://fnb-merchants.oss-cn-shanghai.aliyuncs.com/coupons_bg.png')+')'}" v-for="(item,index) in coupons" :key="index" @click="checkCouponsDesc(item)">
 			<view class="coupons-l">
 				<!-- <view v-if="type!=1">
 					<text>{{item.amount}}</text><text>元</text>
@@ -82,7 +82,7 @@
 	.coupons{
 		@include rect(700upx,200upx);
 		margin: 25upx;
-		background: url(https://fnb-merchants.oss-cn-shanghai.aliyuncs.com/coupons_bg.png);
+		// background: url();
 		background-size: cover;
 	}
 	.coupons-l{

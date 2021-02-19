@@ -3,7 +3,7 @@
 		<view class="header_info">
 			<image src="../../static/my/mine_bg.png" mode="aspectFill"></image>
 			<!-- <navbar :config="config"></navbar> -->
-			<view class="member-code" @click="jumpMemberCoed">
+			<view class="member-code" @click="jumpMemberCoed" v-if="member">
 				<image src="../../static/member_icon.png"></image>
 				会员码
 			</view>
@@ -14,14 +14,15 @@
 					<view class="pic-box">
 						<open-data type="userAvatarUrl"></open-data>
 					</view>
-					<view class="user-label">
+					<view class="user-label" v-if="member">
 						<image :src="currentLev.background" mode="aspectFill"></image>
 						{{currentLev.levelName || ''}}
 					</view>
 				</view>
-				<view class="user-detail">
+				
+				<view class="user-detail" v-if="member">
 					<view class="user-name">
-						{{memberinfo.name?memberinfo.name:'用户'}}
+						{{memberinfo.name?memberinfo.name:'普通用户'}}
 					</view>
 					<view class="card-no">
 						卡号：{{memberinfo.cardNo || ''}}
@@ -39,8 +40,13 @@
 						在累计{{(currentLev.upperLimit-memberinfo.experience) || 0}}经验值就可以升级
 					</view>
 				</view>
+				<view class="user-detail" v-else>
+					<view class="user-name">
+						<open-data type="userNickName"></open-data>
+					</view>
+				</view>
 			</view>
-			<view class="user-assets">
+			<view class="user-assets" v-if="member">
 				<view class="assets-item" @click="jumpShopping">
 					<text>{{memberinfo.point?memberinfo.point:0}}</text>
 					<text>商城</text>
@@ -93,6 +99,7 @@
 
 <script>
 	// import navbar from '../../components/nav.vue'
+	const app = getApp();
 	import api from '../../WXapi/api.js'
 	import sildermine from '../../components/minesilder.vue'
 	import {
@@ -137,18 +144,28 @@
 					text: '关于我们'
 				}, ],
 				currentLev: null,
+				member:false,   //是否展示会员内容
 			}
 		},
 		onLoad() {
 			// this.getActiveInfo();   //查询是否有裂变活动
 		},
 		async onShow() {
-			let memberinfo = await getMemberInfo(true);
-			this.memberinfo = memberinfo;
-			this.getGradeInfo(); //获取当前等级信息
-			if (!memberinfo || !memberinfo.name) {
-				this.notAuth = true;
+			let member = app.globalData.member;
+			if(member){
+				let memberinfo = await getMemberInfo(true);
+				this.memberinfo = memberinfo;
+				this.getGradeInfo(); //获取当前等级信息
+				if (!memberinfo || !memberinfo.name) {
+					this.notAuth = true;
+				}
+			}else{
+				this.servicearr = [{
+					img: '../../static/my/about_icon.png',
+					text: '关于我们'
+				},]
 			}
+			this.member = member;
 		},
 		components: {
 			sildermine,
@@ -233,6 +250,12 @@
 			},
 			//跳转分类页面
 			async jumpClassIfyPage(index) {
+				if(!this.member){
+					uni.navigateTo({
+						url: '../mine/aboutM/aboutM'
+					})
+					return;
+				}
 				let url = '';
 				switch (index) {
 					case 0:
@@ -389,7 +412,7 @@
 
 	.member-card {
 		position: relative;
-		@include rect(698upx, 328upx);
+		@include rect(698upx, auto);
 		background-color: $bg-white;
 		border-radius: $radius-md;
 		margin: -105upx auto 0 auto;
@@ -507,7 +530,7 @@
 
 	.min-service-box {
 
-		@include rect(698upx, 400upx);
+		@include rect(698upx, auto);
 		background-color: $bg-white;
 		margin: 25upx auto;
 		border-radius: $radius-md;
@@ -560,6 +583,11 @@
 				}
 
 				&:nth-of-type(n+5) {
+					image {
+						@include rect(40upx, 40upx);
+					}
+				}
+				&:last-child{
 					image {
 						@include rect(40upx, 40upx);
 					}

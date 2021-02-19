@@ -17,7 +17,7 @@
 					<image class="take-btn" src="../../static/homepage/takeout_btn.png"></image>
 				</view>
 			</view>
-			<view class="blance-box">
+			<view class="blance-box" v-if="member">
 				<view class="blance-l" @click="jumpWallet">
 					<view>
 						<image src="../../static/money_icon.png"></image>
@@ -30,7 +30,7 @@
 				</view>
 				<image class="blance-icon" src="../../static/member_icon.png" @click="jumpMembercode"></image>
 			</view>
-			<view class="integral">
+			<view class="integral" v-if="member">
 				<view class="integral-item" v-for="(item,index) in integralarr" :key="index" @click="jumpClissIfy(index)">
 					<view class="intehead_info">
 						<image :src="item.icon"></image>
@@ -221,6 +221,7 @@
 				homeParams: {},
 				redRewardInfo: null, //天将红包信息
 				pointActive: null, //集点卡活动信息
+				member: false, //是否展示会员内容
 			}
 		},
 		components: {
@@ -235,6 +236,7 @@
 			uni.showLoading({
 				mask: 'true'
 			})
+			this.member = app.globalData.member;
 			if (!this.JSESSIONID) {
 				uni.hideTabBar({});
 				await ajaxUserLogin(); //先进行登录
@@ -246,10 +248,10 @@
 			uni.showLoading({
 				mask: true
 			})
-			this.init(); //归纳函数
+			this.init()
 		},
 		onShow(res) {},
-		
+
 		onShareAppMessage(res) {
 			return appshare()
 		},
@@ -275,10 +277,13 @@
 		},
 		methods: {
 			async init() {
-				this.getBannerList();
-				this.juideUserInfo(); //判断用户是否登录
-				this.renderAnimation(); //定义动画
-
+				if (this.member) {
+					this.juideUserInfo(); //判断用户是否登录
+					this.renderAnimation(); //定义动画
+				} else {
+					uni.hideLoading()
+				}
+				this.getBannerList(); //获取轮播图
 			},
 			//打开集点卡介绍幕布
 			checkPonitDesc() {
@@ -423,7 +428,7 @@
 					}
 				}
 			},
-			
+
 			//查询好友赠送的优惠卷
 			async receiveCoupons() {
 				let homeParams = this.homeParams;
@@ -721,6 +726,7 @@
 			background-color: $bg-white;
 			border-radius: $radius-md;
 			@extend %flex-alcent;
+			margin-bottom: 20upx;
 
 			view {
 				@include rect(50%, 258upx);
@@ -752,7 +758,7 @@
 	.blance-box {
 		@include rect(100%, 160upx);
 		background-color: $bg-white;
-		margin: 20upx 0;
+		margin: 0upx 0 20upx auto;
 		@extend %flex-alcent;
 		border-radius: $radius-md;
 		justify-content: space-between;
