@@ -3,7 +3,10 @@ import {
 	normoal,
 	service_v
 } from './http.js';
+//正式环境
 const key = '&key=6886173bf669d7bc';
+//测试环境
+// const key = '&key=93ba9db2f9f4f0e4';
 
 //service请求区域
 //获取城市id

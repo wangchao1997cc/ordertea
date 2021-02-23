@@ -3,6 +3,12 @@
 	export default {
 		globalData: {
 			remark:'',   //订单的备注信息
+			//测试环境配置
+			// brandId: 456,
+			// menuId: 1804,
+			// brandIdc: 383,
+			// clientId: '32e58123cb58fe0bc7ed15933b4537f4fa0d07',
+			//正式环境配置
 			brandId: 7622,
 			menuId: 1804,
 			brandIdc: 26000607,
@@ -16,9 +22,9 @@
 			orderSuccess:false,   //下单成功清除购物车
 			exchangeSuccess:false, //兑换成功
 			member:true,   //是否启用会员部分
-			
 		},
 		onLaunch: async function() {},
+		//测试环境配置
 		onShow: function() {
 		},
 		onHide: function() {

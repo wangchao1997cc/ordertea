@@ -156,6 +156,7 @@
 	export default {
 		data() {
 			return {
+				haveActive:false,   //商品是否参与活动了
 				useBalance: 1, //是否使用余额   1是0否
 				coupons: null,
 				wareCurrtab: 0, //选择餐具份数索引
@@ -371,10 +372,17 @@
 				if (!this.interest.canUseTotal) {
 					return;
 				}
-				uni.setStorageSync('canusecoupons', this.interest.couponInfoResponseList);
-				uni.navigateTo({
-					url: '../coupons/coupons?type=choose'
-				})
+				//商品已经参与活动了
+				if(this.haveActive){   
+					this.$msg.showModal(res => {
+						if(res==1){
+							uni.setStorageSync('canusecoupons', this.interest.couponInfoResponseList);
+							uni.navigateTo({
+								url: '../coupons/coupons?type=choose'
+							})
+						}
+					},'营销活动暂时不与优惠券同享，是否继续使用优惠券', '温馨提示',true,false,'去使用')
+				}
 			},
 			//跳转订单备注
 			jumpOrederReark() {
@@ -394,8 +402,12 @@
 							orderinfo.promotions.splice(index, 1);
 							this.coupons = item;
 						}
+						if(item.type < 6){
+							this.haveActive = true;
+						}
 					})
 					that.interest = orderinfo;
+					
 					if (res.code == 1901) {
 						this.$msg.showModal((result) => {
 							if (result == 1) {
@@ -412,7 +424,7 @@
 			judgeUseCoupons(){
 				return new Promise((reso,ret) => {
 					let that = this;
-					if(that.interest.canUseTotal && !that.coupons){
+					if(that.interest.canUseTotal && !that.coupons && !that.haveActive){
 						this.$msg.showModal((res) => {
 							if (res == 1) {
 								reso(1)
@@ -883,7 +895,6 @@
 					&:first-child {
 						font-size: 35upx;
 					}
-
 					&:last-child {
 						display: block;
 						margin-top: 15upx;

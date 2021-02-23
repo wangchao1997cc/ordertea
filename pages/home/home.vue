@@ -1,5 +1,6 @@
 <template>
 	<view class="content">
+		<!-- 首页banner -->
 		<swiper class="head-info" :autoplay="true" :circular="true" :interval="3000" :duration="1000">
 			<!-- <navbar :config="config"></navbar> -->
 			<swiper-item v-for="(item,index) in bannerData.topBannerList" :key="index" @click="jumpAdvertise(item,index)">
@@ -7,17 +8,47 @@
 			</swiper-item>
 		</swiper>
 		<view class="home-cont">
+			<!-- 自取/外卖/集点卡部分 -->
 			<view class="app-model">
-				<view class="" @click="jumpMenu(2)">
-					<image class="take-pic" src="../../static/homepage/home_takeit_pic.png" mode=""></image>
-					<image class="take-btn" src="../../static/homepage/takeit_btn.png"></image>
+				<view class="model-box">
+					<view class="" @click="jumpMenu(2)">
+						<image class="take-pic" src="../../static/homepage/home_takeit_pic.png" mode=""></image>
+						<image class="take-btn" src="../../static/homepage/takeit_btn.png"></image>
+					</view>
+					<view class="" @click="jumpMenu(1)">
+						<image class="take-pic" src="../../static/homepage/home_takeout_pic.png"></image>
+						<image class="take-btn" src="../../static/homepage/takeout_btn.png"></image>
+					</view>
 				</view>
-				<view class="" @click="jumpMenu(1)">
-					<image class="take-pic" src="../../static/homepage/home_takeout_pic.png"></image>
-					<image class="take-btn" src="../../static/homepage/takeout_btn.png"></image>
+				<view class="active_card">
+					<view class="card_l">
+						<image class="card_icon" src=""></image>
+						<view class="progress_speed">
+							<text>集点卡({{pointNum || 0}}/{{pointActive.number || 0}})</text>
+							<sildermine :config="sliderConfig"></sildermine>
+						</view>
+					</view>
+					
+					<!-- <view class="active-juide">
+						<image class="sm-icon" src="../../static/homepage/home_milktea.png"></image>
+						<text>{{pointNum || 0}} </text>
+						<text>/ {{pointActive.number || 0}}</text>
+					</view> -->
+					
+					<text class="active-desc">再集{{(pointActive.number - pointNum) || 0}}单可获得好礼</text>
+					<!-- <view class="active-desc">
+						再集{{(pointActive.number - pointNum) || 0}}单可获得好礼
+						<image src="../../static/homepage/right.png"></image>
+					</view> -->
 				</view>
 			</view>
-			<view class="blance-box" v-if="member">
+			<view class="integral">
+				<view class="integral_f">
+					
+				</view>
+			</view>
+			<!-- 我的优惠券 / 我的余额 / 积分商城 -->
+			<!-- <view class="blance-box" v-if="member">
 				<view class="blance-l" @click="jumpWallet">
 					<view>
 						<image src="../../static/money_icon.png"></image>
@@ -29,8 +60,8 @@
 					</view>
 				</view>
 				<image class="blance-icon" src="../../static/member_icon.png" @click="jumpMembercode"></image>
-			</view>
-			<view class="integral" v-if="member">
+			</view> -->
+			<!-- <view class="integral" v-if="member">
 				<view class="integral-item" v-for="(item,index) in integralarr" :key="index" @click="jumpClissIfy(index)">
 					<view class="intehead_info">
 						<image :src="item.icon"></image>
@@ -39,22 +70,9 @@
 							<text>{{item.value}}</text>
 						</view>
 					</view>
-					<!-- @click="checkPonitDesc" -->
-					<view class="active" v-if="index==4">
-						<view class="active-juide">
-							<image class="sm-icon" src="../../static/homepage/home_milktea.png"></image>
-							<text>{{pointNum || 0}} </text>
-							<text>/ {{pointActive.number || 0}}</text>
-						</view>
-						<sildermine :config="sliderConfig"></sildermine>
-						<view class="active-desc">
-							再集{{(pointActive.number - pointNum) || 0}}单可获得好礼
-							<image src="../../static/homepage/right.png"></image>
-						</view>
-					</view>
 					<image class="bg-pic" :src="item.bg"></image>
 				</view>
-			</view>
+			</view> -->
 			<view class="adver">
 				<view class="adver-tit">
 					新鲜事
@@ -117,7 +135,7 @@
 						</view>
 					</view>
 					<scroll-view scroll-y="true" class="desc-cont">
-						<view v-if="pointActive" class="desc-time"> <text v-if="timelimit">{{pointActive.startTime + ' ' + pointActive.endTime}}</text>
+						<view v-if="pointActive" class="desc-time"> <text v-if="timelimit">{{pointActive.startTime + ' 至 ' + pointActive.endTime}}</text>
 							<text v-else>长期有效</text> </view>
 						<text class="desc-time" v-else>非常抱歉，现在没有开启积点活动</text>
 						<view class="desc-cont-o" v-if="pointActive">
@@ -171,10 +189,10 @@
 				notAuth: false, //好友邀请幕布
 				title: 'Hello',
 				sliderConfig: {
-					progresswidth: '272upx',
-					progressbar: '0%',
+					progresswidth: '240upx',
+					progressbar: '50%',
 				},
-				newsImag: ["https://fnb-merchants.oss-cn-shanghai.aliyuncs.com/7622/adsadasfefxxsdx_20210120165856.jpg",
+				newsImag: ["https://fnb-merchants.oss-cn-shanghai.aliyuncs.com/7622/3cbcb489af9a647b807a3e4977781cb.jpg",
 					"https://fnb-merchants.oss-cn-shanghai.aliyuncs.com/7622/banner20201118151452.png"
 				],
 
@@ -338,6 +356,7 @@
 				let that = this;
 				let memberinfo = that.memberinfo;
 				if (!memberinfo) {
+					// this.redRewardInfo = null;
 					return that.$refs.authorM.showPop();
 				}
 				uni.showLoading({
@@ -455,7 +474,7 @@
 				if (this.redRewardInfo) {
 					return this.receiveReward(); //注册成功领取天降红包
 				}
-				if (that.homeParams && that.homeParams.giveCardId) {
+				if (this.homeParams && this.homeParams.giveCardId) {
 					this.receiveCouponsBtn(); //注册成功领取好友赠送的优惠卷
 				}
 			},
@@ -702,11 +721,13 @@
 	}
 
 	.head-info {
-		@include rect(100%, 422upx);
+		// @include rect(100%, 422upx);
+		@include rect(100%, 640upx);
 
 		// background-color: $main-color;.
 		swiper-item {
-			@include rect(100%, 422upx);
+			// @include rect(100%, 422upx);
+			@include rect(100%, 640upx);
 
 			image {
 
@@ -718,37 +739,67 @@
 	.home-cont {
 		position: relative;
 		width: 100%;
-		@include box-padding(26upx);
+		@include box-padding(32upx);
 		margin-top: -80upx;
 
 		.app-model {
-			@include rect(100%, 345upx);
+			width: 100%;
 			background-color: $bg-white;
-			border-radius: $radius-md;
-			@extend %flex-alcent;
-			margin-bottom: 20upx;
+			border-radius: 16upx;
+			margin-bottom: 32upx;
 
-			view {
-				@include rect(50%, 258upx);
-				@extend %flex-column;
-				justify-content: center;
+			.model-box {
+				@include rect(100%, 320upx);
+				@extend %flex-alcent;
+				border-bottom: 1upx #E5E5E5 solid;
 
-				.take-btn {
-					margin-top: 28upx;
-					@include rect(143upx, 53upx)
-				}
+				view {
+					@include rect(50%, 258upx);
+					@extend %flex-column;
+					justify-content: center;
 
-				&:first-child {
-					.take-pic {
-						@include rect(119upx, 94upx)
+					.take-btn {
+						margin-top: 28upx;
+						@include rect(143upx, 53upx)
 					}
 
-					border-right: 1upx $line-color solid;
+					&:first-child {
+						.take-pic {
+							@include rect(119upx, 94upx)
+						}
+						
+						// border-right: 1upx $line-color solid;
+					}
+
+					&:last-child {
+						.take-pic {
+							@include rect(107upx, 88upx)
+						}
+					}
+				}
+			}
+			.active_card{
+				@include rect(100%,122upx);
+				@extend %flex-alcent;
+				@include box-padding(32upx);
+				justify-content: space-between;
+				.card_l{
+					@extend %flex-alcent;
+					height: 100%;
+				}
+				.active-desc{
+					color: #969CAB;
 				}
 
-				&:last-child {
-					.take-pic {
-						@include rect(107upx, 88upx)
+				.card_icon{
+					@include rect(40upx,48upx);
+					margin-right: 18upx;
+				}
+				.progress_speed{
+					width: 240upx;
+					margin-top: 32upx;
+					text{
+						margin-bottom: 8upx;
 					}
 				}
 			}
@@ -794,131 +845,123 @@
 
 	.integral {
 		width: 100%;
+		height: 416upx;
+		display: flex;
 		@extend %flex-list;
-
-		.integral-item {
-			@include rect(220upx, 228upx);
-			margin: 0 19upx 19upx 0;
-			background-color: $bg-white;
-			border-radius: $radius-md;
-			position: relative;
-			overflow: hidden;
-
-			.bg-pic {
-				@include rect(112upx, 112upx);
-				position: absolute;
-				right: -20upx;
-				bottom: -14upx;
-			}
-
-			&:nth-of-type(3) {
-				margin: 0;
-
-				.sm-icon {
-					@include rect(31upx, 27upx);
-				}
-
-				.bg-pic {
-					@include rect(90upx, 105upx);
-					right: 0upx;
-					bottom: -9upx;
-				}
-			}
-
-			&:nth-of-type(2) {
-				.sm-icon {
-					@include rect(31upx, 27upx);
-				}
-
-				.bg-pic {
-					@include rect(98upx, 98upx);
-					right: 0upx;
-					bottom: -2upx;
-				}
-			}
-
-			&:nth-of-type(4) {
-				.sm-icon {
-					@include rect(30upx, 23upx);
-				}
-
-				.bg-pic {
-					@include rect(122upx, 122upx);
-					right: -22upx;
-					bottom: -22upx;
-				}
-			}
-
-
-			&:last-child {
-				width: 458upx;
-				margin: 0;
-
-				.sm-icon {
-					@include rect(26upx, 24upx);
-				}
-
-				.bg-pic {
-					@include rect(143upx, 143upx);
-					right: -20upx;
-					bottom: -20upx;
-				}
-			}
-
-			.intehead_info {
-				width: 100%;
-				margin: 36upx 0 0 24upx;
-				display: flex;
-
-				image {
-					@include rect(32upx, 32upx);
-					margin-right: 16upx;
-				}
-
-			}
-
-			.active {
-				width: 272upx;
-				margin: 20upx 0 0 30upx;
-
-				.active-juide {
-					height: 44upx;
-					display: flex;
-					align-items: flex-end;
-					margin-bottom: 20upx;
-
-					text {
-						line-height: 44upx;
-						font-size: 41upx;
-
-						&:last-child {
-							line-height: 30upx;
-							font-size: 21upx;
-						}
-					}
-
-					image {
-						@include rect(27upx, 44upx);
-						margin-right: 14upx;
-					}
-				}
-
-				.active-desc {
-					width: 100%;
-					margin-top: 10upx;
-					font-size: 24upx;
-					@extend %flex-alcent;
-					color: #A3A3A3;
-
-					image {
-						@include rect(6upx, 13upx);
-						margin-left: 12upx;
-					}
-				}
-			}
-
-
+		
+		.integral_f{
+			
 		}
+
+		// .integral-item {
+		// 	@include rect(220upx, 228upx);
+		// 	margin: 0 19upx 19upx 0;
+		// 	background-color: $bg-white;
+		// 	border-radius: $radius-md;
+		// 	position: relative;
+		// 	overflow: hidden;
+
+		// 	.bg-pic {
+		// 		@include rect(112upx, 112upx);
+		// 		position: absolute;
+		// 		right: -20upx;
+		// 		bottom: -14upx;
+		// 	}
+
+		// 	&:nth-of-type(3) {
+		// 		margin: 0;
+
+		// 		.sm-icon {
+		// 			@include rect(31upx, 27upx);
+		// 		}
+
+		// 		.bg-pic {
+		// 			@include rect(90upx, 105upx);
+		// 			right: 0upx;
+		// 			bottom: -9upx;
+		// 		}
+		// 	}
+
+		// 	&:nth-of-type(2) {
+		// 		.sm-icon {
+		// 			@include rect(31upx, 27upx);
+		// 		}
+
+		// 		.bg-pic {
+		// 			@include rect(98upx, 98upx);
+		// 			right: 0upx;
+		// 			bottom: -2upx;
+		// 		}
+		// 	}
+
+		// 	&:nth-of-type(4) {
+		// 		.sm-icon {
+		// 			@include rect(30upx, 23upx);
+		// 		}
+
+		// 		.bg-pic {
+		// 			@include rect(122upx, 122upx);
+		// 			right: -22upx;
+		// 			bottom: -22upx;
+		// 		}
+		// 	}
+
+
+		// 	&:last-child {
+		// 		width: 458upx;
+		// 		margin: 0;
+
+		// 		.sm-icon {
+		// 			@include rect(26upx, 24upx);
+		// 		}
+
+		// 		.bg-pic {
+		// 			@include rect(143upx, 143upx);
+		// 			right: -20upx;
+		// 			bottom: -20upx;
+		// 		}
+		// 	}
+
+		// 	.intehead_info {
+		// 		width: 100%;
+		// 		margin: 36upx 0 0 24upx;
+		// 		display: flex;
+
+		// 		image {
+		// 			@include rect(32upx, 32upx);
+		// 			margin-right: 16upx;
+		// 		}
+
+		// 	}
+
+		// 	.active {
+		// 		width: 272upx;
+		// 		margin: 20upx 0 0 30upx;
+
+		// 		.active-juide {
+		// 			height: 44upx;
+		// 			display: flex;
+		// 			align-items: flex-end;
+		// 			margin-bottom: 20upx;
+
+		// 			text {
+		// 				line-height: 44upx;
+		// 				font-size: 41upx;
+
+		// 				&:last-child {
+		// 					line-height: 30upx;
+		// 					font-size: 21upx;
+		// 				}
+		// 			}
+
+		// 			image {
+		// 				@include rect(27upx, 44upx);
+		// 				margin-right: 14upx;
+		// 			}
+		// 		}
+
+		// 	}
+		// }
 	}
 
 	.adver {

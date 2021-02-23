@@ -23,7 +23,6 @@ export const getLocation = () => {
 				uni.setStorageSync('location', data);
 			},
 			fail(res) {
-				console.log(1111,res)
 				if (res.errMsg == "getLocation:fail system permission denied") { //系统定位未开启
 					return showToast('请打开手机设置中的定位服务,开启后重新打开小程序');
 				} else if (res.errMsg == "getLocation:fail authorize no response" || "getLocation:fail auth deny") { //微信定位服务未开启

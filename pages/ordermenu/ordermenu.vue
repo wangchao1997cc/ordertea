@@ -170,9 +170,14 @@
 						<image @click="closeActiveMask" src="../../static/cha.png"></image>
 					</view>
 					<scroll-view scroll-y="true" class="desc-cont">
-						<view class="desc-time">{{choseActive.startTime}}</view>
+						<view class="desc-time">
+							<text v-if="timelimit">{{choseActive.startTime + ' 至 ' + choseActive.endTime}}</text>
+							<text v-else>长期有效</text>
+						</view>
 						<view class="desc-cont-o">
-							<text>{{choseActive.ruleDetail}}</text>
+							<!-- <jyf-parser :html="choseActive.description" selectable="true"></jyf-parser> -->
+							<rich-text :nodes="choseActive.description" v-if="choseActive.description"></rich-text>
+							<text v-else>{{choseActive.ruleDetail}}</text>
 						</view>
 					</scroll-view>
 					<!-- <button open-type="share" class="turnTo_btn" v-if="currtab==0 && choiceCoupons.isShare">
@@ -358,7 +363,8 @@
 				isfullprice: null, //满减
 				menuId: null, //餐单id
 				choseActive: null, //当前选则查看的活动
-				member: false,    //当前门店是否需要会员部分
+				member: false, //当前门店是否需要会员部分
+				timelimit:false,   //活动时间限制
 			}
 		},
 
@@ -584,7 +590,13 @@
 			},
 			//查看当前活动
 			jumpActiveDesc(item) {
+				// console.log(item)
 				this.choseActive = item;
+				if (item.endTime.slice(0, 4) > 2099) {
+					this.timelimit = false;
+				}else{
+					this.timelimit = true;
+				}
 				this.maskarr.activeDesc = false;
 				this.openAnimation();
 			},
@@ -791,6 +803,7 @@
 					let property = [];
 					for (let i in that.specarr) {
 						// if (i != that.specarr.length - 1) {
+						// return console.log(that.specarr[i].items[currtabarr[i]])
 						that.specarr[i].items[currtabarr[i]].title = that.specarr[i].title;
 						property.push(that.specarr[i].items[currtabarr[i]])
 
@@ -1170,8 +1183,8 @@
 						useRestriction: 1,
 						cardNo: memberinfo.cardNo,
 					};
-				}else{
-					orderinfo.priceArr = this.priceArr;   //餐饮总价
+				} else {
+					orderinfo.priceArr = this.priceArr; //餐饮总价
 					// .totalPrice;
 					// orderinfo.lunchboxfee = this.priceArr.lunchboxfee
 				}

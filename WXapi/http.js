@@ -1,16 +1,18 @@
 //定义环境 请求封装
-const base_url_m = 'https://open6-wxa.can-dao.com/'; //测试环境   餐道
-//正式环境   "https://open6-wxa.can-dao.com/";
-//测试环境  'https://qc.can-dao.com:7776/
+const base_url_m = 'https://open6-wxa.can-dao.com/'; //正式环境   餐道
+// const base_url_m ='https://qc.can-dao.com:7776/'  //测试环境
 
-const baseurl_v43 = 'https://crmapi.fnb-tech.com/openapi/' //测试环境	会员
-// 正式环境    'https://crmapi.fnb-tech.com/openapi/' 
-//测试环境    'https://api.vi-ni.com/openapi/'
+const baseurl_v43 = 'https://crmapi.fnb-tech.com/openapi/' //正式环境	会员
+// const baseurl_v43 = 'https://api.vi-ni.com/openapi/'   //测试环境 会员
 
+//正式环境 key
 const default_value_f = 'Action?' + 'key=6886173bf669d7bc'
 const default_value_s = 'SecretAction?' + 'key=6886173bf669d7bc'
 
-//key  //正式：‘6886173bf669d7bc’ //测试‘93ba9db2f9f4f0e4’
+//测试环境key
+// const default_value_f = 'Action?' + 'key=93ba9db2f9f4f0e4'
+// const default_value_s = 'SecretAction?' + 'key=93ba9db2f9f4f0e4'
+
 
 import store from '../store/store.js';
 const app = getApp();
