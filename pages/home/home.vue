@@ -13,29 +13,38 @@
 				<view class="model-box">
 					<view class="" @click="jumpMenu(2)">
 						<image class="take-pic" src="../../static/homepage/home_takeit_pic.png" mode=""></image>
-						<image class="take-btn" src="../../static/homepage/takeit_btn.png"></image>
+						<text>门店自取</text>
+						<text class="juide-txt">下单免排队</text>
+						<!-- <image class="take-btn" src="../../static/homepage/takeit_btn.png"></image> -->
 					</view>
 					<view class="" @click="jumpMenu(1)">
 						<image class="take-pic" src="../../static/homepage/home_takeout_pic.png"></image>
-						<image class="take-btn" src="../../static/homepage/takeout_btn.png"></image>
+						<text>外卖</text>
+						<text class="juide-txt">无接触配送，送到家</text>
+						<!-- <image class="take-btn" src="../../static/homepage/takeout_btn.png"></image> -->
 					</view>
 				</view>
-				<view class="active_card">
+				<!-- 积分商城部分 -->
+				<view class="active_card" @click="jumpClissIfy(1)">
 					<view class="card_l">
-						<image class="card_icon" src=""></image>
-						<view class="progress_speed">
+						<image class="card_icon" src="../../static/homepage/home_inter_icon.png"></image>
+						<text>积分商城</text>
+						<!-- <view class="progress_speed">
 							<text>集点卡({{pointNum || 0}}/{{pointActive.number || 0}})</text>
 							<sildermine :config="sliderConfig"></sildermine>
-						</view>
+						</view> -->
 					</view>
-					
+
 					<!-- <view class="active-juide">
 						<image class="sm-icon" src="../../static/homepage/home_milktea.png"></image>
 						<text>{{pointNum || 0}} </text>
 						<text>/ {{pointActive.number || 0}}</text>
 					</view> -->
-					
-					<text class="active-desc">再集{{(pointActive.number - pointNum) || 0}}单可获得好礼</text>
+					<view class="card_r">
+						<text>更多好物</text>
+						<image src="../../static/07_icon_right.png"></image>
+					</view>
+					<!-- <text class="active-desc">再集{{(pointActive.number - pointNum) || 0}}单可获得好礼</text> -->
 					<!-- <view class="active-desc">
 						再集{{(pointActive.number - pointNum) || 0}}单可获得好礼
 						<image src="../../static/homepage/right.png"></image>
@@ -43,8 +52,20 @@
 				</view>
 			</view>
 			<view class="integral">
-				<view class="integral_f">
-					
+				<view class="integral_f" @click="jumpClissIfy(3)">
+					<text>集点卡\n</text>
+					<text>再集{{(pointActive.number - pointNum) || 0}}单可获得好礼</text>
+					<sildermine :config="sliderConfig"></sildermine>
+				</view>
+				<view class="box-r">
+					<view class="integral_s" @click="jumpClissIfy(2)">
+						<text>我的优惠券\n</text>
+						<text>3张待使用</text>
+					</view>
+					<view class="integral_t" @click="jumpWallet">
+						<text>我的余额\n</text>
+						<text>充值享优惠</text>
+					</view>
 				</view>
 			</view>
 			<!-- 我的优惠券 / 我的余额 / 积分商城 -->
@@ -282,6 +303,8 @@
 				if (pointActive) {
 					if (pointActive.sumNumber > pointActive.number) {
 						return pointActive.sumNumber % pointActive.number
+					} else if (pointActive.sumNumber == pointActive.number) {
+						num = 0;
 					} else {
 						num = pointActive.sumNumber;
 					}
@@ -420,6 +443,7 @@
 					}
 				} else {
 					let memberinfo = await getMemberInfo(true);
+					console.log(memberinfo)
 					that.integralarr[0].value = memberinfo.point;
 					that.integralarr[3].value = memberinfo.coupons.length + '张';
 					that.memberinfo = memberinfo;
@@ -547,27 +571,17 @@
 					return this.noLoginHander();
 				}
 				switch (index) {
-					case 0:
-						uni.switchTab({
-							url: '../mine/mine'
-						})
-						break;
 					case 1:
 						uni.navigateTo({
 							url: '../shopping/shopping'
 						})
 						break;
 					case 2:
-						uni.switchTab({
-							url: '../ordermenu/ordermenu'
-						})
-						break;
-					case 3:
 						uni.navigateTo({
 							url: '../coupons/coupons'
 						})
 						break;
-					case 4:
+					case 3:
 						this.checkPonitDesc();
 						break;
 				}
@@ -579,6 +593,26 @@
 <style lang="scss">
 	.blank {
 		height: 100upx;
+	}
+
+	%integral {
+		padding-top: 32upx;
+		@include box-padding(30upx);
+		padding-top: 30upx;
+		box-sizing: border-box;
+		line-height: 44upx;
+
+		text {
+			font-size: 32upx;
+			font-weight: bold;
+			margin-bottom: 4upx;
+
+			&:nth-of-type(2) {
+				font-size: $font-md;
+				color: #969CAB;
+				font-weight: normal;
+			}
+		}
 	}
 
 	.close-redReward {
@@ -730,7 +764,6 @@
 			@include rect(100%, 640upx);
 
 			image {
-
 				@include rect(100%, 100%);
 			}
 		}
@@ -740,7 +773,7 @@
 		position: relative;
 		width: 100%;
 		@include box-padding(32upx);
-		margin-top: -80upx;
+		margin-top: -40upx;
 
 		.app-model {
 			width: 100%;
@@ -750,58 +783,68 @@
 
 			.model-box {
 				@include rect(100%, 320upx);
-				@extend %flex-alcent;
+				display: flex;
 				border-bottom: 1upx #E5E5E5 solid;
 
 				view {
-					@include rect(50%, 258upx);
+					@include rect(50%, 100%);
 					@extend %flex-column;
-					justify-content: center;
 
-					.take-btn {
+					text {
+						font-size: 36upx;
+						line-height: 44upx;
+						margin-top: 4upx;
+					}
+
+					.juide-txt {
+						font-size: 24upx;
+						color: #969CAB;
 						margin-top: 28upx;
-						@include rect(143upx, 53upx)
 					}
 
-					&:first-child {
-						.take-pic {
-							@include rect(119upx, 94upx)
-						}
-						
-						// border-right: 1upx $line-color solid;
+					.take-pic {
+						margin-top: 56upx;
+						@include rect(112upx, 112upx)
 					}
 
-					&:last-child {
-						.take-pic {
-							@include rect(107upx, 88upx)
-						}
-					}
 				}
 			}
-			.active_card{
-				@include rect(100%,122upx);
+
+			.active_card {
+				@include rect(100%, 122upx);
 				@extend %flex-alcent;
-				@include box-padding(32upx);
+				@include box-padding(30upx);
 				justify-content: space-between;
-				.card_l{
+
+
+				.card_l {
 					@extend %flex-alcent;
 					height: 100%;
+
+					image {
+						@include rect(72upx, 72upx) margin-right: 8upx;
+					}
 				}
-				.active-desc{
+
+				.card_r {
+					image {
+						@include rect(11upx, 17upx);
+						margin-left: 18upx;
+					}
+
+					color: #969CAB;
+					font-size: 24upx;
+				}
+
+				.active-desc {
 					color: #969CAB;
 				}
 
-				.card_icon{
-					@include rect(40upx,48upx);
+				.card_icon {
+					@include rect(40upx, 48upx);
 					margin-right: 18upx;
 				}
-				.progress_speed{
-					width: 240upx;
-					margin-top: 32upx;
-					text{
-						margin-bottom: 8upx;
-					}
-				}
+
 			}
 		}
 	}
@@ -847,10 +890,35 @@
 		width: 100%;
 		height: 416upx;
 		display: flex;
-		@extend %flex-list;
-		
-		.integral_f{
-			
+		justify-content: space-between;
+
+		.integral_f {
+			@include rect(335upx, 100%);
+			border-radius: 16px 0px 0px 0px;
+			background: $bg-white url(https://fnb-merchants.oss-cn-shanghai.aliyuncs.com/miniAppSetting/b3a2e7b3e5227e1e1ba86c8a5c5b150.png) no-repeat;
+			background-size: cover;
+			@extend %integral;
+
+		}
+
+		.box-r {
+			@include rect(335upx, 100%);
+
+			.integral_s {
+				@include rect(100%, 200upx); border-radius: 0px 16upx 0px 0px;
+				background: $bg-white url(https://fnb-merchants.oss-cn-shanghai.aliyuncs.com/miniAppSetting/d95e99296259695998bffdce64541e2.png) no-repeat;
+				background-size: cover;
+				margin-bottom: 16upx;
+				@extend %integral;
+			}
+
+			.integral_t {
+				@include rect(100%, 200upx);
+				background: $bg-white url(https://fnb-merchants.oss-cn-shanghai.aliyuncs.com/miniAppSetting/b2b95be2f4f202508436db72c10f174.png) no-repeat;
+				background-size: cover;
+				border-radius: 0px 0px 16upx 0px;
+				@extend %integral;
+			}
 		}
 
 		// .integral-item {
@@ -966,7 +1034,7 @@
 
 	.adver {
 		width: 100%;
-		background-color: $bg-white;
+		// background-color: $bg-white;
 		padding-top: 1upx;
 		box-sizing: border-box;
 		border-radius: $radius-md;
@@ -974,8 +1042,9 @@
 		.adver-tit {
 			font-size: $font-lg;
 			font-weight: 700;
-			margin: 40upx 35upx;
-
+			font-size: 36upx;
+			line-height: 44upx;
+			margin: 52upx 0 20upx 0;
 		}
 
 		.adver-item {

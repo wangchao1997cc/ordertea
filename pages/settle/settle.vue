@@ -372,17 +372,24 @@
 				if (!this.interest.canUseTotal) {
 					return;
 				}
+				
 				//商品已经参与活动了
 				if(this.haveActive){   
 					this.$msg.showModal(res => {
 						if(res==1){
-							uni.setStorageSync('canusecoupons', this.interest.couponInfoResponseList);
-							uni.navigateTo({
-								url: '../coupons/coupons?type=choose'
-							})
+							this.jumpCoupons();
 						}
 					},'营销活动暂时不与优惠券同享，是否继续使用优惠券', '温馨提示',true,false,'去使用')
+				}else{
+					this.jumpCoupons();
 				}
+			},
+			//跳转优惠券页面
+			jumpCoupons(){
+				uni.setStorageSync('canusecoupons', this.interest.couponInfoResponseList);
+				uni.navigateTo({
+					url: '../coupons/coupons?type=choose'
+				})
 			},
 			//跳转订单备注
 			jumpOrederReark() {
@@ -505,11 +512,12 @@
 
 						if (interest.balancePay) {
 							memberPreferentials.push({
-								content: '余额支付',
+								content: 0 + '#' + 'card' + '#¥' + 0,
 								prePrice: -interest.balancePay,
 								type: 7,
 								childType: 0
 							})
+							
 						}
 						if (that.coupons) {
 							memberPreferentials.push({
@@ -521,13 +529,12 @@
 						if(this.member){
 							interest.promotions.forEach(item => {
 								memberPreferentials.push({
-									content: item.name,
+									content: item['id'] + '#' + 'promotions' + '#' + item['name'],
 									prePrice: -item.amount,
 									type: 7,
 								})
 							})
 						}
-						
 						// childType
 						params.products = products;
 						params.memberPreferentials = memberPreferentials;

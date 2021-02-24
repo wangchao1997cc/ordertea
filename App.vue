@@ -36,6 +36,6 @@
 <style >
 	/*每个页面公共css */
 	page {
-		background: #F8F8FA;
+		background: #F8F7FA;
 	}
 </style>

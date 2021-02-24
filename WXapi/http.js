@@ -13,14 +13,14 @@ const default_value_s = 'SecretAction?' + 'key=6886173bf669d7bc'
 // const default_value_f = 'Action?' + 'key=93ba9db2f9f4f0e4'
 // const default_value_s = 'SecretAction?' + 'key=93ba9db2f9f4f0e4'
 
-
-import store from '../store/store.js';
-const app = getApp();
 const key = 'rc09pv1O21dfY01nx8wx';   //正式环境
 // const key = 'jdhajshdjf871238767o';   //测试环境
 
-var JSESSIONID = store.state.JSESSIONID;
+import store from '../store/store.js';
+const app = getApp();
 
+
+var JSESSIONID = store.state.JSESSIONID;
 //使用 data.actionName   请求的方式
 export function service(url, method, data, isloading) {
 	let header = {

@@ -9,7 +9,7 @@
 					剩余支付时间：
 				</view> -->
 			<view class="status-cont" @click="callTel">
-				{{orderdetails.progress[0].clientTips}}
+				{{orderdetails.progress[0].clientTips || '请耐心等待'}}
 			</view>
 			<view class="order-bt-box" v-if="orderdetails.progress[0].status==1">
 				<view class="order-btn" @click="cancelOrder">
@@ -113,11 +113,10 @@
 				<view class="other-item-r">
 					<text>{{orderdetails.peopleNum?orderdetails.peopleNum:'1'}}份</text>
 					<!-- <image src="../../static/07_icon_right.png"></image> -->
-				</view>
+				</view>	
 			</view>
 		</view>
 		<view class="blank"></view>
-
 	</view>
 </template>
 

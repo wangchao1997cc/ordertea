@@ -6,7 +6,6 @@
 				<text @click="switchStoreOwn">{{headerinfo_t}}</text>
 			</view>
 			<view class="store-control">
-
 				<view class="table-num" v-if="forhere">
 					{{forhere.deskId}}号桌
 				</view>
@@ -17,20 +16,46 @@
 				</view>
 			</view>
 		</view>
-		<view class="header" v-if="showdetail">
-			<view class="make-busy">
-				<swiper v-if="activelist.length" class="active-s" :autoplay="true" :interval="5000" :duration="1000" :circular="true">
-					<swiper-item v-for="(item,index) in activelist" :key="index">
-						<view class="active-goods">
-							<view>
-								{{item.title}}
-							</view>
-							<view @click="jumpActiveDesc(item)">
-								<text>查看详情 ></text>
-							</view>
+		<view class="active_desc" :style="{height:activeHeight}">
+			<scroll-view scroll-y="true" :style="{height:activeHeight}">
+				<view class="active-item" v-for="(item,index) in activelist" :key="index">
+					<view class="active-tit">
+						{{item.title}}
+					</view>
+					<view class="active-desc">
+						<view class="left-box" :class="{on:item.type == 4}" v-if="item.type == 5 || item.type == 4">
+							{{item.type == 5?'特':'减'}}
 						</view>
-					</swiper-item>
-				</swiper>
+
+						<rich-text :nodes="item.description"></rich-text>
+						<!-- <jyf-parser :html="item.description" selectable="true"></jyf-parser> -->
+					</view>
+				</view>
+			</scroll-view>
+			<view class="close-active" @click="closeActivePop">
+				<image src="../../static/menu/close_active.png"></image>
+			</view>
+		</view>
+		<view class="header" v-if="showdetail && !activeHeight">
+			<view class="make-busy">
+				<view class="make-busy-l">
+					<image class="active-pic" src="../../static/active_icon.png"></image>
+					<swiper :vertical='true' v-if="activelist.length" class="active-s" :autoplay="true" :interval="5000" :duration="1000"
+					 :circular="true">
+						<swiper-item v-for="(item,index) in activelist" :key="index">
+							<view class="active-goods">
+								<view>
+									{{item.title}}
+								</view>
+							</view>
+						</swiper-item>
+					</swiper>
+				</view>
+
+				<view class="active-r" @click="jumpActiveDesc(item)">
+					<text>全部活动详情</text>
+					<image class="drop_down" src="../../static/menu/drop_down.png"></image>
+				</view>
 				<!-- <view class="busy-cont">
 					<view class="busy-l">
 						<sildermine :config="sliderConfig"></sildermine>
@@ -41,9 +66,12 @@
 					</view>
 				</view> -->
 			</view>
+			<!-- <view class="blank">
+				
+			</view> -->
 		</view>
 
-		<view class="menu-cont" v-if="showdetail">
+		<view class="menu-cont" v-if="showdetail && !activeHeight">
 			<!-- 左侧导航栏 -->
 			<scroll-view scroll-y class="left-aside" :style="{height:shopBoxHeight + 'rpx'}" :scroll-into-view="leftCurrtab"
 			 scroll-with-animation>
@@ -164,7 +192,7 @@
 					</view>
 				</view>
 				<!-- 活动详情 -->
-				<view class="active-desc" :hidden="maskarr.activeDesc">
+				<!-- <view class="active-desc" :hidden="maskarr.activeDesc">
 					<view class="head-tit">
 						{{choseActive.title}}
 						<image @click="closeActiveMask" src="../../static/cha.png"></image>
@@ -175,15 +203,12 @@
 							<text v-else>长期有效</text>
 						</view>
 						<view class="desc-cont-o">
-							<!-- <jyf-parser :html="choseActive.description" selectable="true"></jyf-parser> -->
 							<rich-text :nodes="choseActive.description" v-if="choseActive.description"></rich-text>
 							<text v-else>{{choseActive.ruleDetail}}</text>
 						</view>
 					</scroll-view>
-					<!-- <button open-type="share" class="turnTo_btn" v-if="currtab==0 && choiceCoupons.isShare">
-						转增
-					</button> -->
-				</view>
+					
+				</view> -->
 				<!-- 购物车 -->
 				<view class="shopcar-cont" :hidden="maskarr.shopCarCont">
 					<view class="head_juide">
@@ -275,6 +300,7 @@
 </template>
 
 <script>
+	import jyfParser from '@/components/jyf-parser/jyf-parser'; //富文本组件
 	const app = getApp();
 	let newload = false; //页面第一次加载
 	import author from '../../components/author.vue'
@@ -340,6 +366,7 @@
 				loadingState: false, //展现loading
 				storeInfo: {}, //选中的店铺信息
 				showdetail: true, //展示店铺更多信息
+				activeHeight: false, //展开活动信息
 				useraddress: null, //用户选择的地址信息 
 				popHeight: 'auto', //弹出层的高度
 				popHeightInfo: { //弹出层的两种高低
@@ -364,7 +391,7 @@
 				menuId: null, //餐单id
 				choseActive: null, //当前选则查看的活动
 				member: false, //当前门店是否需要会员部分
-				timelimit:false,   //活动时间限制
+				timelimit: false, //活动时间限制
 			}
 		},
 
@@ -374,7 +401,8 @@
 			switchC,
 			storeDetail,
 			author,
-			sildermine
+			sildermine,
+			jyfParser
 		},
 		onShareAppMessage(res) {
 			return appshare()
@@ -397,7 +425,7 @@
 				if (computedHeight) {
 					height = computedHeight - 216;
 					if (!this.activelist.length) {
-						height = computedHeight - 105;
+						height = computedHeight - 85;
 					}
 				}
 				return height;
@@ -590,15 +618,19 @@
 			},
 			//查看当前活动
 			jumpActiveDesc(item) {
-				// console.log(item)
-				this.choseActive = item;
-				if (item.endTime.slice(0, 4) > 2099) {
-					this.timelimit = false;
-				}else{
-					this.timelimit = true;
-				}
-				this.maskarr.activeDesc = false;
-				this.openAnimation();
+				this.activeHeight = this.shopBoxHeight + 105 + 'rpx';
+				// this.choseActive = item;
+				// if (item.endTime.slice(0, 4) > 2099) {
+				// 	this.timelimit = false;
+				// } else {
+				// 	this.timelimit = true;
+				// }
+				// this.maskarr.activeDesc = false;
+				// this.openAnimation();
+			},
+			//关闭活动详情弹窗
+			closeActivePop() {
+				this.activeHeight = 0;
 			},
 			//还原数据
 			reductionData() {
@@ -682,6 +714,7 @@
 							})
 						}
 					})
+					console.log(res.data)
 					this.activelist = res.data;
 					return menus;
 				}
@@ -1649,43 +1682,135 @@
 		}
 	}
 
+	.active_desc {
+		padding: 24upx 32upx 0 32upx;
+		width: 100%;
+		height: 0;
+		background-color: white;
+		transition: all .8s;
+		box-sizing: border-box;
+		overflow: hidden;
+		position: relative;
+
+		.active-item {
+			@include rect(100%, auto);
+			margin-bottom: 64upx;
+			line-height: 44upx;
+
+			.active-tit {
+				font-size: 32upx;
+				font-weight: 500;
+				margin-bottom: 24upx;
+			}
+
+			.active-desc {
+				/* height: 44upx; */
+				line-height: 44upx;
+				display: flex;
+				font-size: 24upx;
+				
+				.left-box{
+					@include rect(36upx,36upx);
+					@include text-allcenter(36upx);
+					color: $text-white;
+					background-color: #FF3945;
+					font-size: 20upx;
+					border-radius: 22upx;
+					margin-top: 4upx;
+					margin-right: 16upx;
+					
+					&.on{
+						background-color: #FF8D5C;
+					}
+				}
+				
+			}
+		}
+
+		.close-active {
+			position: absolute;
+			bottom: 0;
+			left: 0;
+			@include rect(100%, 280upx);
+			background-color: rgba(255, 255, 255, 0.2);
+			@extend %flex-alcent;
+			justify-content: center;
+			
+			image {
+				@include rect(48upx, 48upx);
+				transform: rotate(180deg);
+			}
+		}
+	}
+
 	.header {
 		width: 100%;
 		box-sizing: border-box;
 
+		&::after {
+			content: '';
+			display: block;
+			@include rect(100%, 20upx);
+			background-color: $bg-white;
+		}
+
+
 		.active-s {
-			background-color: #f5f5f5;
+			background-color: #F8F7FA;
 			@include rect(100%, 85upx);
 
 			swiper-item {
+
 				@include rect(100%, 100%);
 			}
 		}
 
 		.active-goods {
+			line-height: 86upx;
 			@include rect(100%, 100%);
 			@include box-padding(28upx);
-			@extend %flex-alcent;
-			justify-content: space-between;
+
 
 			view {
 				font-size: $font-sm;
-
-				&:last-child {
-					@extend %flex-alcent;
-					color: $main-color;
-				}
+				color: #969CAB;
 			}
 		}
 
 		.make-busy {
 			width: 100%;
-			background-color: $bg-white;
-			padding-top: 1upx;
-			padding-bottom: 20upx;
+			background-color: #F8F7FA;
+			padding: 1upx 24upx 0 24upx;
+			box-sizing: border-box;
+			/* padding-top: 1upx;
+			padding-bottom: 20upx; */
+			@extend %flex-alcent;
+			justify-content: space-between;
+
+			.make-busy-l {
+				width: 500upx;
+				height: 100%;
+				@extend %flex-alcent;
+			}
+
+			.active-r {
+				font-size: 24upx;
+				color: #B2D14E;
+				@extend %flex-alcent;
+
+				text {
+					line-height: 85upx;
+				}
+
+				image {
+					@include rect(24upx, 24upx);
+					margin-left: 13upx;
+				}
+			}
 
 			.busy-cont {
-				@include rect(697upx, 85upx);
+
+				@include rect(340upx, 85upx);
 				box-shadow: 0px 4upx 21upx 0px rgba(19, 19, 20, 0.08);
 				border-radius: 13upx;
 				margin: 20upx auto;
@@ -1716,12 +1841,16 @@
 
 			}
 		}
+
+		.active-pic {
+			@include rect(40upx, 40upx);
+		}
 	}
 
 
 	.left-aside {
 		width: 196upx;
-		background-color: #f5f5f5;
+		background-color: #F8F7FA;
 	}
 
 	.blank-fill {
@@ -1925,68 +2054,9 @@
 		}
 	}
 
-	.active-desc {
-		display: flex;
-
-		view {
-			display: flex;
-		}
-
-		width: 100%;
-		background: #F8F8FA;
-		flex-direction: column;
-		align-items: center;
-
-		.head-tit {
-			@include rect(100%, 100upx);
-			font-size: 35upx;
-			line-height: 100upx;
-			justify-content: center;
-			font-weight: 700;
-			position: relative;
-
-			image {
-				position: absolute;
-				@include rect(55upx, 55upx);
-				top: 22.5upx;
-				right: 33upx;
-			}
-		}
-
-		.desc-cont {
-			@include rect(698upx, 450upx);
-			background-color: $bg-white;
-			border-radius: $radius-md;
-			flex-direction: column;
-			@include box-padding(25upx);
-			padding-bottom: 48upx;
-			margin-bottom: 40upx;
-
-			.desc-time {
-				font-size: 28upx;
-				color: black;
-				line-height: 108upx;
-			}
-
-			.desc-cont-o {
-				width: 100%;
-				font-size: 25upx;
-				color: #8A8A8A;
-			}
-		}
-
-		.turnTo_btn {
-			@include rect(698upx, 88upx);
-			justify-content: cneter;
-			line-height: 88upx;
-			background-color: $main-color;
-			color: $text-white;
-			font-size: 32upx;
-			margin: 0upx auto 40upx auto;
-			border-radius: 44upx;
-			justify-content: center;
-		}
-	}
+	
+	
+	
 
 	.shopcar-cont {
 		width: 100%;
@@ -2072,7 +2142,7 @@
 		width: 100%;
 		bottom: 0;
 		/* transform: translateY(100%); */
-		background-color: #F5F5F5;
+		background-color: #F8F7FA;
 		border-top-right-radius: 20upx;
 		border-top-left-radius: 20upx;
 		overflow: hidden;
