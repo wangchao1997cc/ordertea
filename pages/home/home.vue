@@ -24,32 +24,7 @@
 						<!-- <image class="take-btn" src="../../static/homepage/takeout_btn.png"></image> -->
 					</view>
 				</view>
-				<!-- 积分商城部分 -->
-				<view class="active_card" @click="jumpClissIfy(1)">
-					<view class="card_l">
-						<image class="card_icon" src="../../static/homepage/home_inter_icon.png"></image>
-						<text>积分商城</text>
-						<!-- <view class="progress_speed">
-							<text>集点卡({{pointNum || 0}}/{{pointActive.number || 0}})</text>
-							<sildermine :config="sliderConfig"></sildermine>
-						</view> -->
-					</view>
-
-					<!-- <view class="active-juide">
-						<image class="sm-icon" src="../../static/homepage/home_milktea.png"></image>
-						<text>{{pointNum || 0}} </text>
-						<text>/ {{pointActive.number || 0}}</text>
-					</view> -->
-					<view class="card_r">
-						<text>更多好物</text>
-						<image src="../../static/07_icon_right.png"></image>
-					</view>
-					<!-- <text class="active-desc">再集{{(pointActive.number - pointNum) || 0}}单可获得好礼</text> -->
-					<!-- <view class="active-desc">
-						再集{{(pointActive.number - pointNum) || 0}}单可获得好礼
-						<image src="../../static/homepage/right.png"></image>
-					</view> -->
-				</view>
+				
 			</view>
 			<view class="integral">
 				<view class="integral_f" @click="jumpClissIfy(3)">
@@ -66,6 +41,18 @@
 						<text>我的余额\n</text>
 						<text>充值享优惠</text>
 					</view>
+				</view>
+			</view>
+			<!-- 积分商城部分 -->
+			<view class="active_card" @click="jumpClissIfy(1)">
+				<view class="card_l">
+					<image class="card_icon" src="../../static/homepage/home_inter_icon.png"></image>
+					<text>积分商城</text>
+			
+				</view>
+				<view class="card_r">
+					<text>更多好物</text>
+					<image src="../../static/07_icon_right.png"></image>
 				</view>
 			</view>
 			<!-- 我的优惠券 / 我的余额 / 积分商城 -->
@@ -784,7 +771,6 @@
 			.model-box {
 				@include rect(100%, 320upx);
 				display: flex;
-				border-bottom: 1upx #E5E5E5 solid;
 
 				view {
 					@include rect(50%, 100%);
@@ -808,43 +794,6 @@
 					}
 
 				}
-			}
-
-			.active_card {
-				@include rect(100%, 122upx);
-				@extend %flex-alcent;
-				@include box-padding(30upx);
-				justify-content: space-between;
-
-
-				.card_l {
-					@extend %flex-alcent;
-					height: 100%;
-
-					image {
-						@include rect(72upx, 72upx) margin-right: 8upx;
-					}
-				}
-
-				.card_r {
-					image {
-						@include rect(11upx, 17upx);
-						margin-left: 18upx;
-					}
-
-					color: #969CAB;
-					font-size: 24upx;
-				}
-
-				.active-desc {
-					color: #969CAB;
-				}
-
-				.card_icon {
-					@include rect(40upx, 48upx);
-					margin-right: 18upx;
-				}
-
 			}
 		}
 	}
@@ -894,7 +843,7 @@
 
 		.integral_f {
 			@include rect(335upx, 100%);
-			border-radius: 16px 0px 0px 0px;
+			border-radius: 16upx 0px 0px 16upx;
 			background: $bg-white url(https://fnb-merchants.oss-cn-shanghai.aliyuncs.com/miniAppSetting/b3a2e7b3e5227e1e1ba86c8a5c5b150.png) no-repeat;
 			background-size: cover;
 			@extend %integral;
@@ -905,7 +854,8 @@
 			@include rect(335upx, 100%);
 
 			.integral_s {
-				@include rect(100%, 200upx); border-radius: 0px 16upx 0px 0px;
+				@include rect(100%, 200upx);
+				border-radius: 0px 16upx 0px 0px;
 				background: $bg-white url(https://fnb-merchants.oss-cn-shanghai.aliyuncs.com/miniAppSetting/d95e99296259695998bffdce64541e2.png) no-repeat;
 				background-size: cover;
 				margin-bottom: 16upx;
@@ -1139,6 +1089,44 @@
 				border-radius: 44upx;
 				justify-content: center;
 			}
+		}
+	}
+	.active_card {
+		@include rect(100%, 122upx);
+		@extend %flex-alcent;
+		@include box-padding(30upx);
+		justify-content: space-between;
+		background-color: $bg-white;
+		margin-top: 32upx;
+		border-radius: 16upx;
+	
+	
+		.card_l {
+			@extend %flex-alcent;
+			height: 100%;
+	
+			image {
+				@include rect(72upx, 72upx) margin-right: 8upx;
+			}
+		}
+	
+		.card_r {
+			image {
+				@include rect(11upx, 17upx);
+				margin-left: 18upx;
+			}
+	
+			color: #969CAB;
+			font-size: 24upx;
+		}
+	
+		.active-desc {
+			color: #969CAB;
+		}
+	
+		.card_icon {
+			@include rect(40upx, 48upx);
+			margin-right: 18upx;
 		}
 	}
 </style>

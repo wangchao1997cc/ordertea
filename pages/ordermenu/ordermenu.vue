@@ -26,8 +26,10 @@
 						<view class="left-box" :class="{on:item.type == 4}" v-if="item.type == 5 || item.type == 4">
 							{{item.type == 5?'特':'减'}}
 						</view>
-
-						<rich-text :nodes="item.description"></rich-text>
+						<view class="rich_text">
+							<rich-text :nodes="item.description"></rich-text>
+						</view>
+						
 						<!-- <jyf-parser :html="item.description" selectable="true"></jyf-parser> -->
 					</view>
 				</view>
@@ -279,7 +281,7 @@
 				选好了
 			</view>
 		</view>
-		<storeDetail :shopinfo="storeInfo" :shopBoxHeight="shopBoxHeight" :showdetail="showdetail"></storeDetail>
+		<storeDetail :shopinfo="storeInfo" :shopBoxHeight="shopBoxHeight+105" :showdetail="showdetail"></storeDetail>
 		<choseStore :nearList="nearList" @switchStore="switchStore" ref="chosestore"></choseStore>
 		<loadpage :loadingState="loadingState"></loadpage>
 		<author ref="authorM" @loginSuccess="loginSuccess"></author>
@@ -1017,15 +1019,15 @@
 				}
 				let res = await api.getProductMenu(data);
 				if (res && res.status == 1) {
-					if (this.model == 1 && this.storeInfo.businessStatus[0].busy) {
-						this.noTakeOut();
-					}
-					if (!this.storeInfo.isServiceTime) {
-						this.noBussinessTime();
-					}
 					this.menuId = res.data.menuId;
 					this.defaultS = false;
 					this.handleShopData(res.data.bigs);
+					if (!this.storeInfo.isServiceTime) {
+						return this.noBussinessTime();
+					}
+					if (this.model == 1 && this.storeInfo.businessStatus[0].busy) {
+						this.noTakeOut();
+					}
 				}
 			},
 			//不支持外卖提示
@@ -1317,6 +1319,9 @@
 			checkDetail() {
 				if (this.defaultS) {
 					return this.$msg.showToast('请先选择下单店铺哦～')
+				}
+				if(this.activeHeight){
+					this.activeHeight = 0;
 				}
 				this.showdetail = !this.showdetail;
 			},
@@ -1705,9 +1710,9 @@
 
 			.active-desc {
 				/* height: 44upx; */
-				line-height: 44upx;
 				display: flex;
 				font-size: 24upx;
+				/* border: 1upx red solid; */
 				
 				.left-box{
 					@include rect(36upx,36upx);
@@ -1716,14 +1721,16 @@
 					background-color: #FF3945;
 					font-size: 20upx;
 					border-radius: 22upx;
-					margin-top: 4upx;
+					margin-top: 3upx;
 					margin-right: 16upx;
 					
 					&.on{
 						background-color: #FF8D5C;
 					}
 				}
-				
+				.rich_text{
+					line-height: 44upx
+				}
 			}
 		}
 
