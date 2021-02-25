@@ -29,13 +29,13 @@
 			<view class="integral">
 				<view class="integral_f" @click="jumpClissIfy(3)">
 					<text>集点卡\n</text>
-					<text>再集{{(pointActive.number - pointNum) || pointActive.number}}单可获得好礼</text>
+					<text>再集{{(pointActive.number - pointNum)?(pointActive.number - pointNum):(pointActive.number || 0)}}单可获得好礼</text>
 					<sildermine :config="sliderConfig"></sildermine>
 				</view>
 				<view class="box-r">
 					<view class="integral_s" @click="jumpClissIfy(2)">
 						<text>我的优惠券\n</text>
-						<text>3张待使用</text>
+						<text>{{memberinfo.coupons.length || 0}}张待使用</text>
 					</view>
 					<view class="integral_t" @click="jumpWallet">
 						<text>我的余额\n</text>
@@ -200,7 +200,7 @@
 					progresswidth: '240upx',
 					progressbar: '0%',
 				},
-				newsImag: ["https://fnb-merchants.oss-cn-shanghai.aliyuncs.com/7622/3cbcb489af9a647b807a3e4977781cb.jpg",
+				newsImag: ["https://fnb-merchants.oss-cn-shanghai.aliyuncs.com/7622/d770639ad08da8dcdb8a8a2ab82134d.jpg",
 					"https://fnb-merchants.oss-cn-shanghai.aliyuncs.com/7622/banner20201118151452.png"
 				],
 
@@ -259,7 +259,6 @@
 			let memberinfo = this.memberinfo;
 			if(memberinfo){
 				getMemberInfo(true).then(res=>{
-					console.log(2222,res)
 					this.member = res;
 				});
 				this.pointActivity();
@@ -365,7 +364,6 @@
 						}
 					
 						this.pointActive = res.data[0];
-						console.log(11111,this.pointActive)
 						if (res.data[0].endTime.slice(0, 4) > 2099) {
 							this.timelimit = false
 						}

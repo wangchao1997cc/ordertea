@@ -410,6 +410,7 @@
 							this.coupons = item;
 						}
 						if(item.type < 6){
+							console.log(1111)
 							this.haveActive = true;
 						}
 					})
@@ -489,7 +490,7 @@
 					params.name = address.receiverName;
 					params.phone = address.receiverPhone;
 					params.address = address.receiverAddress + address.appendReceiverAddress;
-					tit = `是否确认配送地址【${address.receiverAddress}${address.appendReceiverAddress}】自提`
+					tit = '是否确认配送地址'
 				}
 				that.$msg.showModal(async json => {
 					if (json == 1) {
@@ -552,7 +553,7 @@
 						}
 					}
 					uni.hideLoading()
-				}, '订单确认后无法更改', tit)
+				}, '订单确认后无法更改', tit, true)
 			},
 			requestSubscribeMessage() {
 				return new Promise((result, ret) => {
@@ -888,7 +889,7 @@
 		color: $uni-text-color;
 
 		.times-cont {
-			@include rect(698upx, 380upx);
+			@include rect(698upx, auto);
 			@extend %box-style;
 			margin-top: 26upx;
 
