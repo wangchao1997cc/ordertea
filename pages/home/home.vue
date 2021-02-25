@@ -29,7 +29,7 @@
 			<view class="integral">
 				<view class="integral_f" @click="jumpClissIfy(3)">
 					<text>集点卡\n</text>
-					<text>再集{{(pointActive.number - pointNum) || 0}}单可获得好礼</text>
+					<text>再集{{(pointActive.number - pointNum) || pointActive.number}}单可获得好礼</text>
 					<sildermine :config="sliderConfig"></sildermine>
 				</view>
 				<view class="box-r">
@@ -198,7 +198,7 @@
 				title: 'Hello',
 				sliderConfig: {
 					progresswidth: '240upx',
-					progressbar: '50%',
+					progressbar: '0%',
 				},
 				newsImag: ["https://fnb-merchants.oss-cn-shanghai.aliyuncs.com/7622/3cbcb489af9a647b807a3e4977781cb.jpg",
 					"https://fnb-merchants.oss-cn-shanghai.aliyuncs.com/7622/banner20201118151452.png"
@@ -255,6 +255,16 @@
 			author,
 			jyfParser
 		},
+		onShow() {
+			let memberinfo = this.memberinfo;
+			if(memberinfo){
+				getMemberInfo(true).then(res=>{
+					console.log(2222,res)
+					this.member = res;
+				});
+				this.pointActivity();
+			}
+		},
 		// computed:{
 		// 	...mapState(['isLogin']),
 		// },
@@ -276,7 +286,6 @@
 			})
 			this.init()
 		},
-		onShow(res) {},
 
 		onShareAppMessage(res) {
 			return appshare()
@@ -289,7 +298,7 @@
 				let percent = '0%';
 				if (pointActive) {
 					if (pointActive.sumNumber > pointActive.number) {
-						return pointActive.sumNumber % pointActive.number
+						num = pointActive.sumNumber % pointActive.number
 					} else if (pointActive.sumNumber == pointActive.number) {
 						num = 0;
 					} else {
@@ -354,7 +363,9 @@
 						if (!res.data[0].description) {
 							res.data[0].description = '<div>暂无内容</div>'
 						}
+					
 						this.pointActive = res.data[0];
+						console.log(11111,this.pointActive)
 						if (res.data[0].endTime.slice(0, 4) > 2099) {
 							this.timelimit = false
 						}
