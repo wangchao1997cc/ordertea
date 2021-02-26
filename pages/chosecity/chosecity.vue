@@ -9,7 +9,6 @@
 			<view class="address-item" v-for="(item,index) in addressData[currtab]" :key='index'>
 				{{item.name}}
 				<view class="tab-click" @click="switchRegion(item)">
-					
 				</view>
 			</view>
 		</view>

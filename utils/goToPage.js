@@ -1,12 +1,11 @@
-
 //前往选择城市
 export function goChoseCity(bollean) {
 	let url = '../chosecity/chosecity';
-	if(bollean){
+	if (bollean) {
 		uni.redirectTo({
-			url:url
+			url: url
 		})
-	}else{
+	} else {
 		uni.navigateTo({
 			url: url
 		})
@@ -25,14 +24,14 @@ const ROUTEPARAMS = 'routeparams';
 
 //本地存储路由数据
 function setRouteParams(parms) {
-	uni.setStorageSync(ROUTEPARAMS,parms)
+	uni.setStorageSync(ROUTEPARAMS, parms)
 }
 
-export function getRouteParams(){
+export function getRouteParams() {
 	let data = uni.getStorageSync(ROUTEPARAMS);
 	// uni.removeStorage({   //获取后删除
 	// 		key:ROUTEPARAMS
- //    })
+	//    })
 	return data;
 }
 
@@ -51,15 +50,15 @@ export function goChoseStore(parms) {
 }
 
 //前往订单详情
-export function goOrderDeatails(parms,bollean) {
+export function goOrderDeatails(parms, bollean) {
 	let url = `../orderdetail/orderdetail?orderId=`;
-	if(bollean){
+	if (bollean) {
 		uni.redirectTo({
-			url:url + parms
+			url: url + parms
 		})
-		return;
+	} else {
+		uni.navigateTo({
+			url: url + parms,
+		})
 	}
-	uni.navigateTo({
-		url: url + parms,
-	})
 }

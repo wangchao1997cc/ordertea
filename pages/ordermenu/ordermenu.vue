@@ -29,7 +29,7 @@
 						<view class="rich_text">
 							<rich-text :nodes="item.description"></rich-text>
 						</view>
-						
+
 						<!-- <jyf-parser :html="item.description" selectable="true"></jyf-parser> -->
 					</view>
 				</view>
@@ -596,6 +596,9 @@
 				let storeInfo = this.storeInfo;
 				this.$msg.showModal((res) => {
 					if (res == 1) {
+						if(this.model==1){
+							return this.switchStoreOwn();
+						}
 						goChoseStore({
 							cityId: storeInfo.cityId,
 							cityName: storeInfo.cityName,
@@ -716,7 +719,6 @@
 							})
 						}
 					})
-					console.log(res.data)
 					this.activelist = res.data;
 					return menus;
 				}
@@ -1035,12 +1037,13 @@
 				let storeInfo = this.storeInfo;
 				this.$msg.showModal((res) => {
 					if (res == 1) {
-						goChoseStore({
-							cityId: storeInfo.cityId,
-							cityName: storeInfo.cityName,
-							districtId: storeInfo.districtId,
-							districtName: storeInfo.districtName,
-						})
+						this.switchStoreOwn();
+						// goChoseStore({
+						// 	cityId: storeInfo.cityId,
+						// 	cityName: storeInfo.cityName,
+						// 	districtId: storeInfo.districtId,
+						// 	districtName: storeInfo.districtName,
+						// })
 					}
 				}, '目前因门店现状问题，我们暂时关闭了小程序外卖，非常抱歉，敬请谅解！', '门店繁忙', true, false, '切换门店')
 			},
@@ -1320,7 +1323,7 @@
 				if (this.defaultS) {
 					return this.$msg.showToast('请先选择下单店铺哦～')
 				}
-				if(this.activeHeight){
+				if (this.activeHeight) {
 					this.activeHeight = 0;
 				}
 				this.showdetail = !this.showdetail;
@@ -1713,9 +1716,9 @@
 				display: flex;
 				font-size: 24upx;
 				/* border: 1upx red solid; */
-				
-				.left-box{
-					@include rect(36upx,36upx);
+
+				.left-box {
+					@include rect(36upx, 36upx);
 					@include text-allcenter(36upx);
 					color: $text-white;
 					background-color: #FF3945;
@@ -1723,12 +1726,13 @@
 					border-radius: 22upx;
 					margin-top: 3upx;
 					margin-right: 16upx;
-					
-					&.on{
+
+					&.on {
 						background-color: #FF8D5C;
 					}
 				}
-				.rich_text{
+
+				.rich_text {
 					line-height: 44upx
 				}
 			}
@@ -1742,7 +1746,7 @@
 			background-color: rgba(255, 255, 255, 0.2);
 			@extend %flex-alcent;
 			justify-content: center;
-			
+
 			image {
 				@include rect(48upx, 48upx);
 				transform: rotate(180deg);
@@ -2061,9 +2065,9 @@
 		}
 	}
 
-	
-	
-	
+
+
+
 
 	.shopcar-cont {
 		width: 100%;

@@ -477,9 +477,12 @@
 					peopleNum: 0,
 				}
 				if(that.member){
-					params.name = interest.card.name;
-					params.phone = interest.card.mobile;
+					// params.name = interest.card.name;
+					// params.phone = interest.card.mobile;
+					delete params.name,params.phone;
+					// delete params.phone;
 				}
+				console.log(params)
 				// if(type!=3){
 				// 	params.
 				// }
