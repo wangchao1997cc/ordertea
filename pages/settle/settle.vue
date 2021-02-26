@@ -476,16 +476,6 @@
 					couponId: 0,
 					peopleNum: 0,
 				}
-				if(that.member){
-					// params.name = interest.card.name;
-					// params.phone = interest.card.mobile;
-					delete params.name,params.phone;
-					// delete params.phone;
-				}
-				console.log(params)
-				// if(type!=3){
-				// 	params.
-				// }
 				let tit = `是否前往【${storeInfo.storeName}】自提`;
 				if (type == 1) {
 					let address = this.address;
