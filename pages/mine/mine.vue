@@ -53,7 +53,7 @@
 				</view>
 				<view class="assets-item" @click="jumpCoupons">
 					<text>{{memberinfo.couponsCount?memberinfo.couponsCount:0}}</text>
-					<text>优惠卷</text>
+					<text>优惠券</text>
 				</view>
 				<view class="assets-item" @click="jumpWallet">
 					<text>{{memberinfo.balance?memberinfo.balance:0}}</text>
@@ -85,7 +85,7 @@
 					<view class="juide-content">
 						<text>您的会员信息还不完整哦!
 							为了您的权益请尽快完善您的会员信息
-							完善后即可获得您的专属折扣卷
+							完善后即可获得您的专属折扣券
 						</text>
 					</view>
 					<button class="autho_btn" open-type="getUserInfo" @getuserinfo="getUserInfo">
@@ -226,7 +226,7 @@
 				}
 				this.notAuth = false;
 			},
-			//跳转优惠卷
+			//跳转优惠券
 			jumpCoupons() {
 				uni.navigateTo({
 					url: '../coupons/coupons'

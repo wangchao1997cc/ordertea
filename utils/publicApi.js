@@ -16,6 +16,17 @@ export const refreshUserInfo = async callback => {
 	}
 }
 
+//等待排队
+export const waitLineUp = async data => {
+	let res = await api.waitLineup(data);
+	if (res.code == 200) {
+		return res;
+		// uni.setStorageSync('userinfo', res.data);
+	}else{
+		return '';
+	}
+}
+
 //获取充值套餐
 export const getRecharge = async callback => {
 	let res =  await api.getRecharge({},true);
@@ -113,7 +124,6 @@ export const ajaxUserLogin = async (takeit) => {
 //微信支付
 export const wxPayment = (payment) => {
 	return new Promise((resolve, reject) => {
-		console.log(5555,payment)
 		uni.requestPayment({
 			'timeStamp': payment.timeStamp,
 			'nonceStr': payment.nonceStr,

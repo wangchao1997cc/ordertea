@@ -20,6 +20,7 @@
 			forhere:null,  //堂食
 			activeParams:null,   //推荐人参数
 			orderSuccess:false,   //下单成功清除购物车
+			orderRefresh:false,   //下单后订单列表刷新
 			exchangeSuccess:false, //兑换成功
 			member:true,   //是否启用会员部分
 		},

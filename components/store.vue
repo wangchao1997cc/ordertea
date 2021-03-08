@@ -1,18 +1,19 @@
 <template>
 	<view class="single-box">
-		<view class="single-store" :class="{change_border:currtab==index}" v-for="(item,index) in nearList" :key="index" @click="choseStore(index,item)">
+		<view class="single-store" :class="{change_border:currtab==index}" v-for="(item,index) in nearList" :key="index"
+		 @click="choseStore(index,item)">
 			<view class="single-l-info">
 				<view class="single-store-name">
 					<view class="single-store-label" v-if="type" :class="{greybg:!item.isServiceTime}">
 						{{item.isServiceTime?(item.isBusy?'繁忙中':'营业中'):'休息中'}}
-						isServiceTime
+						<!-- isServiceTime -->
 					</view>
 					<text>{{item.storeName}}</text>
 				</view>
 				<view class="single-address">
 					<image src="../static/address_icon.png"></image>
 					<view class="single-address-info">
-						<text>{{`${item.provinceName}-${item.districtName}-${item.storeAddress}`}}</text>
+						{{`${item.provinceName}-${item.districtName}-${item.storeAddress}`}}
 					</view>
 				</view>
 				<view class="time-info" v-if="type">
@@ -24,10 +25,10 @@
 					</view>
 					<!-- <text>10:00-24:00</text> -->
 				</view>
-				<!-- <view class="busy-l">
-					<minesilder :config="sliderConfig"></minesilder>
-					<text>前面还有<text>8</text>笔订单，预计还要20分钟</text>
-				</view> -->
+				<view class="busy-l" v-if="busyarr[index] && busyarr[index].orderCount">
+					<minesilder :config="busyarr[index].sliderConfig"></minesilder>
+					<text><text>{{busyarr[index].orderCount}}</text>笔订单，预计等待{{busyarr[index].orderTime}}分钟</text>
+				</view>
 			</view>
 			<view class="single_r" :class="{on:type}">
 				<view class="go-look" @click="jumpSoreMenu(item)">
@@ -45,41 +46,99 @@
 
 <script>
 	import minesilder from './minesilder.vue';
+	import {
+		waitLineUp
+	} from '../utils/publicApi.js';
+
 	const app = getApp();
 	export default {
 		data() {
 			return {
-				currtab:0,
+				currtab: 0,
 				animationData: {}, //动画
 				sliderConfig: {
 					progresswidth: '320upx',
-					progressbar: '50%',
+					progressbar: '0%',
 				},
+				busyarr:[],
 			};
 		},
-		props:{
-			nearList:{
-				type:Array,
-				default:() => []
+		props: {
+			nearList: {
+				type: Array,
+				default: () => []
 			},
-			type:{
-				type:Boolean,
-				default:false,
+			type: {
+				type: Boolean,
+				default: false,
 			},
-			
+
 		},
 		components: {
 			minesilder,
 		},
-		methods:{
-			//点击选择店铺
-			choseStore(index,item) {
+		watch:{
+			nearList(nearList){
+				let callcarr = [];
+				// let nearList = this.nearList;
+				if (nearList.length) {
+					for (let i in nearList) {
+						callcarr[i] = waitLineUp({
+							storeCode: nearList[i].extraStoreId
+						})
+					}
+					Promise.all(callcarr).then(values => {
+						let sliderConfig = this.sliderConfig;
+						values.forEach(item => {
+							if (item && item.orderCount) {
+								let percent;
+								let orderTime = item.orderTime;
+								if (orderTime < 15 && orderTime != 0) {
+									percent = 5
+								} else if (orderTime > 15 && orderTime < 25) {
+									percent = 20
+								} else if (orderTime > 25 && orderTime < 45) {
+									percent = 40
+								} else if (orderTime > 45 && orderTime < 65) {
+									percent = 60
+								} else if (orderTime > 65 && orderTime < 90) {
+									percent = 80
+								} else if (orderTime > 90) {
+									percent = 100
+								}
+								sliderConfig.progressbar = percent + "%";
+								item.sliderConfig = sliderConfig;
+							}
+						})
+						// console.log(1111,values)
+						this.busyarr =  values;
+					})
+					
+				}
+			}
+		},
+		// computed: {
+			// aaa(){
+			// 	return 1111
+			// },
+			// busyarr() {
 				
+			// }
+		// },
+
+		// watch:{
+		// 	nearList(){
+
+		// 	}
+		// },
+		methods: {
+			//点击选择店铺
+			choseStore(index, item) {
 				if (this.currtab == index) {
 					return
 				}
 				this.currtab = index;
-				this.$emit('choseStore',item)
+				this.$emit('choseStore', item)
 			},
 			//拨打电话
 			callPhone(tel) {
@@ -99,11 +158,11 @@
 			},
 			//前往此店铺的点餐页
 			jumpSoreMenu(item) {
-				if(item.isBusy){
+				if (item.isBusy) {
 					return this.$msg.showToast('门店忙碌中，请选择其他门店')
 				}
 				app.globalData.storeInfo = item;
-				if(this.type){
+				if (this.type) {
 					this.$store.commit('copy', item.storeId);
 					uni.switchTab({
 						url: '../ordermenu/ordermenu'
@@ -115,9 +174,10 @@
 </script>
 
 <style lang="scss">
-	.single-box{
-		@include rect(100%,100%);
+	.single-box {
+		@include rect(100%, 100%);
 	}
+
 	.single-store {
 		width: 698upx;
 		margin: 25upx auto;
@@ -128,11 +188,11 @@
 		font-size: 25upx;
 		background-color: $bg-white;
 		border-radius: $radius-md;
-		
+
 
 	}
-	
-	.change_border{
+
+	.change_border {
 		border: 2upx $main-color solid;
 	}
 
@@ -147,7 +207,8 @@
 		@extend %flex-column;
 		justify-content: center;
 	}
-	.on{
+
+	.on {
 		height: 231upx;
 	}
 
@@ -164,36 +225,41 @@
 		background-color: $main-color;
 		font-size: 21upx;
 		margin-right: 23upx;
-		&.greybg{
+
+		&.greybg {
 			background-color: #ACACAC;
 		}
 	}
 
 	.single-address {
-		margin: 30upx 0;
+		margin: 30upx 0 16upx 0;
+		height: 64upx;
 		display: flex;
+		line-height: 32upx;
 	}
 
 	.time-info {
 		@extend %flex-alcent;
 	}
 
-	.time-info > image {
+	.time-info>image {
 		@include rect(26upx, 26upx);
 		margin-right: 18upx;
 		color: #5D5D5D;
 	}
-	.time-box{
+
+	.time-box {
 		width: 340upx;
 	}
 
 	.single-address>image {
 		@include rect(20upx, 27upx);
-		margin-right: 20upx
+		margin-right: 20upx;
+		margin-top:3upx;
 	}
 
 	.single-address-info {
-		max-height: 80upx;
+		height: 64upx;
 		width: 340upx;
 		@include lineAny(2);
 		color: #5D5D5D;
@@ -201,10 +267,9 @@
 
 	.busy-l {
 		width: 320upx;
-		margin: 40upx 0 30upx 40upx;
-		font-size: 20upx;
+		margin: 20upx 0 30upx 40upx;
+		font-size: 22upx;
 		color: #A3A3A3;
-
 	}
 
 	.busy-l>text {

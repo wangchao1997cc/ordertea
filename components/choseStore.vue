@@ -9,7 +9,6 @@
 				<store @choseStore="choseStore" :nearList="nearList"></store>
 			</scroll-view>
 			<view class="chose-store-footer">
-
 				<view class="store-footer-item" @click="confirmStore">
 					确定
 				</view>

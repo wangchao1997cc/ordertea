@@ -34,6 +34,7 @@
 </template>
 
 <script>
+	const app = getApp();
 	import api from '../../WXapi/api.js'
 	import {goOrderDeatails} from '../../utils/goToPage.js'
 	import nodata from '../../components/nodata.vue';
@@ -47,6 +48,15 @@
 		},
 		onLoad() {
 			this.getOrderList();   //获取订单数据
+		},
+		onShow() {
+			let orderRefresh = app.globalData.orderRefresh;
+			if(orderRefresh){
+				app.globalData.orderRefresh = false;
+				this.pageNow = 0;
+				this.isNexPage = true;
+				this.getOrderList();
+			}
 		},
 		computed:{
 			config() {

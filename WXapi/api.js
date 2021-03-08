@@ -123,8 +123,10 @@ const cancelOrder = (data, isloading) => {
 	return service('candao.orderOwn.cancelOrder', 'post', data, isloading)
 }
 
-
-
+//获取餐单广告
+const getMenuBanner = (data, isloading) => {
+	return service('candao.product.getMenuBanner', 'post', data, isloading)
+}
 
 
 //normoal请求区域
@@ -192,7 +194,7 @@ const getLevel = (data, isloading) => {
 
 
 
-//获取可使用优惠卷
+//获取可使用优惠券
 const getCoupons = (data, isloading) => {
 	let backurl;
 	if (data) {
@@ -303,22 +305,22 @@ const activityDesc = (data, isloading) => {
 	return service_v('v4_3/activity/information', 'post', data, isloading)
 }
 
-//锁定分享的优惠卷
+//锁定分享的优惠券
 const lockingCoupons = (data, isloading) => {
 	return service_v('v4_3/card/transfer/ticket/choice', 'post', data, isloading)
 }
 
-//兑换优惠卷
+//兑换优惠券
 const codeByTicket = (data, isloading) => {
 	return service_v('v4_3/ticket/codeByTicket', 'post', data, isloading)
 }
 
-//兑换优惠卷
+//兑换优惠券
 const confirmStutas = (data, isloading) => {
 	return service_v('v4_3/card/transfer/ticket/status', 'post', data, isloading)
 }
 
-//好友领取优惠卷
+//好友领取优惠券
 const receiveCoupons = (data, isloading) => {
 	return service_v('v4_3/card/transfer/ticket/get', 'post', data, isloading)
 }
@@ -339,11 +341,18 @@ const pointActivity = (data, isloading) => {
 }
 
 
+//排队 预计前面还有多少订单
+const waitLineup = (data, isloading) => {
+	return service_v('v4_3/findStore/queue', 'get', data, isloading)
+}
+
 
 
 
 
 module.exports = {
+	waitLineup:waitLineup,
+	getMenuBanner:getMenuBanner,
 	pointActivity:pointActivity,
 	receiveReward:receiveReward,
 	redRewardActive:redRewardActive,

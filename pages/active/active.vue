@@ -6,13 +6,13 @@
 			</view>
 			<view class="tips-cont">
 				<view class="not-login" v-if="!memberinfo">
-					<text v-if="couponsNums">您有 <text>{{couponsNums}}</text> 张优惠卷待领取</text>
+					<text v-if="couponsNums">您有 <text>{{couponsNums}}</text> 张优惠券待领取</text>
 					<text v-else>您有新的会员权益待领取</text>
 				</view>
 				<view class="cont-head" v-else>
 					<view class="cont-item">
 						<image src="../../static/active/invitation_coupons.png"></image>
-						<text>获得优惠卷</text>
+						<text>获得优惠券</text>
 						<text>{{profitinfo.earnings.ticketCount || 0}}张</text>
 					</view>
 					<view class="cont-item">

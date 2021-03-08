@@ -115,7 +115,7 @@
 		<!-- 天将红包模块 -->
 		<view class="mask" v-if="redRewardInfo">
 			<view class="reward-box">
-				<view class="reward-head-box" :style="{backgroundImage:'url('+redRewardInfo.imageUrl +')'}">
+				<view class="reward-head-box" :style="{backgroundImage:'url('+ redRewardInfo.imageUrl +')'}">
 					<view class="reward-tit">
 						天降红包
 					</view>
@@ -130,7 +130,6 @@
 					<image src="../../static/POP_close01.png"></image>
 				</view>
 			</view>
-
 		</view>
 		<!-- 集点卡活动 -->
 		<view class="mask" v-if="maskShow" @catchtouchmove="true">
@@ -158,7 +157,6 @@
 
 <script>
 	import jyfParser from '@/components/jyf-parser/jyf-parser'; //富文本组件
-
 	const app = getApp();
 	import author from '../../components/author.vue'
 	import {
@@ -199,6 +197,7 @@
 				sliderConfig: {
 					progresswidth: '240upx',
 					progressbar: '0%',
+					progressheight:'6rpx',
 				},
 				newsImag: ["https://fnb-merchants.oss-cn-shanghai.aliyuncs.com/7622/d770639ad08da8dcdb8a8a2ab82134d.jpg",
 					"https://fnb-merchants.oss-cn-shanghai.aliyuncs.com/7622/banner20201118151452.png"
@@ -206,7 +205,7 @@
 
 				memberinfo: null, //用户信息
 				bannerData: {}, //轮播图数据
-				shareCoupons: null, //分享的优惠卷
+				shareCoupons: null, //分享的优惠券
 				// config: {
 				// 	slideHeight: 400,
 				// 	hiddentit: false,
@@ -232,7 +231,7 @@
 					},
 					{
 						icon: '../../static/homepage/home_sm_coupon.png',
-						tit: '我的优惠卷',
+						tit: '我的优惠券',
 						value: '0',
 						bg: '../../static/homepage/home_coupons.png',
 					},
@@ -405,7 +404,7 @@
 					url: '../membercode/membercode'
 				})
 			},
-			//领取好友赠送的优惠卷
+			//领取好友赠送的优惠券
 			async receiveCouponsBtn() {
 				let memberinfo = this.memberinfo;
 				if (!memberinfo) {
@@ -430,9 +429,9 @@
 				let userinfo = await refreshUserInfo(true);
 				if (!userinfo || !userinfo.phone) { //是否注册 ，没有注册的情况下
 					let redReaward = await that.redReaward(); //查询红包奖励（天将红包）
-					if (that.homeParams.giveCardId || redReaward) { //用户赠送的优惠卷
+					if (that.homeParams.giveCardId || redReaward) { //用户赠送的优惠券
 						if (that.homeParams.giveCardId) {
-							that.receiveCoupons(); //查询好友赠送的优惠卷
+							that.receiveCoupons(); //查询好友赠送的优惠券
 						}
 					} else {
 						that.$refs.authorM.showPop();
@@ -444,7 +443,7 @@
 					that.integralarr[3].value = memberinfo.coupons.length + '张';
 					that.memberinfo = memberinfo;
 					if (that.homeParams && that.homeParams.giveCardId) {
-						that.receiveCoupons(); //查询好友赠送的优惠卷优惠卷
+						that.receiveCoupons(); //查询好友赠送的优惠券优惠券
 					}
 					that.pointActivity(); //查询积点活动
 					that.redReaward(memberinfo.id);
@@ -468,7 +467,7 @@
 				}
 			},
 
-			//查询好友赠送的优惠卷
+			//查询好友赠送的优惠券
 			async receiveCoupons() {
 				let homeParams = this.homeParams;
 				if (this.memberinfo && this.memberinfo.id == homeParams.giveCardId) {
@@ -495,7 +494,7 @@
 					return this.receiveReward(); //注册成功领取天降红包
 				}
 				if (this.homeParams && this.homeParams.giveCardId) {
-					this.receiveCouponsBtn(); //注册成功领取好友赠送的优惠卷
+					this.receiveCouponsBtn(); //注册成功领取好友赠送的优惠券
 				}
 			},
 			//跳转点单页，判断自取或外卖
@@ -631,12 +630,13 @@
 		background-color: $bg-white;
 		border-radius: $radius-md;
 		z-index: 29;
-
+		// overflow: hidden;
 
 		.reward-head-box {
 			height: 720upx;
 			background-size: cover;
 			@include box-padding(28upx);
+			border-radius: $radius-md;
 			padding-top: 1upx;
 
 			.reward-tit {

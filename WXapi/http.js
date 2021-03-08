@@ -1,20 +1,25 @@
 //定义环境 请求封装
-const base_url_m = 'https://open6-wxa.can-dao.com/'; //正式环境   餐道
-// const base_url_m ='https://qc.can-dao.com:7776/'  //测试环境
 
-const baseurl_v43 = 'https://crmapi.fnb-tech.com/openapi/' //正式环境	会员
-// const baseurl_v43 = 'https://api.vi-ni.com/openapi/'   //测试环境 会员
+
+
+
+
 
 //正式环境 key
 const default_value_f = 'Action?' + 'key=6886173bf669d7bc'
 const default_value_s = 'SecretAction?' + 'key=6886173bf669d7bc'
+const key = 'rc09pv1O21dfY01nx8wx';   //正式环境
+const base_url_m = 'https://open6-wxa.can-dao.com/'; //正式环境   餐道
+const baseurl_v43 = 'https://crmapi.fnb-tech.com/openapi/' //正式环境	会员
 
 //测试环境key
 // const default_value_f = 'Action?' + 'key=93ba9db2f9f4f0e4'
 // const default_value_s = 'SecretAction?' + 'key=93ba9db2f9f4f0e4'
-
-const key = 'rc09pv1O21dfY01nx8wx';   //正式环境
 // const key = 'jdhajshdjf871238767o';   //测试环境
+// const base_url_m ='https://qc.can-dao.com:7776/'  //测试环境
+// const baseurl_v43 = 'https://api.vi-ni.com/openapi/'   //测试环境 会员
+
+
 
 import store from '../store/store.js';
 const app = getApp();
@@ -64,8 +69,11 @@ export async function service_v(url, method, data, isloading) {
 		"timestamp": timestamp.data,
 	}
 	let storeCode = app.globalData.storeInfo.extraStoreId;
-	if (storeCode) {
+	if (storeCode && url != 'v4_3/weixin/recharge') {
 		header.storeCode = storeCode;
+	}
+	if(data && data.storeCode){    //门店列表时，查询门店等待时间
+		header.storeCode = data.storeCode
 	}
 	let md5Params = Object.assign({}, header);
 	header.key = key;

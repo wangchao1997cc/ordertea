@@ -159,7 +159,7 @@
 			//获取商品详情
 			async getGoodsDesc(id) {
 				let data = {
-					cardNo: '18715262316',
+					cardNo: this.$store.state.cardNo,
 					productId: id,
 				}
 				let res = await api.goodsDetail(data);

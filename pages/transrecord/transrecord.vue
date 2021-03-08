@@ -57,17 +57,14 @@
 				if(this.currtab==1){
 					type = 1
 				}
-
 				let data = {
-					// cardNo:this.$store.state.cardNo,
-					cardNo:"18715262316",
-					type:type
+					cardNo:this.$store.state.cardNo,
+					type:type,
 				}
 				let res = await api.checkRecord(data)
 				if(res.code==200){
 					this.recordData = res.data
 				}
-				console.log(res)
 			},
 			//导航栏切换
 			changeNav(index){

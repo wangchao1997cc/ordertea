@@ -1,5 +1,5 @@
 <template>
-	<view class="progressbar" :style="{width:config.progresswidth}">
+	<view class="progressbar" :style="{width:config.progresswidth,height:config.progressheight || '14rpx'}">
 		<view class="current" :style="{width: config.progressbar}"></view>
 	</view>
 </template>
@@ -14,6 +14,7 @@
 			config: {
 				type: Object,
 				default: () => ({
+					
 				})
 			}
 		},
@@ -22,7 +23,7 @@
 
 <style lang="scss">
 	.progressbar{
-		height: 6upx;
+
 		background-color: #F8FAF3;
 		border-radius: 14upx;
 		position: relative;

@@ -177,7 +177,7 @@
 				location: {}, //用户位置信息
 				address: null, //用户地址
 				forhere: null, //堂食
-				templateIds: null, //微信订阅消息
+				templateIds: [], //微信订阅消息
 				member:false,   //当前门店是否需要会员部分
 			};
 		},
@@ -208,7 +208,7 @@
 		onShow() {
 			let remark = app.globalData.remark;
 			let orderparams = app.globalData.orderinfo;
-			if (orderparams.ticketId) { //如果有优惠卷
+			if (orderparams.ticketId) { //如果有优惠券
 				this.orderparams = orderparams;
 				this.memberInterest(orderparams); //会员权益计算
 			}
@@ -281,8 +281,9 @@
 			},
 			async getWxaSubscribeTemplates() {
 				let res = await api.getWxaSubscribeTemplates({});
+				
 				if (res.status == 1) {
-					this.templateIds = res.data.templateIds;
+					this.templateIds.push(res.data.templateIds[1]);
 				}
 			},
 			//切换餐具数量
@@ -367,7 +368,7 @@
 				return timerarr;
 				
 			},
-			//前往使用优惠卷页面
+			//前往使用优惠券页面
 			jumpUseCoupons() {
 				if (!this.interest.canUseTotal) {
 					return;
@@ -410,7 +411,6 @@
 							this.coupons = item;
 						}
 						if(item.type < 6){
-							console.log(1111)
 							this.haveActive = true;
 						}
 					})
@@ -472,11 +472,15 @@
 					randomCode: new Date(new Date()).format("yyyyMMddhhmmss"),
 					userNote: that.remark ? that.remark : '无',
 					invoiceType: 0,
-					isInvoice: false,
+					isInvoice: false,	
 					couponId: 0,
 					peopleNum: 0,
 				}
 				let tit = `是否前往【${storeInfo.storeName}】自提`;
+				if(that.member){
+					params.name = interest.card.name;
+					params.phone = interest.card.mobile;
+				}
 				if (type == 1) {
 					let address = this.address;
 					params.type = 4;
@@ -485,6 +489,7 @@
 					params.address = address.receiverAddress + address.appendReceiverAddress;
 					tit = '是否确认配送地址'
 				}
+				
 				that.$msg.showModal(async json => {
 					if (json == 1) {
 						uni.showLoading({
@@ -520,7 +525,7 @@
 								type: 7,
 							})
 						}
-						if(this.member){
+						if(that.member){
 							interest.promotions.forEach(item => {
 								memberPreferentials.push({
 									content: item['id'] + '#' + 'promotions' + '#' + item['name'],
@@ -540,6 +545,7 @@
 						uni.hideLoading()
 						if (res.status == 1) {
 							app.globalData.orderSuccess = true;
+							app.globalData.orderRefresh = true;
 							this.getOrderDetail(res.data); //获取订单详情
 						} else {
 							this.$msg.showToast(res.msg);
@@ -553,10 +559,10 @@
 					uni.requestSubscribeMessage({
 						tmplIds: this.templateIds,
 						success(res) {
-							console.log(res)
+							console.log(1111,res)
 						},
 						complete(res) {
-							console.log(res)
+							console.log(11111,res)
 							result()
 						}
 					})

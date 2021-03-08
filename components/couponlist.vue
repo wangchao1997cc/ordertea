@@ -58,7 +58,7 @@
 			// 		uni.navigateBack({})
 			// 	}
 			// },
-			//查看优惠卷详情
+			//查看优惠券详情
 			checkCouponsDesc(item){
 				if(!this.type){
 					this.$emit('checkCouponsDesc',item)

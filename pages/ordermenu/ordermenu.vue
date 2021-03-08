@@ -58,25 +58,15 @@
 					<text>全部活动详情</text>
 					<image class="drop_down" src="../../static/menu/drop_down.png"></image>
 				</view>
-				<!-- <view class="busy-cont">
-					<view class="busy-l">
-						<sildermine :config="sliderConfig"></sildermine>
-						<text>前面还有<text>8</text>笔订单，预计还要20分钟</text>
-					</view>
-					<view class="busy-r">
-						切换门店
-					</view>
-				</view> -->
-			</view>
-			<!-- <view class="blank">
 				
-			</view> -->
+			</view>
+			
 		</view>
 
 		<view class="menu-cont" v-if="showdetail && !activeHeight">
 			<!-- 左侧导航栏 -->
 			<scroll-view scroll-y class="left-aside" :style="{height:shopBoxHeight + 'rpx'}" :scroll-into-view="leftCurrtab"
-			 scroll-with-animation>
+			 scroll-with-animation :scroll-top="leftScrollTop">
 				<view v-for="(item, index) in products" :key="index" class="f-item" :class="{active: item.uid === currentId}"
 				 @click="tabtap(item)" :id="'left'+item.uid">
 					<!-- {{'leftm-'+item.uid}} -->
@@ -90,9 +80,9 @@
 			<scroll-view scroll-with-animation @scroll-into-view="currentId" scroll-y class="right-aside" @scroll="asideScroll"
 			 :scroll-top="tabScrollTop" :style="{height:shopBoxHeight + 'rpx'}" binddragend="touchEnd">
 				<!-- 活动banner -->
-				<swiper class="header_banner" :indicator-dots="true" :autoplay="true" :circular="true" :interval="3000" :duration="1000">
+				<swiper v-if="bannerList.length" class="header_banner" :indicator-dots="true" :autoplay="true" :circular="true" :interval="3000" :duration="1000">
 					<swiper-item v-for="(item,index) in bannerList" :key="index" @click="jumpAdver(item,index)">
-						<image :src="item.picUrl"></image>
+						<image :src="item.picUrl" mode="aspectFill"></image>
 					</swiper-item>
 				</swiper>
 				<!-- 对应产品列表 -->
@@ -240,7 +230,6 @@
 									<view class="">
 										<text>¥ {{item.price}}</text>
 									</view>
-
 									<view class="goods-single">
 										<image src="../../static/sub.png" @click="reduceTap(3,item)"></image>
 										<view class="num">
@@ -281,6 +270,24 @@
 				选好了
 			</view>
 		</view>
+		<view class="busy-cont" :class="{busy_open:busyOpen}" @click="busyJuideSwitch" v-if="busyData && busyData.orderCount">
+			<view class="busy-l">
+				<!-- <sildermine :config="sliderConfig"></sildermine> -->
+				<view class="busy-img">
+					<image src="../../static/busy_pic.png"></image>
+				</view>
+				<view class="order-juide">
+					<text>{{busyData.orderCount}}单制作中</text>
+					<view class="estima">
+						预计{{busyData.orderTime}}分钟后完成
+					</view>
+				</view>
+				<!-- <text>前面还有<text>8</text>笔订单，预计还要20分钟</text> -->
+			</view>
+			<view class="busy-r">
+				<image src="../../static/chevron_duo.png"></image>
+			</view>
+		</view>
 		<storeDetail :shopinfo="storeInfo" :shopBoxHeight="shopBoxHeight+105" :showdetail="showdetail"></storeDetail>
 		<choseStore :nearList="nearList" @switchStore="switchStore" ref="chosestore"></choseStore>
 		<loadpage :loadingState="loadingState"></loadpage>
@@ -310,11 +317,12 @@
 	import loadpage from '../../components/loadingpage.vue' //loading
 	import switchC from '../../components/switch.vue' //自定义switch
 	import storeDetail from '../../components/storedetail.vue' //店铺的其他信息展示
-	import sildermine from '../../components/minesilder.vue' //进度条
+	// import sildermine from '../../components/minesilder.vue' //进度条
 	import {
 		ajaxUserLogin,
-		getBannerList,
-		refreshUserInfo
+		// getBannerList,
+		refreshUserInfo,
+		waitLineUp
 	} from '../../utils/publicApi.js'
 	import {
 		mapState,
@@ -350,6 +358,9 @@
 	export default {
 		data() {
 			return {
+				busyData:null, //预计排队时间
+				busyOpen:false,  //繁忙展开
+				leftScrollTop:0,   //左边滑动距离顶部
 				leftCurrtab: 'left',
 				forhere: null,
 				computedHeight: null, //系统高度
@@ -403,7 +414,7 @@
 			switchC,
 			storeDetail,
 			author,
-			sildermine,
+			// sildermine,
 			jyfParser
 		},
 		onShareAppMessage(res) {
@@ -560,13 +571,15 @@
 					this.$children[2].hiddenChoseStore = false;
 				}
 				// that.shopcar = []; //清空购物车
-				that.storeInfo = app.globalData.storeInfo;
+				that.storeInfo  = app.globalData.storeInfo;
 				that.getStoreMenu(that.storeId);
 				that.$store.commit('copy', '');
 			} else if (newload && !that.storeInfo.storeId) {
 				if (!that.nearList.length) {
 					that.goToChoseCity();
 				}
+			}else if(this.storeInfo){     //页面刷新  店铺
+				this.getStore(this.storeInfo.storeId)
 			}
 			if (app.globalData.orderSuccess) { //下单成功
 				this.reductionData();
@@ -592,6 +605,10 @@
 			// 		this.productPrimaryTypeName = app.globalData.productPrimaryTypeName;
 			// 	}
 			// },
+			//商铺是否繁忙开关
+			busyJuideSwitch(){
+				this.busyOpen = !this.busyOpen
+			},
 			noBussinessTime() {
 				let storeInfo = this.storeInfo;
 				this.$msg.showModal((res) => {
@@ -612,7 +629,7 @@
 				let that = this;
 				that.juideUserInfo(); //判断用户是否登录
 				that.computReftHe(); //计算右边商品列表的高度
-				that.getBannerList(); //获取轮播图广告
+				// that.getBannerList(); //获取轮播图广告
 				that.getLocation(); //获取地理位置
 			},
 			//授权成功关闭弹窗
@@ -732,12 +749,12 @@
 				}
 			},
 			//获取轮播图广告
-			async getBannerList() {
-				let res = await getBannerList();
-				if (res) {
-					this.bannerList = res.topBannerList;
-				}
-			},
+			// async getBannerList() {
+			// 	let res = await getBannerList();
+			// 	if (res) {
+			// 		this.bannerList = res.topBannerList;
+			// 	}
+			// },
 			//
 			closeActiveMask() {
 				this.closeAllMask();
@@ -1013,6 +1030,9 @@
 				uni.showTabBar({})
 			},
 			async getStoreMenu(storeId) {
+				waitLineUp().then(res => {
+					this.busyData = res;
+				});
 				this.loadingState = false;
 				let that = this;
 				let data = {
@@ -1021,6 +1041,10 @@
 				}
 				let res = await api.getProductMenu(data);
 				if (res && res.status == 1) {
+					this.getAdvertList({     //获取餐单广告
+						menuId:res.data.menuId,
+						storeId:storeId,
+					});   //获取店铺广告
 					this.menuId = res.data.menuId;
 					this.defaultS = false;
 					this.handleShopData(res.data.bigs);
@@ -1081,6 +1105,7 @@
 					}
 				} else {
 					that.getCategoryList(); //获取默认的商品列表
+					
 				}
 			},
 			// 获取当前附近的门店
@@ -1095,10 +1120,8 @@
 					pageSize: 10
 				}
 				let res = await api.getNearStoreList(data);
-				console.log(res)
 				newload = true; //第二次从onshow刷新地理位置
 				if (res && res.status == 1) {
-
 					let nearList = res.data.rows;
 					nearList.forEach(item => {
 						item.newdistance = conversion(item.distance) //换算距离
@@ -1278,6 +1301,13 @@
 					this.handleShopData(res.data.bigs)
 				}
 			},
+			//获取默认广告banner
+			async getAdvertList(data){
+				let res = await api.getMenuBanner(data);
+				if(res.status && res.data){
+					this.bannerList = res.data.menuAdvertList;
+				}
+			},
 			//一级分类点击
 			tabtap(item) {
 				clearTimeout(this.timer);
@@ -1292,10 +1322,15 @@
 				let scrollTop = e.detail.scrollTop;
 				let tabs = that.products.filter(item => item.top <= scrollTop).reverse();
 				if (tabs.length > 0) {
+					if(tabs.length == 1){
+						this.leftScrollTop = this.leftScrollTop + 0.01;
+					}
 					if (that.currentId != tabs[0].uid) {
 						that.currentId = tabs[0].uid;
 						that.leftCurrtab = 'left' + tabs[0].uid;
 					}
+				}else{
+					this.leftScrollTop = 0;
 				}
 			},
 			// 计算右侧栏每个tab的高度等信息
@@ -1345,6 +1380,87 @@
 	.classify {
 		width: $screen-width;
 		color: $uni-text-color;
+	}
+	
+	/* 订单等待 */
+	.busy-cont {
+		@include rect(166px, 50px);
+		transition: all .3s;
+		position: fixed;
+		bottom: 3px;
+		right: 0px;
+		background: #F1FAD4;
+		border-radius: 25px 0 0 25px;
+		/* box-shadow: 0px 4upx 21upx 0px rgba(19, 19, 20, 0.08); */
+		@extend %flex-alcent;
+		justify-content: space-between;
+		
+	
+		.busy-l {
+			margin-left: 6px;
+			display: flex;
+			padding-top: .1px;
+			height: 50px;
+			.busy-img{
+				margin-top: 6px;
+				width: 38px;
+				height: 38px;
+				border: 1px solid #B2D14E;
+				border-radius: 19px;
+				box-sizing: border-box;
+
+				@extend %flex-alcent;
+				justify-content: center;
+				image{
+					@include rect(24px,24px);
+				}
+			}
+			.order-juide{
+				
+				/* height: 50px; */
+				margin-left: 8px;
+				margin-top: 8px;
+				/* border: 1upx red solid; */
+				font-size: 10px;
+				color: #B2D14E;
+				line-height: 14px;
+				text{
+					line-height: 17px;
+					font-weight: bold;
+					font-size: 12px;
+				}
+				.estima{
+					margin-top: 2px;
+				}
+			}
+			
+			text {
+				text {
+					color: $color-red;
+				}
+			}
+		}
+	
+		.busy-r {
+			@include rect(16px, 16px);
+			margin-right: 8px;
+			image{
+				@include rect(100%,100%)
+			}
+		}
+		&.busy_open{
+			width: 28px;
+			.busy-l{
+				display: none;
+			}
+			
+			.busy-r{
+				margin-left: 6px;
+				margin-right: 0;
+				transform: rotate(180deg);
+			}
+		}
+	
 	}
 
 	.nobusiness {
@@ -1819,38 +1935,7 @@
 				}
 			}
 
-			.busy-cont {
-
-				@include rect(340upx, 85upx);
-				box-shadow: 0px 4upx 21upx 0px rgba(19, 19, 20, 0.08);
-				border-radius: 13upx;
-				margin: 20upx auto;
-				@extend %flex-alcent;
-				justify-content: space-between;
-
-				.busy-l {
-					width: 320upx;
-					margin-left: 34upx;
-					font-size: 20upx;
-					color: #A3A3A3;
-
-					text {
-						text {
-							color: $color-red;
-						}
-					}
-				}
-
-				.busy-r {
-					@include rect(134upx, 50upx);
-					border: 1upx $main-color solid;
-					margin-right: 26upx;
-					border-radius: 50upx;
-					@include text-allcenter(50upx) color: $main-color;
-					font-size: 24upx;
-				}
-
-			}
+			
 		}
 
 		.active-pic {

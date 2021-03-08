@@ -41,7 +41,7 @@
 					
 					case 'coupon':
 						img = '../static/nodata/no_coupons.png';
-						juide = '暂无此类优惠卷～';
+						juide = '暂无此类优惠券～';
 					break;
 
 				}

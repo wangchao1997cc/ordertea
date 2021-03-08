@@ -15,7 +15,7 @@
 				</view>
 				<view class="assets-item" @click="jumpCoupons">
 					<text>{{memberinfo.couponsCount?memberinfo.couponsCount:0}}</text>
-					<text>优惠卷</text>
+					<text>优惠券</text>
 				</view>
 				<view class="assets-item" @click="jumpWallet">
 					<text>{{memberinfo.balance?memberinfo.balance:0}}</text>

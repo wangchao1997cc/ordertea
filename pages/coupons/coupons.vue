@@ -7,7 +7,7 @@
 		</view>
 		<couponlist :currtab="currtab" :coupons="couponsObj[currtab].list" :type="type" @checkCouponsDesc="checkCouponsDesc"></couponlist>
 		<view class="exchange" @click="jumpExchange">
-			兑换优惠卷
+			兑换优惠券
 		</view>
 		<view class="mask" v-if="maskShow" @catchtouchmove="true">
 			<view class="order-info" :animation="animationData">
@@ -44,7 +44,7 @@
 		data() {
 			return {
 				// navarr: [],
-				choiceCoupons: {}, //选中的优惠卷
+				choiceCoupons: {}, //选中的优惠券
 				currtab: 0,
 				type: 0,
 				couponsObj: [],
@@ -81,19 +81,19 @@
 				data.title = '我给你分享了一张' + "“" + that.choiceCoupons.name + "”" + ',快来领取吧',
 					data.imageUrl = '../../static/share.png';
 			}
-			that.lockingCoupons(); //锁定优惠卷
+			that.lockingCoupons(); //锁定优惠券
 			return data
 		},
 		
 		onLoad(options) {
 			let type = options.type;
-			let title = '我的优惠卷';
+			let title = '我的优惠券';
 			// let navarr = ['未使用','已使用','已过期'];
 			if (type == 'choose') {
 				this.type = 1;
 				let couponsList = uni.getStorageSync('canusecoupons');
-				this.handerCoupons(couponsList); //处理优惠卷数据
-				title = '选择优惠卷'
+				this.handerCoupons(couponsList); //处理优惠券数据
+				title = '选择优惠券'
 				uni.removeStorageSync('canusecoupons');
 			} else {
 				this.getCoupons();
@@ -108,11 +108,11 @@
 		onShow() {
 			if (app.globalData.exchangeSuccess) {
 				app.globalData.exchangeSuccess = false;
-				this.getCoupons(); //刷新优惠卷
+				this.getCoupons(); //刷新优惠券
 			}
 		},
 		methods: {
-			async lockingCoupons() { //锁定优惠卷
+			async lockingCoupons() { //锁定优惠券
 				let data = {
 					ticketId: this.choiceCoupons.id,
 					giveCardId: this.memberinfo.id
@@ -136,7 +136,7 @@
 				})
 				that.animation = animation;
 			},
-			//获取我的优惠卷
+			//获取我的优惠券
 			async getCoupons() {
 				let res = await api.getCoupons({
 					cardNo: this.$store.state.cardNo,
@@ -160,7 +160,7 @@
 				let animation = that.animation;
 				that.animationData = animation.export();
 			},
-			//处理优惠卷数据
+			//处理优惠券数据
 			handerCoupons(couponsList) {
 				let couponsObj = [];
 				switch (this.type) {
@@ -211,7 +211,7 @@
 					this.getCoupons();
 				}
 			},
-			//跳转兑换优惠卷页面
+			//跳转兑换优惠券页面
 			jumpExchange() {
 				uni.navigateTo({
 					url: '../exchangecoupons/exchangecoupons'
