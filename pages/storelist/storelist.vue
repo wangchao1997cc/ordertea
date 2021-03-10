@@ -7,7 +7,7 @@
 		</view>
 		<map id="store-map" show-location :longitude="maplocation[0]" :latitude="maplocation[1]" :markers="markers"></map>
 		<view class="store-cont">
-			<store :type="true" :nearList="storeList"></store>
+			<store :type="true" :nearList="storeList" @choseStore="choseStore"></store>
 		</view>
 	</view>
 </template>
@@ -33,18 +33,19 @@
 				storeList: [],
 				currtab: 0,
 				markers: [],
+				maplocation:[113,23],
 			}
 		},
 		computed: {
 			...mapState(['businessType']),
-			maplocation() { //显示的店铺位置
-				let location = [113,23];
-				if (this.storeList.length) {
-					let storedata = this.storeList[this.currtab];
-					location = storedata.coordinate;
-				}
-				return location;
-			},
+			// maplocation() { //显示的店铺位置
+			// 	let location = [113,23];
+			// 	if (this.storeList.length) {
+			// 		let storedata = this.storeList[this.currtab];
+			// 		location = storedata.coordinate;
+			// 	}
+			// 	return location;
+			// },
 		},
 		components:{
 			store
@@ -56,14 +57,13 @@
 		},
 		methods: {
 			//选择店铺
-			choseStore(index) {
-				if (this.currtab == index) {
-					return
-				}
-				this.currtab = index;
+			choseStore(val) {
+				this.maplocation = val.coordinate;
+				// if(val.)
 			},
 			//获取地区所对应的门店列表
 			async getStoreList(data) {
+				
 				let location = uni.getStorageSync('location');
 				let that = this;
 				let params = {
@@ -75,12 +75,14 @@
 				}
 				data.districtId ? params.districtId = data.districtId : '';
 				let res = await api.getStoreList(params);
+				console.log(res)
 				if (res.status == 1) {
 					let storeList = res.data.rows;
 					storeList.forEach(item => {  //换算距离
 						item.distance = item.newdistance = conversion(item.distance) //换算距离
 					})
 					that.storeList = storeList;
+					that.maplocation = that.storeList[0].coordinate;
 					that.handleMarkers(storeList);   //处理地图标记点
 				}
 			},

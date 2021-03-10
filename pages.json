@@ -187,6 +187,7 @@
 		}
         
       
+       
     ],
 	"globalStyle": {
 		"navigationBarTextStyle": "black",
@@ -198,7 +199,7 @@
 		"color": "#9A9A9A",
 		"selectedColor": "#343434",
 		"borderStyle": "black",
-		"backgroundColor": "#ffffff",
+		"backgroundColor": "#ddeace",
 		"list": [{
 				"pagePath": "pages/home/home",
 				"iconPath": "static/tabbar/home_press.png",

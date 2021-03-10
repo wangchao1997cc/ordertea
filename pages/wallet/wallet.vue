@@ -12,11 +12,11 @@
 				</view>
 			</view>
 		</view>
-		<mswiper :imgList="imgList" @changeData="changeData"></mswiper>
+		<mswiper :imgList="imgList" @changeData="changeData"></mswiper> 
 		<view class="recharge-desc">
 			充值说明
 			<text>
-				\n内含{{currtabData.amount}}元储值金、{{currtabData.ticketNames}}{{currtabData.give?',赠送'+currtabData.give+'元':''}}{{currtabData.give?',额外赠送':''}}<text v-if="currtabData.give">{{currtabData.give}}元、</text>{{currtabData.point?currtabData.point+'积分':''}}
+				\n内含{{currtabData.amount || 0}}元储值金、{{currtabData.ticketNames || ''}}{{currtabData.give?',赠送'+currtabData.give+'元':''}}{{currtabData.give?',额外赠送':''}}<text v-if="currtabData.give">{{currtabData.give}}元、</text>{{currtabData.point?currtabData.point+'积分':''}}
 			</text>
 			<text class="span">\n*以下等级可以充值：{{currtabData.lvarr}}</text>
 		</view>

@@ -11,33 +11,39 @@
 			<!-- 自取/外卖/集点卡部分 -->
 			<view class="app-model">
 				<view class="model-box">
+					<!-- <view class="red_line">
+						
+					</view> -->
 					<view class="" @click="jumpMenu(2)">
 						<image class="take-pic" src="../../static/homepage/home_takeit_pic.png" mode=""></image>
-						<text>门店自取</text>
+						<!-- <text>门店自取</text> -->
 						<text class="juide-txt">下单免排队</text>
 						<!-- <image class="take-btn" src="../../static/homepage/takeit_btn.png"></image> -->
 					</view>
 					<view class="" @click="jumpMenu(1)">
 						<image class="take-pic" src="../../static/homepage/home_takeout_pic.png"></image>
-						<text>外卖</text>
+						<!-- <text>外卖</text> -->
 						<text class="juide-txt">无接触配送，送到家</text>
 						<!-- <image class="take-btn" src="../../static/homepage/takeout_btn.png"></image> -->
 					</view>
 				</view>
-				
+
 			</view>
 			<view class="integral">
 				<view class="integral_f" @click="jumpClissIfy(3)">
+					<image src="../../static/collection_icon.png"></image>
 					<text>集点卡\n</text>
 					<text>再集{{(pointActive.number - pointNum)?(pointActive.number - pointNum):(pointActive.number || 0)}}单可获得好礼</text>
 					<sildermine :config="sliderConfig"></sildermine>
 				</view>
 				<view class="box-r">
 					<view class="integral_s" @click="jumpClissIfy(2)">
+						<image src="../../static/coupon_icon.png"></image>
 						<text>我的优惠券\n</text>
 						<text>{{memberinfo.coupons.length || 0}}张待使用</text>
 					</view>
 					<view class="integral_t" @click="jumpWallet">
+						<image src="../../static/home_wallet_icon.png"></image>
 						<text>我的余额\n</text>
 						<text>充值享优惠</text>
 					</view>
@@ -46,9 +52,9 @@
 			<!-- 积分商城部分 -->
 			<view class="active_card" @click="jumpClissIfy(1)">
 				<view class="card_l">
-					<image class="card_icon" src="../../static/homepage/home_inter_icon.png"></image>
+					<image class="card_icon" src="../../static/home_shop_icon.png"></image>
 					<text>积分商城</text>
-			
+
 				</view>
 				<view class="card_r">
 					<text>更多好物</text>
@@ -197,7 +203,7 @@
 				sliderConfig: {
 					progresswidth: '240upx',
 					progressbar: '0%',
-					progressheight:'6rpx',
+					progressheight: '6rpx',
 				},
 				newsImag: ["https://fnb-merchants.oss-cn-shanghai.aliyuncs.com/7622/d770639ad08da8dcdb8a8a2ab82134d.jpg",
 					"https://fnb-merchants.oss-cn-shanghai.aliyuncs.com/7622/banner20201118151452.png"
@@ -256,8 +262,8 @@
 		},
 		onShow() {
 			let memberinfo = this.memberinfo;
-			if(memberinfo){
-				getMemberInfo(true).then(res=>{
+			if (memberinfo) {
+				getMemberInfo(true).then(res => {
 					this.member = res;
 				});
 				this.pointActivity();
@@ -361,7 +367,7 @@
 						if (!res.data[0].description) {
 							res.data[0].description = '<div>暂无内容</div>'
 						}
-					
+
 						this.pointActive = res.data[0];
 						if (res.data[0].endTime.slice(0, 4) > 2099) {
 							this.timelimit = false
@@ -438,7 +444,6 @@
 					}
 				} else {
 					let memberinfo = await getMemberInfo(true);
-					console.log(memberinfo)
 					that.integralarr[0].value = memberinfo.point;
 					that.integralarr[3].value = memberinfo.coupons.length + '张';
 					that.memberinfo = memberinfo;
@@ -605,7 +610,7 @@
 			&:nth-of-type(2) {
 				font-size: $font-md;
 				color: #969CAB;
-				font-weight: normal;
+				// font-weight: 500;
 			}
 		}
 	}
@@ -780,10 +785,20 @@
 			.model-box {
 				@include rect(100%, 320upx);
 				display: flex;
+				position: relative;
+				// .red_line{
+				// 	position: absolute;
+				// 	width: 100%;
+				// 	height: 1upx;
+				// 	background-color: red;
+				// 	top: 208upx;
+					
+				// }
 
 				view {
 					@include rect(50%, 100%);
 					@extend %flex-column;
+					position: relative;
 
 					text {
 						font-size: 36upx;
@@ -792,16 +807,25 @@
 					}
 
 					.juide-txt {
+						position: absolute;
 						font-size: 24upx;
 						color: #969CAB;
-						margin-top: 28upx;
+						// margin-top: 28upx;
+						width: 100%;
+						text-align: center;
+						bottom: 18upx;
 					}
 
 					.take-pic {
-						margin-top: 56upx;
-						@include rect(112upx, 112upx)
+						// border: 1upx red solid;
+						margin-top: 20upx;
+						@include rect(240upx, 240upx)
 					}
-
+					&:last-child{
+						.take-pic {
+							margin-top: 28upx;
+						}
+					}
 				}
 			}
 		}
@@ -853,9 +877,18 @@
 		.integral_f {
 			@include rect(335upx, 100%);
 			border-radius: 16upx 0px 0px 16upx;
-			background: $bg-white url(https://fnb-merchants.oss-cn-shanghai.aliyuncs.com/miniAppSetting/b3a2e7b3e5227e1e1ba86c8a5c5b150.png) no-repeat;
+			background: $bg-white url(https://fnb-merchants.oss-cn-shanghai.aliyuncs.com/7622/1b253b89c321717db5769a50cbb2232.jpg) no-repeat;
 			background-size: cover;
 			@extend %integral;
+			
+			position: relative;
+
+			image {
+				@include rect(216upx, 216upx);
+				position: absolute;
+				bottom: 2upx;
+				right: 4upx;
+			}
 
 		}
 
@@ -865,18 +898,34 @@
 			.integral_s {
 				@include rect(100%, 200upx);
 				border-radius: 0px 16upx 0px 0px;
-				background: $bg-white url(https://fnb-merchants.oss-cn-shanghai.aliyuncs.com/miniAppSetting/d95e99296259695998bffdce64541e2.png) no-repeat;
+				background: $bg-white url(https://fnb-merchants.oss-cn-shanghai.aliyuncs.com/7622/96659fa520f210cdcb3137096ef3bcc.jpg)  no-repeat;
 				background-size: cover;
 				margin-bottom: 16upx;
 				@extend %integral;
+				position: relative;
+
+				image {
+					position: absolute;
+					@include rect(126upx, 126upx);
+					right: 26upx;
+					top: 22upx;
+				}
 			}
 
 			.integral_t {
 				@include rect(100%, 200upx);
-				background: $bg-white url(https://fnb-merchants.oss-cn-shanghai.aliyuncs.com/miniAppSetting/b2b95be2f4f202508436db72c10f174.png) no-repeat;
+				background: $bg-white url(https://fnb-merchants.oss-cn-shanghai.aliyuncs.com/7622/ef05215c008e255b52fc28f6584d228.jpg) no-repeat;
 				background-size: cover;
 				border-radius: 0px 0px 16upx 0px;
 				@extend %integral;
+				position: relative;
+
+				image {
+					position: absolute;
+					@include rect(126upx, 126upx);
+					bottom: 32upx;
+					right: 30upx;
+				}
 			}
 		}
 
@@ -1100,6 +1149,7 @@
 			}
 		}
 	}
+
 	.active_card {
 		@include rect(100%, 122upx);
 		@extend %flex-alcent;
@@ -1108,31 +1158,32 @@
 		background-color: $bg-white;
 		margin-top: 32upx;
 		border-radius: 16upx;
-	
-	
+
+
 		.card_l {
 			@extend %flex-alcent;
 			height: 100%;
-	
+
 			image {
-				@include rect(72upx, 72upx) margin-right: 8upx;
+				@include rect(72upx, 72upx);
+				margin-right: 8upx;
 			}
 		}
-	
+
 		.card_r {
 			image {
 				@include rect(11upx, 17upx);
 				margin-left: 18upx;
 			}
-	
+
 			color: #969CAB;
 			font-size: 24upx;
 		}
-	
+
 		.active-desc {
 			color: #969CAB;
 		}
-	
+
 		.card_icon {
 			@include rect(40upx, 48upx);
 			margin-right: 18upx;
