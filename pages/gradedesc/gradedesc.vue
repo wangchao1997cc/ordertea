@@ -4,7 +4,7 @@
 		<view class="head-pic">
 			<image :src="interest.background"></image>
 		</view>
-		<view class="interest">
+		<view class="interest" v-if="interest.ticketList.length">
 			<view class="tit">
 				会员权益
 			</view>

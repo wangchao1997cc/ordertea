@@ -5,9 +5,14 @@
 			<text>{{`${address.cityName} ${address.districtName}`}}</text>
 			<image src="../../static/my/right.png"></image>
 		</view>
-		<map id="store-map" show-location :longitude="maplocation[0]" :latitude="maplocation[1]" :markers="markers"></map>
+		<map id="store-map" :style="{height:unfoldStow?'0px':'400rpx'}" show-location :longitude="maplocation[0]" :latitude="maplocation[1]"
+		 :markers="markers"></map>
+		<view class="unfold_stow" @click="clickControl" :class="{on:unfoldStow}">
+			{{unfoldStow?'点击展开':'点击收起'}}
+			<image src="../../static/address/bottom.png"></image>
+		</view>
 		<view class="store-cont">
-			<store :type="true" :nearList="storeList"></store>
+			<store :type="true" :nearList="storeList" @choseStore="choseStore"></store>
 		</view>
 	</view>
 </template>
@@ -17,7 +22,8 @@
 		conversion
 	} from '../../utils/author.js'
 	import {
-		getRouteParams,goChoseCity
+		getRouteParams,
+		goChoseCity
 	} from '../../utils/goToPage.js'
 	import store from '../../components/store.vue'
 	import {
@@ -28,25 +34,27 @@
 	export default {
 		data() {
 			return {
+				unfoldStow: false, //地图展开或者收起
 				address: {},
 				pageindex: 0,
 				storeList: [],
 				currtab: 0,
 				markers: [],
+				maplocation: [113, 23],
 			}
 		},
 		computed: {
 			...mapState(['businessType']),
-			maplocation() { //显示的店铺位置
-				let location = [113,23];
-				if (this.storeList.length) {
-					let storedata = this.storeList[this.currtab];
-					location = storedata.coordinate;
-				}
-				return location;
-			},
+			// maplocation() { //显示的店铺位置
+			// 	let location = [113,23];
+			// 	if (this.storeList.length) {
+			// 		let storedata = this.storeList[this.currtab];
+			// 		location = storedata.coordinate;
+			// 	}
+			// 	return location;
+			// },
 		},
-		components:{
+		components: {
 			store
 		},
 		onLoad() {
@@ -56,14 +64,17 @@
 		},
 		methods: {
 			//选择店铺
-			choseStore(index) {
-				if (this.currtab == index) {
-					return
-				}
-				this.currtab = index;
+			choseStore(val) {
+				this.maplocation = val.coordinate;
+				// if(val.)
+			},
+			//点击展开收起
+			clickControl() {
+				this.unfoldStow = !this.unfoldStow;
 			},
 			//获取地区所对应的门店列表
 			async getStoreList(data) {
+
 				let location = uni.getStorageSync('location');
 				let that = this;
 				let params = {
@@ -75,13 +86,15 @@
 				}
 				data.districtId ? params.districtId = data.districtId : '';
 				let res = await api.getStoreList(params);
+				console.log(res)
 				if (res.status == 1) {
 					let storeList = res.data.rows;
-					storeList.forEach(item => {  //换算距离
+					storeList.forEach(item => { //换算距离
 						item.distance = item.newdistance = conversion(item.distance) //换算距离
 					})
 					that.storeList = storeList;
-					that.handleMarkers(storeList);   //处理地图标记点
+					that.maplocation = that.storeList[0].coordinate;
+					that.handleMarkers(storeList); //处理地图标记点
 				}
 			},
 			handleMarkers(storeList) {
@@ -91,7 +104,7 @@
 				if (storeList.length) {
 					storeList.forEach((item, index) => {
 						callout = {
-							content:item.storeName,
+							content: item.storeName,
 							color: "#333333",
 							fontSize: 11,
 							display: "ALWAYS",
@@ -104,7 +117,7 @@
 							margin: 0,
 						};
 						data = {
-							id:index,
+							id: index,
 							iconPath: "../../static/map/shop.png",
 							longitude: item.coordinate[0],
 							latitude: item.coordinate[1],
@@ -117,10 +130,9 @@
 			},
 			//跳转选择城市
 			choseCity() {
-				if(this.address.chosecity){
-					uni.navigateBack({
-					})
-				}else{
+				if (this.address.chosecity) {
+					uni.navigateBack({})
+				} else {
 					goChoseCity(true)
 				}
 			}
@@ -129,6 +141,25 @@
 </script>
 
 <style lang="scss">
+	.unfold_stow {
+		@include rect(100%, 50upx);
+		background-color: $bg-white;
+		@extend %flex-alcent;
+		justify-content: center;
+
+		image {
+			transform: rotate(180deg);
+			@include rect(22upx, 22upx);
+			margin-left: 12upx;
+		}
+
+		&.on {
+			image {
+				transform: rotate(0deg);
+			}
+		}
+	}
+
 	.content {
 		font-size: $font-md;
 		width: $screen-width;
@@ -150,6 +181,7 @@
 
 		#store-map {
 			@include rect(100%, 400upx);
+			transition: all .4s;
 		}
 
 		.store-cont {

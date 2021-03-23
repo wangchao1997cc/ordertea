@@ -29,8 +29,6 @@
 						<view class="rich_text">
 							<rich-text :nodes="item.description"></rich-text>
 						</view>
-
-						<!-- <jyf-parser :html="item.description" selectable="true"></jyf-parser> -->
 					</view>
 				</view>
 			</scroll-view>
@@ -58,9 +56,9 @@
 					<text>全部活动详情</text>
 					<image class="drop_down" src="../../static/menu/drop_down.png"></image>
 				</view>
-				
+
 			</view>
-			
+
 		</view>
 
 		<view class="menu-cont" v-if="showdetail && !activeHeight">
@@ -80,7 +78,8 @@
 			<scroll-view scroll-with-animation @scroll-into-view="currentId" scroll-y class="right-aside" @scroll="asideScroll"
 			 :scroll-top="tabScrollTop" :style="{height:shopBoxHeight + 'rpx'}" binddragend="touchEnd">
 				<!-- 活动banner -->
-				<swiper v-if="bannerList.length" class="header_banner" :indicator-dots="true" :autoplay="true" :circular="true" :interval="3000" :duration="1000">
+				<swiper v-if="bannerList.length" class="header_banner" :indicator-dots="true" :autoplay="true" :circular="true"
+				 :interval="3000" :duration="1000">
 					<swiper-item v-for="(item,index) in bannerList" :key="index" @click="jumpAdver(item,index)">
 						<image :src="item.picUrl" mode="aspectFill"></image>
 					</swiper-item>
@@ -358,9 +357,9 @@
 	export default {
 		data() {
 			return {
-				busyData:null, //预计排队时间
-				busyOpen:false,  //繁忙展开
-				leftScrollTop:0,   //左边滑动距离顶部
+				busyData: null, //预计排队时间
+				busyOpen: false, //繁忙展开
+				leftScrollTop: 0, //左边滑动距离顶部
 				leftCurrtab: 'left',
 				forhere: null,
 				computedHeight: null, //系统高度
@@ -436,9 +435,9 @@
 				let height = 0;
 				let computedHeight = this.computedHeight;
 				if (computedHeight) {
-					height = computedHeight - 216;
-					if (!this.activelist.length) {
-						height = computedHeight - 85;
+					height = computedHeight - 142;
+					if (this.activelist.length) {
+						height = height - 105;
 					}
 				}
 				return height;
@@ -563,22 +562,26 @@
 
 		onShow: function onShow() {
 			let that = this;
-			if (that.storeId) { //如果有storeId则刷新点餐
-				if (that.shopcar.length) {
-					this.reductionData();
+			if (that.storeId) { //如果有storeId 并且不是同一家店铺则刷新点餐
+				if (that.storeInfo && that.storeInfo.storeId == that.storeId) {
+					this.getStore(this.storeInfo.storeId)
+				} else {
+					if (that.shopcar.length) {
+						this.reductionData();
+					}
+					if (this.$children[2].hiddenChoseStore) { //选择其他门店   关闭附近门店选择弹窗
+						this.$children[2].hiddenChoseStore = false;
+					}
+					// that.shopcar = []; //清空购物车
+					that.storeInfo = app.globalData.storeInfo;
+					that.getStoreMenu(that.storeId);
 				}
-				if (this.$children[2].hiddenChoseStore) { //选择其他门店   关闭附近门店选择弹窗
-					this.$children[2].hiddenChoseStore = false;
-				}
-				// that.shopcar = []; //清空购物车
-				that.storeInfo  = app.globalData.storeInfo;
-				that.getStoreMenu(that.storeId);
 				that.$store.commit('copy', '');
 			} else if (newload && !that.storeInfo.storeId) {
 				if (!that.nearList.length) {
 					that.goToChoseCity();
 				}
-			}else if(this.storeInfo){     //页面刷新  店铺
+			} else if (this.storeInfo) { //页面刷新  店铺
 				this.getStore(this.storeInfo.storeId)
 			}
 			if (app.globalData.orderSuccess) { //下单成功
@@ -606,14 +609,14 @@
 			// 	}
 			// },
 			//商铺是否繁忙开关
-			busyJuideSwitch(){
+			busyJuideSwitch() {
 				this.busyOpen = !this.busyOpen
 			},
 			noBussinessTime() {
 				let storeInfo = this.storeInfo;
 				this.$msg.showModal((res) => {
 					if (res == 1) {
-						if(this.model==1){
+						if (this.model == 1) {
 							return this.switchStoreOwn();
 						}
 						goChoseStore({
@@ -677,8 +680,10 @@
 					let storeInfo = res.data;
 					storeInfo.newdistance = conversion(storeInfo.distance) //换算距离
 					that.storeInfo = storeInfo;
-					that.getStoreMenu(storeInfo.storeId);
-					app.globalData.storeInfo = storeInfo
+					if (app.globalData.storeInfo.storeId != storeId) { // 当onshow刷新店铺
+						that.getStoreMenu(storeInfo.storeId);
+					}
+					app.globalData.storeInfo = storeInfo;
 				}
 			},
 			switchTab() {
@@ -1041,10 +1046,10 @@
 				}
 				let res = await api.getProductMenu(data);
 				if (res && res.status == 1) {
-					this.getAdvertList({     //获取餐单广告
-						menuId:res.data.menuId,
-						storeId:storeId,
-					});   //获取店铺广告
+					this.getAdvertList({ //获取餐单广告
+						menuId: res.data.menuId,
+						storeId: storeId,
+					}); //获取店铺广告
 					this.menuId = res.data.menuId;
 					this.defaultS = false;
 					this.handleShopData(res.data.bigs);
@@ -1080,6 +1085,7 @@
 					low: windowHeight * 0.5,
 				};
 				this.computedHeight = windowHeight * (750 / sysinfo.windowWidth); //系统高度rpx
+				console.log(this.computedHeight)
 				let animation = uni.createAnimation({ //定义动画
 					duration: 300,
 					timingFunction: 'linear',
@@ -1105,7 +1111,7 @@
 					}
 				} else {
 					that.getCategoryList(); //获取默认的商品列表
-					
+
 				}
 			},
 			// 获取当前附近的门店
@@ -1114,6 +1120,7 @@
 				let location = that.location;
 				let data = {
 					coordinate: [location.longitude, location.latitude],
+					// coordinate: ['120.555910', '31.293695'],   //测试地理位置
 					// coordinate: ['120.68000030517578', '31.316667556762695'],   //测试地理位置
 					businessType: that.businessType,
 					pageNow: 0,
@@ -1302,9 +1309,9 @@
 				}
 			},
 			//获取默认广告banner
-			async getAdvertList(data){
+			async getAdvertList(data) {
 				let res = await api.getMenuBanner(data);
-				if(res.status && res.data){
+				if (res.status && res.data) {
 					this.bannerList = res.data.menuAdvertList;
 				}
 			},
@@ -1322,14 +1329,14 @@
 				let scrollTop = e.detail.scrollTop;
 				let tabs = that.products.filter(item => item.top <= scrollTop).reverse();
 				if (tabs.length > 0) {
-					if(tabs.length == 1){
+					if (tabs.length == 1) {
 						this.leftScrollTop = this.leftScrollTop + 0.01;
 					}
 					if (that.currentId != tabs[0].uid) {
 						that.currentId = tabs[0].uid;
 						that.leftCurrtab = 'left' + tabs[0].uid;
 					}
-				}else{
+				} else {
 					this.leftScrollTop = 0;
 				}
 			},
@@ -1381,7 +1388,7 @@
 		width: $screen-width;
 		color: $uni-text-color;
 	}
-	
+
 	/* 订单等待 */
 	.busy-cont {
 		@include rect(166px, 50px);
@@ -1394,14 +1401,15 @@
 		/* box-shadow: 0px 4upx 21upx 0px rgba(19, 19, 20, 0.08); */
 		@extend %flex-alcent;
 		justify-content: space-between;
-		
-	
+
+
 		.busy-l {
 			margin-left: 6px;
 			display: flex;
 			padding-top: .1px;
 			height: 50px;
-			.busy-img{
+
+			.busy-img {
 				margin-top: 6px;
 				width: 38px;
 				height: 38px;
@@ -1411,12 +1419,14 @@
 
 				@extend %flex-alcent;
 				justify-content: center;
-				image{
-					@include rect(24px,24px);
+
+				image {
+					@include rect(24px, 24px);
 				}
 			}
-			.order-juide{
-				
+
+			.order-juide {
+
 				/* height: 50px; */
 				margin-left: 8px;
 				margin-top: 8px;
@@ -1424,43 +1434,48 @@
 				font-size: 10px;
 				color: #B2D14E;
 				line-height: 14px;
-				text{
+
+				text {
 					line-height: 17px;
 					font-weight: bold;
 					font-size: 12px;
 				}
-				.estima{
+
+				.estima {
 					margin-top: 2px;
 				}
 			}
-			
+
 			text {
 				text {
 					color: $color-red;
 				}
 			}
 		}
-	
+
 		.busy-r {
 			@include rect(16px, 16px);
 			margin-right: 8px;
-			image{
-				@include rect(100%,100%)
+
+			image {
+				@include rect(100%, 100%)
 			}
 		}
-		&.busy_open{
+
+		&.busy_open {
 			width: 28px;
-			.busy-l{
+
+			.busy-l {
 				display: none;
 			}
-			
-			.busy-r{
+
+			.busy-r {
 				margin-left: 6px;
 				margin-right: 0;
 				transform: rotate(180deg);
 			}
 		}
-	
+
 	}
 
 	.nobusiness {
@@ -1760,9 +1775,10 @@
 	.header-control {
 		@extend %flex-alcent;
 		@include box-padding(28upx);
-		@include rect(100%, 110upx);
+		@include rect(100%, 142upx);
 		justify-content: space-between;
 		background-color: $bg-white;
+		padding-top: 1upx;
 
 		.address-info {
 			text {
@@ -1776,11 +1792,11 @@
 		}
 
 		.store-control {
-			height: 100%;
+			/* height: 100%; */
 			text-align: center;
 
 			.check-juide {
-				margin-top: 6upx;
+				margin-top: 16upx;
 				font-size: 20upx;
 				color: #a0a0a0;
 				justify-content: center;
@@ -1935,7 +1951,7 @@
 				}
 			}
 
-			
+
 		}
 
 		.active-pic {

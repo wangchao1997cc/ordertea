@@ -115,11 +115,13 @@
 		}
 	}
 	.record-item{
+		
 		@include rect(698upx,234upx);
 		background-color: $bg-white;
 		@include box-padding(35upx);
 		border-radius: $radius-md;
 		margin-bottom: 20upx;
+		
 		.item-head{
 			@include rect(100%,99upx);
 			@extend %flex-alcent;
@@ -138,6 +140,7 @@
 	}
 	.no_record{
 		width: 100%;
+		
 		.no-record-pic{
 			@include rect(400upx,384upx);
 			margin: 200upx auto 50upx auto;
@@ -145,11 +148,11 @@
 				@include rect(100%,100%);
 			}
 		}
+		
 		.no-record-juide{
 			color: #343434;
 			opacity: 0.5;
 			text-align: center;
-			
 		}
 	}
 </style>
