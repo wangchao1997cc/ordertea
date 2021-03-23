@@ -16,7 +16,7 @@
 				</view>
 			</view>
 		</view>
-		<!-- <view class="active_desc" :style="{height:activeHeight}">
+		<view class="active_desc" :style="{height:activeHeight}">
 			<scroll-view scroll-y="true" :style="{height:activeHeight}">
 				<view class="active-item" v-for="(item,index) in activelist" :key="index">
 					<view class="active-tit">
@@ -35,7 +35,7 @@
 			<view class="close-active" @click="closeActivePop">
 				<image src="../../static/menu/close_active.png"></image>
 			</view>
-		</view> -->
+		</view>
 		<view class="header" v-if="showdetail && !activeHeight">
 			<view class="make-busy">
 				<view class="make-busy-l">
