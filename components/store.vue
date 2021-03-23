@@ -32,7 +32,7 @@
 			</view>
 			<view class="single_r" :class="{on:type}">
 				<view class="go-look" @click="jumpSoreMenu(item)">
-					<text v-if="type">去看看\n</text>
+					<view class="place_order" v-if="type">去下单\n</view>
 					<text>距离您{{item.newdistance}}</text>
 				</view>
 				<view class="tel-info" v-if="type">
@@ -281,6 +281,14 @@
 	.go-look {
 		font-size: 28upx;
 		text-align: center;
+		.place_order{
+			@include rect(138upx,50upx);
+			border-radius: 50upx;
+			@include text-allcenter(50upx);
+			border: 2upx $main-color solid;
+			background-color: $main-color;
+			color: $text-white;
+		}
 	}
 
 	.go-look>text:last-child {

@@ -62,13 +62,14 @@
 		width: $screen-width;
 
 		.nodata-pic {
-			display: flex;
-			flex-direction: column;
-			@include rect(750upx, 550upx);
+			@extend %flex-column;
+			width: 100%;
+			// @include rect(500upx, 500upx);
 			text-align: center;
+			// border: 1upx red solid;
 
 			image {
-				@include rect(100%, 100%);
+				@include rect(500upx, 500upx);
 				margin-bottom: 40upx;
 			}
 			text {
