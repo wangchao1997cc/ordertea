@@ -17,9 +17,9 @@
 					</view>
 					<text>{{item.brandName}}</text>
 				</view>
-				<view class="cont-r">
+				<!-- <view class="cont-r">
 					x1
-				</view>
+				</view> -->
 			</view>
 			<view class="time-price">
 				<text>{{item.createTime}}</text>
@@ -170,6 +170,7 @@
 		}
 		.time-price{
 			@include rect(100%,75upx);
+			line-height: 75upx;
 			@extend %flex-alcent;
 			justify-content: space-between;
 			color: #000000;

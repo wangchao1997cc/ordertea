@@ -8,85 +8,57 @@
 			</swiper-item>
 		</swiper>
 		<view class="home-cont">
-			<!-- 自取/外卖/集点卡部分 -->
+			<!-- 自取/外卖 -->
 			<view class="app-model">
 				<view class="model-box">
 					<!-- <view class="red_line">
 						
 					</view> -->
 					<view class="" @click="jumpMenu(2)">
-						<image class="take-pic" src="../../static/homepage/home_takeit_pic.png" mode=""></image>
-						<!-- <text>门店自取</text> -->
-						<text class="juide-txt">下单免排队</text>
-						<!-- <image class="take-btn" src="../../static/homepage/takeit_btn.png"></image> -->
+						<image src="../../static/homepage/home_takeit_pic.png" mode=""></image>
 					</view>
 					<view class="" @click="jumpMenu(1)">
-						<image class="take-pic" src="../../static/homepage/home_takeout_pic.png"></image>
-						<!-- <text>外卖</text> -->
-						<text class="juide-txt">无接触配送，送到家</text>
-						<!-- <image class="take-btn" src="../../static/homepage/takeout_btn.png"></image> -->
+						<image src="../../static/homepage/home_takeout_pic.png"></image>
 					</view>
 				</view>
 
 			</view>
+			<!-- 集点卡、优惠券、我的余额 -->
 			<view class="integral">
 				<view class="integral_f" @click="jumpClissIfy(3)">
-					<image src="../../static/collection_icon.png"></image>
-					<text>集点卡\n</text>
-					<text>再集{{(pointActive.number - pointNum)?(pointActive.number - pointNum):(pointActive.number || 0)}}单可获得好礼</text>
-					<sildermine :config="sliderConfig"></sildermine>
+					<image src="../../static/homepage/home_active_bar.png"></image>
+					<view class="point-box">
+						<text>再集{{(pointActive.number - pointNum)?(pointActive.number - pointNum):(pointActive.number || 0)}}单可获得好礼</text>
+						<sildermine :config="sliderConfig"></sildermine>
+					</view>
 				</view>
 				<view class="box-r">
 					<view class="integral_s" @click="jumpClissIfy(2)">
-						<image src="../../static/coupon_icon.png"></image>
-						<text>我的优惠券\n</text>
-						<text>{{memberinfo.coupons.length || 0}}张待使用</text>
+						<image src="../../static/homepage/home_coupons_bar.png"></image>
+						<view class="juide-text">
+							{{memberinfo.coupons.length || 0}}张待使用
+						</view>
 					</view>
-					<view class="integral_t" @click="jumpWallet">
-						<image src="../../static/home_wallet_icon.png"></image>
-						<text>我的余额\n</text>
-						<text>充值享优惠</text>
+					<view class="integral_s" @click="jumpWallet">
+						<image src="../../static/homepage/home_wallet_bar.png"></image>
+						<view class="juide-text">
+							充值享优惠
+						</view>
 					</view>
 				</view>
 			</view>
 			<!-- 积分商城部分 -->
 			<view class="active_card" @click="jumpClissIfy(1)">
 				<view class="card_l">
-					<image class="card_icon" src="../../static/home_shop_icon.png"></image>
-					<text>积分商城</text>
-
+					<image src="../../static/homepage/home_inter_bg.png"></image>
+					<!-- <image class="card_icon" src="../../static/home_shop_icon.png"></image>
+					<image src="../../static/inter_font_icon.png"></image> -->
 				</view>
 				<view class="card_r">
 					<text>更多好物</text>
 					<image src="../../static/07_icon_right.png"></image>
 				</view>
 			</view>
-			<!-- 我的优惠券 / 我的余额 / 积分商城 -->
-			<!-- <view class="blance-box" v-if="member">
-				<view class="blance-l" @click="jumpWallet">
-					<view>
-						<image src="../../static/money_icon.png"></image>
-						我的余额：{{memberinfo.balance?memberinfo.balance:0}}
-					</view>
-					<view>
-						点击进行充值，享取优惠
-						<image src="../../static/07_icon_right.png"></image>
-					</view>
-				</view>
-				<image class="blance-icon" src="../../static/member_icon.png" @click="jumpMembercode"></image>
-			</view> -->
-			<!-- <view class="integral" v-if="member">
-				<view class="integral-item" v-for="(item,index) in integralarr" :key="index" @click="jumpClissIfy(index)">
-					<view class="intehead_info">
-						<image :src="item.icon"></image>
-						<view class="">
-							<text>{{item.tit}}\n</text>
-							<text>{{item.value}}</text>
-						</view>
-					</view>
-					<image class="bg-pic" :src="item.bg"></image>
-				</view>
-			</view> -->
 			<view class="adver">
 				<view class="adver-tit">
 					新鲜事
@@ -98,8 +70,9 @@
 		</view>
 		<view class="blank"></view>
 		<author ref="authorM" @loginSuccess="loginSuccess"></author>
-		<!-- 好友邀请模块 -->
+		<!-- 活动详情 -->
 		<view class="mask" v-if="notAuth">
+			<!-- 好友分享优惠券 -->
 			<view class="author-info">
 				<image class="pop-top" src="../../static/POP_top.png"></image>
 				<view class="home-id">
@@ -296,7 +269,7 @@
 		},
 		computed: {
 			...mapState(['cityid', 'JSESSIONID', 'isLogin']),
-			pointNum() {
+			pointNum() {    
 				let pointActive = this.pointActive;
 				let num = 0;
 				let percent = '0%';
@@ -601,18 +574,22 @@
 		padding-top: 30upx;
 		box-sizing: border-box;
 		line-height: 44upx;
-
-		text {
-			font-size: 32upx;
-			font-weight: bold;
-			margin-bottom: 4upx;
-
-			&:nth-of-type(2) {
-				font-size: $font-md;
-				color: #969CAB;
-				// font-weight: 500;
-			}
+		
+		image{
+			@include rect(100%,100%);
+			position: absolute;
+			top: 0;
+			left: 0;
 		}
+
+		// text {
+		// 	font-size: 20upx;
+		// 	&:nth-of-type(2) {
+		// 		font-size: $font-md;
+		// 		color: #969CAB;
+		// 		// font-weight: 500;
+		// 	}
+		// }
 	}
 
 	.close-redReward {
@@ -778,14 +755,16 @@
 
 		.app-model {
 			width: 100%;
-			background-color: $bg-white;
+			
 			border-radius: 16upx;
 			margin-bottom: 32upx;
 
 			.model-box {
+				
 				@include rect(100%, 320upx);
 				display: flex;
 				position: relative;
+				justify-content: space-between;
 				// .red_line{
 				// 	position: absolute;
 				// 	width: 100%;
@@ -796,75 +775,43 @@
 				// }
 
 				view {
-					@include rect(50%, 100%);
+					background-color: $bg-white;
+					@include rect(335upx, 100%);
+					border-radius: 20upx;
 					@extend %flex-column;
 					position: relative;
-
-					text {
-						font-size: 36upx;
-						line-height: 44upx;
-						margin-top: 4upx;
+					image{
+						@include rect(335upx,335upx)
 					}
 
-					.juide-txt {
-						position: absolute;
-						font-size: 24upx;
-						color: #969CAB;
-						// margin-top: 28upx;
-						width: 100%;
-						text-align: center;
-						bottom: 18upx;
-					}
+					// text {
+					// 	font-size: 36upx;
+					// 	line-height: 44upx;
+					// 	margin-top: 4upx;
+					// }
 
-					.take-pic {
-						// border: 1upx red solid;
-						margin-top: 20upx;
-						@include rect(240upx, 240upx)
-					}
-					&:last-child{
-						.take-pic {
-							margin-top: 28upx;
-						}
-					}
+					// .juide-txt {
+					// 	position: absolute;
+					// 	font-size: 24upx;
+					// 	color: #969CAB;
+					// 	// margin-top: 28upx;
+					// 	width: 100%;
+					// 	text-align: center;
+					// 	bottom: 18upx;
+					// }
+
+					// .take-pic {
+					// 	// border: 1upx red solid;
+					// 	margin-top: 20upx;
+					// 	@include rect(240upx, 240upx)
+					// }
+					// &:last-child{
+					// 	.take-pic {
+					// 		margin-top: 28upx;
+					// 	}
+					// }
 				}
 			}
-		}
-	}
-
-	.blance-box {
-		@include rect(100%, 160upx);
-		background-color: $bg-white;
-		margin: 0upx 0 20upx auto;
-		@extend %flex-alcent;
-		border-radius: $radius-md;
-		justify-content: space-between;
-
-		.blance-l {
-			margin-left: 36upx;
-
-			view {
-				@extend %flex-alcent;
-
-				image {
-					@include rect(32upx, 32upx) margin-right: 25upx;
-				}
-
-				&:last-child {
-					color: $text-grey;
-					font-size: 24upx;
-					margin-top: 15upx;
-
-					image {
-						@include rect(9upx, 18upx);
-						margin-left: 24upx;
-					}
-				}
-			}
-		}
-
-		.blance-icon {
-			@include rect(52upx, 52upx);
-			margin-right: 50upx;
 		}
 	}
 
@@ -873,21 +820,24 @@
 		height: 416upx;
 		display: flex;
 		justify-content: space-between;
+		font-size: 22upx;
+		font-weight: 500;
 
 		.integral_f {
 			@include rect(335upx, 100%);
 			border-radius: 16upx 0px 0px 16upx;
-			background: $bg-white url(https://fnb-merchants.oss-cn-shanghai.aliyuncs.com/7622/1b253b89c321717db5769a50cbb2232.jpg) no-repeat;
-			background-size: cover;
+			background-color: $bg-white;
 			@extend %integral;
-			
+			border-radius: 20upx;
 			position: relative;
-
-			image {
-				@include rect(216upx, 216upx);
+			color: #969cab;
+			.point-box{
+				text-align: center;
+				width: 240upx;
 				position: absolute;
-				bottom: 2upx;
-				right: 4upx;
+				bottom: 44upx;
+				left: 47.5upx;
+				
 			}
 
 		}
@@ -898,35 +848,33 @@
 			.integral_s {
 				@include rect(100%, 200upx);
 				border-radius: 0px 16upx 0px 0px;
-				background: $bg-white url(https://fnb-merchants.oss-cn-shanghai.aliyuncs.com/7622/96659fa520f210cdcb3137096ef3bcc.jpg)  no-repeat;
+				background-color: $bg-white;
 				background-size: cover;
 				margin-bottom: 16upx;
 				@extend %integral;
 				position: relative;
-
-				image {
+				.juide-text{
 					position: absolute;
-					@include rect(126upx, 126upx);
-					right: 26upx;
-					top: 22upx;
+					width: 100%;
+					// font-size: 22upx;
+					// font-weight: 500;
+					color: #969cab;
+					bottom: 3upx;
+					text-align: center;
+					left: 0upx;
+					
 				}
 			}
 
-			.integral_t {
-				@include rect(100%, 200upx);
-				background: $bg-white url(https://fnb-merchants.oss-cn-shanghai.aliyuncs.com/7622/ef05215c008e255b52fc28f6584d228.jpg) no-repeat;
-				background-size: cover;
-				border-radius: 0px 0px 16upx 0px;
-				@extend %integral;
-				position: relative;
+			// .integral_t {
+			// 	@include rect(100%, 200upx);
+			// 	background: $bg-white;
+			// 	background-size: cover;
+			// 	border-radius: 0px 0px 16upx 0px;
+			// 	@extend %integral;
+			// 	position: relative;
 
-				image {
-					position: absolute;
-					@include rect(126upx, 126upx);
-					bottom: 32upx;
-					right: 30upx;
-				}
-			}
+			// }
 		}
 
 		// .integral-item {
@@ -1154,19 +1102,23 @@
 		@include rect(100%, 122upx);
 		@extend %flex-alcent;
 		@include box-padding(30upx);
-		justify-content: space-between;
+		justify-content: flex-end;
 		background-color: $bg-white;
 		margin-top: 32upx;
 		border-radius: 16upx;
+		// border: 3.5upx solid #3f7642;
+		position: relative;
+		
 
 
 		.card_l {
-			@extend %flex-alcent;
-			height: 100%;
+			position: absolute;
+			top: 0;
+			left: 0;
+			@include rect(100%,100%);
 
 			image {
-				@include rect(72upx, 72upx);
-				margin-right: 8upx;
+				@include rect(100%,100%);
 			}
 		}
 
@@ -1177,11 +1129,13 @@
 			}
 
 			color: #969CAB;
-			font-size: 24upx;
+			font-size: 22upx;
+			font-weight: 500;
 		}
 
 		.active-desc {
 			color: #969CAB;
+			
 		}
 
 		.card_icon {

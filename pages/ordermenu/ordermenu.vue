@@ -16,7 +16,7 @@
 				</view>
 			</view>
 		</view>
-		<view class="active_desc" :style="{height:activeHeight}">
+		<!-- <view class="active_desc" :style="{height:activeHeight}">
 			<scroll-view scroll-y="true" :style="{height:activeHeight}">
 				<view class="active-item" v-for="(item,index) in activelist" :key="index">
 					<view class="active-tit">
@@ -29,15 +29,13 @@
 						<view class="rich_text">
 							<rich-text :nodes="item.description"></rich-text>
 						</view>
-
-						<!-- <jyf-parser :html="item.description" selectable="true"></jyf-parser> -->
 					</view>
 				</view>
 			</scroll-view>
 			<view class="close-active" @click="closeActivePop">
 				<image src="../../static/menu/close_active.png"></image>
 			</view>
-		</view>
+		</view> -->
 		<view class="header" v-if="showdetail && !activeHeight">
 			<view class="make-busy">
 				<view class="make-busy-l">
@@ -437,9 +435,9 @@
 				let height = 0;
 				let computedHeight = this.computedHeight;
 				if (computedHeight) {
-					height = computedHeight - 216;
-					if (!this.activelist.length) {
-						height = computedHeight - 85;
+					height = computedHeight - 142;
+					if (this.activelist.length) {
+						height = height - 105;
 					}
 				}
 				return height;
@@ -1087,6 +1085,7 @@
 					low: windowHeight * 0.5,
 				};
 				this.computedHeight = windowHeight * (750 / sysinfo.windowWidth); //系统高度rpx
+				console.log(this.computedHeight)
 				let animation = uni.createAnimation({ //定义动画
 					duration: 300,
 					timingFunction: 'linear',
@@ -1121,6 +1120,7 @@
 				let location = that.location;
 				let data = {
 					coordinate: [location.longitude, location.latitude],
+					// coordinate: ['120.555910', '31.293695'],   //测试地理位置
 					// coordinate: ['120.68000030517578', '31.316667556762695'],   //测试地理位置
 					businessType: that.businessType,
 					pageNow: 0,
@@ -1775,9 +1775,10 @@
 	.header-control {
 		@extend %flex-alcent;
 		@include box-padding(28upx);
-		@include rect(100%, 110upx);
+		@include rect(100%, 142upx);
 		justify-content: space-between;
 		background-color: $bg-white;
+		padding-top: 1upx;
 
 		.address-info {
 			text {
@@ -1791,11 +1792,11 @@
 		}
 
 		.store-control {
-			height: 100%;
+			/* height: 100%; */
 			text-align: center;
 
 			.check-juide {
-				margin-top: 6upx;
+				margin-top: 16upx;
 				font-size: 20upx;
 				color: #a0a0a0;
 				justify-content: center;

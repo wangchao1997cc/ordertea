@@ -140,7 +140,7 @@
 							uni.navigateBack({})
 						}
 					}
-				}, '确定要删除该地址吗')
+				}, '确定要删除该地址吗',false,true)
 			},
 			//选择器确定
 			// entryAre(val) {

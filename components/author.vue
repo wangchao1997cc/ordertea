@@ -11,7 +11,7 @@
 				<view class="author-btn" @click="hidePop">
 					取消
 				</view>
-				<button class="author-btn" open-type="getPhoneNumber" @getphonenumber="decryptPhoneNumber">获取手机号</button>
+				<button class="author-btn" open-type="getPhoneNumber" @getphonenumber="decryptPhoneNumber">确定</button>
 			</view>
 		</view>
 	</view>

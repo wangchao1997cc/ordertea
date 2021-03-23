@@ -60,7 +60,7 @@
 			</view>
 		</view>
 		<view class="blank"></view>
-		
+
 		<!-- <author ref="authorM" @loginSuccess="loginSuccess"></author> -->
 		<view class="mask" v-if="notAuth">
 			<view class="popup">
@@ -99,7 +99,8 @@
 		mapMutations
 	} from "vuex";
 	import {
-		accAdd,subtr
+		accAdd,
+		subtr
 	} from '../../utils/utils.js'
 	export default {
 		data() {
@@ -109,22 +110,22 @@
 				profitinfo: {}, //自己的收益
 				activeDesc: {}, //活动详情
 				activeinfo: {}, //活动信息
-				notAuth:false,
-				userdata:{},
+				notAuth: false,
+				userdata: {},
 			}
 		},
 		async onShareAppMessage(res) {
 			let data = {
 				path: '/pages/active/active'
 			}
-			if(!this.activityId){
+			if (!this.activityId) {
 				this.activityId = await this.getActiveInfo();
 			}
 			if (res.from === 'button') { // 来自页面内分享按钮
 				data.path = '/pages/active/active?recommendedId=' + this.memberinfo.id + '&activityId=' + this.activityId;
-				data.title = '快来和我一起领取超多福利吧～',
-					data.imageUrl = this.activeDesc.imageUrl,
-					data.bgImgUrl = this.activeDesc.shareImageUrl
+				data.title = '快来和我一起领取超多福利吧～';
+				data.imageUrl = this.activeDesc.imageUrl;
+				data.bgImgUrl = this.activeDesc.shareImageUrl
 			}
 			return data
 		},
@@ -149,7 +150,7 @@
 		},
 		async onLoad(options) {
 			uni.showLoading({
-				mask:'true'
+				mask: 'true'
 			})
 			let memberinfo = uni.getStorageSync('memberinfo');
 			this.memberinfo = memberinfo;
@@ -166,14 +167,14 @@
 			if (memberinfo) {
 				this.cheackProfit(); //查看自己的收益
 				this.activeDescInfo(); //查询活动详情信息
-				if(!memberinfo.name){
+				if (!memberinfo.name) {
 					this.notAuth = true;
 				}
 			}
 			// this.juideUserInfo(); //判断用户是否登录
 		},
 		methods: {
-			cancelBtn(){
+			cancelBtn() {
 				this.notAuth = false
 			},
 			// async juideUserInfo() {
@@ -192,7 +193,7 @@
 					cardId: this.memberinfo.id,
 					activityId: this.activityId
 				};
-				let res = await api.activityDesc(data,true);
+				let res = await api.activityDesc(data, true);
 				if (res.code == 200) {
 					this.activeDesc = res.data;
 				}
@@ -201,7 +202,7 @@
 			async getUserInfo(e) {
 				if (e.detail.errMsg == 'getUserInfo:ok') {
 					let userInfo = e.detail.userInfo;
-					userInfo.gender = subtr(userInfo.gender,1);
+					userInfo.gender = subtr(userInfo.gender, 1);
 					let memberinfo = this.memberinfo;
 					let data = {
 						name: userInfo.nickName,
@@ -211,22 +212,21 @@
 					}
 					let res = await api.updateMember(data, true);
 					this.notAuth = false;
-					if (res.code == 200) {
-					} else {
+					if (res.code == 200) {} else {
 						this.$msg.showToast(res.message)
 					}
-				}else{
+				} else {
 					this.$msg.showToast('取消授权');
 					this.notAuth = false;
 				}
-				
+
 			},
 			async getActiveInfo(bol) {
 				let data = {};
 				if (this.memberinfo) {
 					data.cardId = this.memberinfo.id;
 				}
-				let res = await api.fissionActive(data,true);
+				let res = await api.fissionActive(data, true);
 				if (res.code == 200) {
 					this.activeinfo = res.data;
 					return res.data.id;
@@ -267,7 +267,7 @@
 						this.cheackProfit(); //查看自己的收益
 						this.activeDescInfo(); //获取活动详情
 						uni.setStorageSync('memberinfo', memberinfo);
-					} else if(result.status==2){
+					} else if (result.status == 2) {
 						this.$store.commit('changeLogin', true);
 						this.$msg.showToast(result.msg);
 						let memberinfo = await getMemberInfo(true);
@@ -283,7 +283,7 @@
 	page {
 		background-color: $main-color;
 	}
-	
+
 	.mask {
 		@extend %all-mask;
 
@@ -296,13 +296,13 @@
 			border-radius: 8upx;
 			line-height: 48upx;
 			font-size: 32upx;
-		
+
 			.title {
 				margin-top: 48upx;
 				text-align: center;
 				font-weight: 700;
 			}
-		
+
 			.juide-cont {
 				width: 100%;
 				@include box-padding(40upx);
@@ -313,10 +313,10 @@
 				max-height: 490upx;
 				text-align: center;
 			}
-		
+
 			.hide-pop {
 				@include rect(100%, 96upx);
-				@extend  %flex-alcent;
+				@extend %flex-alcent;
 				border-top: 1upx rgba(0, 0, 0, 0.08) solid;
 				// @include text-allcenter(96upx);
 				color: $main-color;
@@ -324,11 +324,13 @@
 				bottom: 0upx;
 				line-height: 96upx;
 				font-weight: 700;
-				.author-btn{
-					@include rect(50%,96upx);
+
+				.author-btn {
+					@include rect(50%, 96upx);
 					text-align: center;
 				}
-				button{
+
+				button {
 					@extend %clear-button;
 					color: $main-color;
 					line-height: 96upx;
