@@ -26,7 +26,7 @@
 				</view>
 				
 			</view>
-			<view class="integral">
+			<view class="integral" v-if="member">
 				<view class="integral_f" @click="jumpClissIfy(3)">
 					<text>集点卡\n</text>
 					<text>再集{{(pointActive.number - pointNum)?(pointActive.number - pointNum):(pointActive.number || 0)}}单可获得好礼</text>
@@ -44,7 +44,7 @@
 				</view>
 			</view>
 			<!-- 积分商城部分 -->
-			<view class="active_card" @click="jumpClissIfy(1)">
+			<view class="active_card" @click="jumpClissIfy(1)" v-if="member">
 				<view class="card_l">
 					<image class="card_icon" src="../../static/homepage/home_inter_icon.png"></image>
 					<text>积分商城</text>

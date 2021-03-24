@@ -25,8 +25,8 @@ export const checkMobile = data => {
 
 export const appshare = () => {
 	return {
-		title: '欢迎来到迷客夏', // 分享标题
-		desc: '迷客夏欢迎您！', // 分享描述
+		title: '欢迎来到茶汤会', // 分享标题
+		desc: '茶汤会欢迎您！', // 分享描述
 		path: '/pages/ordermenu/ordermenu' // 分享路径
 	}
 }

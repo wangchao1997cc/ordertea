@@ -32,6 +32,7 @@ export function service(url, method, data, isloading) {
 		'content-type': method === 'get' ? 'application/x-www-form-urlencoded' : 'application/json',
 		"Cookie": JSESSIONID ? 'JSESSIONID=' + JSESSIONID : '',
 	}
+	
 	return request(method, header, url, data, isloading)
 }
 
@@ -127,10 +128,6 @@ function nrequest(method, header, url, data, isloading) {
 					if (!JSESSIONID) {
 						// JSESSIONID = "cc8bef60-c231-4a26-b0e3-6c3e13549cbf; path=/; expires=Fri, 01-Jan-2021 02:47:00 GMT"
 						JSESSIONID = e.header["Set-Cookie"].match(/JSESSIONID=(.*)?;/)[1];
-						// console.log(JSESSIONID)
-						// let data = {
-						// 	"JSESSIONID": JSESSIONID
-						// };
 						store.commit('jessionid', JSESSIONID);
 					}
 					resolve(e.data);

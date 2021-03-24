@@ -4,7 +4,7 @@ import {
 	service_v
 } from './http.js';
 //正式环境
-const key = '&key=6886173bf669d7bc';
+const key = '&key=41de034d6f72404d';
 //测试环境
 // const key = '&key=93ba9db2f9f4f0e4';
 
@@ -85,11 +85,15 @@ const deleteAdress = (data, isloading) => {
 
 //获取广告banner  
 const getBannerList = (data, isloading) => {
+	console.log(data)
 	return service('candao.storeOwn.getWeChatAppSetting', 'post', data, isloading)
 }
 
 //获取用户信息 
 const getUserInfo = (data, isloading) => {
+	if(!data){
+		data = {}
+	}
 	return service('candao.user.getBaseInfo', 'post', data, isloading)
 }
 

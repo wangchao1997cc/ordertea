@@ -1,6 +1,7 @@
 <template>
 	<!-- 积分商城的店铺 -->
 	<view class="content">
+		
 		<view class="point-item" v-for="(item,index) in storeList" :key="index">
 			<view class="store-pic">
 				<image :src="item.logo"></image>
