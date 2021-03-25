@@ -9,9 +9,9 @@
 							<text>{{item.title}}</text>
 							
 						</view>
-						<view class="price-box">
+						<!-- <view class="price-box">
 							<text>¥ {{item.amount}}</text>
-						</view>
+						</view> -->
 					</view>
 				</swiper-item>
 			</block>

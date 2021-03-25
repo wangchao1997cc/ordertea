@@ -199,8 +199,8 @@
 					progressbar: '0%',
 					progressheight:'6rpx',
 				},
-				newsImag: ["https://fnb-merchants.oss-cn-shanghai.aliyuncs.com/7622/d770639ad08da8dcdb8a8a2ab82134d.jpg",
-					"https://fnb-merchants.oss-cn-shanghai.aliyuncs.com/7622/banner20201118151452.png"
+				newsImag: ["http://51wm-pic1.oss-cn-hangzhou.aliyuncs.com/51wm-pic1/OCRM6/DRpQFTfX-yhheciyf-fwpMkpii.png",
+					// "https://fnb-merchants.oss-cn-shanghai.aliyuncs.com/7622/banner20201118151452.png"
 				],
 
 				memberinfo: null, //用户信息
@@ -519,18 +519,21 @@
 				let location = await getLocation();
 			},
 			bootNewBtn(index) {
-				let url = '';
-				switch (index) {
-					case 0:
-						url = 'https://mp.weixin.qq.com/s/vK-cBUCVqIaH8WS7zHgJGQ';
-						break
-					case 1:
-						url = 'https://mp.weixin.qq.com/s/zc3Gb3zEeWtHzm1-DHMNwQ';
-						break;
-				}
-				uni.navigateTo({
-					url: '../webview/webview?url=' + url,
+				uni.switchTab({
+					url:'../ordermenu/ordermenu'
 				})
+				// let url = '';
+				// switch (index) {
+				// 	case 0:
+				// 		url = 'https://mp.weixin.qq.com/s/vK-cBUCVqIaH8WS7zHgJGQ';
+				// 		break
+				// 	case 1:
+				// 		url = 'https://mp.weixin.qq.com/s/zc3Gb3zEeWtHzm1-DHMNwQ';
+				// 		break;
+				// }
+				// uni.navigateTo({
+				// 	url: '../webview/webview?url=' + url,
+				// })
 			},
 			jumpAdvertise(item, index) {
 				if (index == 0) {
@@ -753,7 +756,6 @@
 	.head-info {
 		// @include rect(100%, 422upx);
 		@include rect(100%, 640upx);
-
 		// background-color: $main-color;.
 		swiper-item {
 			// @include rect(100%, 422upx);

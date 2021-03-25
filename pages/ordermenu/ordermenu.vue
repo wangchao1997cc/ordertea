@@ -14,9 +14,9 @@
 					{{showdetail?'更多门店信息':'收起'}}
 					<image src="../../static/07_icon_right.png"></image>
 				</view>
-			</view>
+			</view>	
 		</view>
-		<view class="active_desc" :style="{height:activeHeight}">
+		<!-- <view class="active_desc" :style="{height:activeHeight}">
 			<scroll-view scroll-y="true" :style="{height:activeHeight}">
 				<view class="active-item" v-for="(item,index) in activelist" :key="index">
 					<view class="active-tit">
@@ -35,8 +35,8 @@
 			<view class="close-active" @click="closeActivePop">
 				<image src="../../static/menu/close_active.png"></image>
 			</view>
-		</view>
-		<view class="header" v-if="showdetail && !activeHeight">
+		</view> -->
+		<!-- <view class="header" v-if="showdetail && !activeHeight">
 			<view class="make-busy">
 				<view class="make-busy-l">
 					<image class="active-pic" src="../../static/active_icon.png"></image>
@@ -52,14 +52,14 @@
 					</swiper>
 				</view>
 
-				<view class="active-r" @click="jumpActiveDesc(item)">
+				<view class="active-r" @click="jumpActiveDesc(item)" >
 					<text>全部活动详情</text>
 					<image class="drop_down" src="../../static/menu/drop_down.png"></image>
 				</view>
 
 			</view>
 
-		</view>
+		</view> -->
 
 		<view class="menu-cont" v-if="showdetail && !activeHeight">
 			<!-- 左侧导航栏 -->
@@ -68,7 +68,7 @@
 				<view v-for="(item, index) in products" :key="index" class="f-item" :class="{active: item.uid === currentId}"
 				 @click="tabtap(item)" :id="'left'+item.uid">
 					<!-- {{'leftm-'+item.uid}} -->
-					<image :src="item.typeImage" mode="aspectFill"></image>{{item.name}}
+					<image :src="item.typeImage?item.typeImage:''" mode="aspectFill"></image> {{item.name}}
 				</view>
 				<view class="blank-fill">
 				</view>

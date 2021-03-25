@@ -6,8 +6,8 @@
 
 
 //正式环境 key
-const default_value_f = 'Action?' + 'key=6886173bf669d7bc'
-const default_value_s = 'SecretAction?' + 'key=6886173bf669d7bc'
+const default_value_f = 'Action?' + 'key=41de034d6f72404d';
+const default_value_s = 'SecretAction?' + 'key=41de034d6f72404d';
 const key = 'rc09pv1O21dfY01nx8wx';   //正式环境
 const base_url_m = 'https://open6-wxa.can-dao.com/'; //正式环境   餐道
 const baseurl_v43 = 'https://crmapi.fnb-tech.com/openapi/' //正式环境	会员
