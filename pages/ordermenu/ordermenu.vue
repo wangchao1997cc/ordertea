@@ -68,7 +68,8 @@
 				<view v-for="(item, index) in products" :key="index" class="f-item" :class="{active: item.uid === currentId}"
 				 @click="tabtap(item)" :id="'left'+item.uid">
 					<!-- {{'leftm-'+item.uid}} -->
-					<image :src="item.typeImage?item.typeImage:''" mode="aspectFill"></image> {{item.name}}
+					<!-- <image :src="item.typeImage?item.typeImage:''" mode="aspectFill"></image> -->
+					{{item.name}}
 				</view>
 				<view class="blank-fill">
 				</view>
@@ -1977,7 +1978,7 @@
 	.f-item {
 		display: flex;
 		align-items: center;
-		/* justify-content: center; */
+		justify-content: center;
 		width: 100%;
 		height: 150upx;
 		font-size: 28upx;

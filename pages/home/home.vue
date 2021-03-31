@@ -199,7 +199,7 @@
 					progressbar: '0%',
 					progressheight:'6rpx',
 				},
-				newsImag: ["http://51wm-pic1.oss-cn-hangzhou.aliyuncs.com/51wm-pic1/OCRM6/DRpQFTfX-yhheciyf-fwpMkpii.png",
+				newsImag: ["http://51wm-pic1.oss-cn-hangzhou.aliyuncs.com/51wm-pic1/OCRM6/nyxQSWAk-QJsxxaEt-hBjmTTPe.png",
 					// "https://fnb-merchants.oss-cn-shanghai.aliyuncs.com/7622/banner20201118151452.png"
 				],
 
@@ -519,8 +519,8 @@
 				let location = await getLocation();
 			},
 			bootNewBtn(index) {
-				uni.switchTab({
-					url:'../ordermenu/ordermenu'
+				uni.navigateTo({
+					url: '../webview/webview?url=https://mp.weixin.qq.com/s/lthzZihMWZMB7AFlzFe5JQ',
 				})
 				// let url = '';
 				// switch (index) {
@@ -531,9 +531,7 @@
 				// 		url = 'https://mp.weixin.qq.com/s/zc3Gb3zEeWtHzm1-DHMNwQ';
 				// 		break;
 				// }
-				// uni.navigateTo({
-				// 	url: '../webview/webview?url=' + url,
-				// })
+				
 			},
 			jumpAdvertise(item, index) {
 				if (index == 0) {
@@ -1009,7 +1007,7 @@
 		}
 
 		.adver-item {
-			@include rect(100%, 220upx);
+			@include rect(100%, 296upx);
 			border-radius: 8upx;
 			overflow: hidden;
 			margin-bottom: 28upx;
