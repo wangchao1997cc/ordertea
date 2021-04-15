@@ -178,7 +178,7 @@
 					progressbar: '0%',
 					progressheight: '6rpx',
 				},
-				newsImag: ["https://fnb-merchants.oss-cn-shanghai.aliyuncs.com/7622/d770639ad08da8dcdb8a8a2ab82134d.jpg",
+				newsImag: ["https://fnb-merchants.oss-cn-shanghai.aliyuncs.com/7622/product/6aaae7ad6a9a47d0db03372bbe972f70.jpg",
 					"https://fnb-merchants.oss-cn-shanghai.aliyuncs.com/7622/banner20201118151452.png"
 				],
 
@@ -500,7 +500,7 @@
 				let url = '';
 				switch (index) {
 					case 0:
-						url = 'https://mp.weixin.qq.com/s/vK-cBUCVqIaH8WS7zHgJGQ';
+						url = 'https://mp.weixin.qq.com/s/rnxKxvnqzoc4ltYMcvFThg';
 						break
 					case 1:
 						url = 'https://mp.weixin.qq.com/s/zc3Gb3zEeWtHzm1-DHMNwQ';
