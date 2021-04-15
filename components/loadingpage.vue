@@ -35,7 +35,7 @@
 		@extend %flex-alcent;
 		justify-content: center;
 		image{
-			@include rect(228upx,228upx);
+			@include rect(320upx,240upx);
 		}
 	}
 
