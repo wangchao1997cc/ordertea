@@ -22,7 +22,7 @@
 			"path": "pages/active/active",
 			"style": {
 				"navigationBarTitleText": "邀请活动",
-				"navigationBarBackgroundColor": "#A8D732",
+				"navigationBarBackgroundColor": "#c79d56",
 				"navigationBarTextStyle": "white"
 			}
 		

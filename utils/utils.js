@@ -234,8 +234,8 @@ export const showModal = (callback, content, tit, showCancel, cancelText, confir
 	uni.showModal({
 		title: tit || '提示',
 		content: content,
-		confirmColor: '#A8D732',
-		cancelColor: '#A8D732',
+		confirmColor: '#c79d56',
+		cancelColor: '#c79d56',
 		showCancel: showCancel,
 		cancelText: cancelText || '取消',
 		confirmText: confirmText || '确认',
