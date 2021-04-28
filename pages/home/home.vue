@@ -199,7 +199,7 @@
 					progressbar: '0%',
 					progressheight:'6rpx',
 				},
-				newsImag: ["http://51wm-pic1.oss-cn-hangzhou.aliyuncs.com/51wm-pic1/OCRM6/nyxQSWAk-QJsxxaEt-hBjmTTPe.png",
+				newsImag: ["https://fnb-merchants.oss-cn-shanghai.aliyuncs.com/7622/product/2e8ab1139b89e3d4faf10f1d408e8bb9.png",
 					// "https://fnb-merchants.oss-cn-shanghai.aliyuncs.com/7622/banner20201118151452.png"
 				],
 
