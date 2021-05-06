@@ -538,9 +538,9 @@
 			},
 			//包装费价格
 		},
-		watch: {
-			storeInfo(val) {
-				if (!this.storeId) {
+		watch:{
+			storeInfo(val){
+				if(!this.storeId) {
 					app.globalData.storeInfo = val;
 				}
 			}
@@ -1306,6 +1306,7 @@
 				let res = await api.getDefaultMeun(data);
 				if (res.status == 1) {
 					this.defaultS = true;
+					console.log(res.data)
 					this.handleShopData(res.data.bigs)
 				}
 			},

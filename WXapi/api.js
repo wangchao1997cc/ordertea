@@ -350,11 +350,17 @@ const waitLineup = (data, isloading) => {
 	return service_v('v4_3/findStore/queue', 'get', data, isloading)
 }
 
+//获取新鲜事列表
+const getNewsList = (data, isloading) => {
+	return service_v('v4_3/WxTweets/list', 'get', data, isloading)
+}
+
 
 
 
 
 module.exports = {
+	getNewsList:getNewsList,
 	waitLineup:waitLineup,
 	getMenuBanner:getMenuBanner,
 	pointActivity:pointActivity,

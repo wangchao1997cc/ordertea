@@ -319,6 +319,7 @@
 					uni.hideLoading()
 				}
 				this.getBannerList(); //获取轮播图
+				// this.obtainNews()
 			},
 			//打开集点卡介绍幕布
 			checkPonitDesc() {
@@ -520,7 +521,7 @@
 			},
 			bootNewBtn(index) {
 				uni.navigateTo({
-					url: '../webview/webview?url=https://mp.weixin.qq.com/s/lthzZihMWZMB7AFlzFe5JQ',
+					url: '../webview/webview?url=https://mp.weixin.qq.com/s/XeghCF-_GPUjghjLKQd-Lg',
 				})
 				// let url = '';
 				// switch (index) {
