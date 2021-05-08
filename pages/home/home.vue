@@ -297,7 +297,13 @@
 				} else {
 					uni.hideLoading()
 				}
+				this.getNewsList();   //获取新鲜事列表
 				this.getBannerList(); //获取轮播图
+			},
+			//获取新鲜事列表
+			async getNewsList(){
+				let res = await api.getNewsList();
+				console.log(res)
 			},
 			//打开集点卡介绍幕布
 			checkPonitDesc() {
@@ -417,14 +423,20 @@
 					}
 				} else {
 					let memberinfo = await getMemberInfo(true);
-					that.integralarr[0].value = memberinfo.point;
-					that.integralarr[3].value = memberinfo.coupons.length + '张';
-					that.memberinfo = memberinfo;
-					if (that.homeParams && that.homeParams.giveCardId) {
-						that.receiveCoupons(); //查询好友赠送的优惠券优惠券
+					try{
+						console.log(1111,memberinfo)
+						that.integralarr[0].value = memberinfo.point;
+						that.integralarr[3].value = memberinfo.coupons.length + '张';
+						that.memberinfo = memberinfo;
+						if (that.homeParams && that.homeParams.giveCardId) {
+							that.receiveCoupons(); //查询好友赠送的优惠券优惠券
+						}
+						that.pointActivity(); //查询积点活动
+						that.redReaward(memberinfo.id);
+					}catch(err){
+						console.log(333,err)
 					}
-					that.pointActivity(); //查询积点活动
-					that.redReaward(memberinfo.id);
+					
 				}
 				uni.hideLoading();
 			},

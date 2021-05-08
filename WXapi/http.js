@@ -11,6 +11,7 @@ const default_value_s = 'SecretAction?' + 'key=6886173bf669d7bc'
 const key = 'rc09pv1O21dfY01nx8wx';   //正式环境
 const base_url_m = 'https://open6-wxa.can-dao.com/'; //正式环境   餐道
 const baseurl_v43 = 'https://crmapi.fnb-tech.com/openapi/' //正式环境	会员
+// const baseurl_v43 = 'http://192.168.1.61:8090/openapi/' //内网环境	会员
 
 //测试环境key
 // const default_value_f = 'Action?' + 'key=93ba9db2f9f4f0e4'
@@ -72,6 +73,7 @@ export async function service_v(url, method, data, isloading) {
 	if (storeCode && url != 'v4_3/weixin/recharge') {
 		header.storeCode = storeCode;
 	}
+	
 	if(data && data.storeCode){    //门店列表时，查询门店等待时间
 		header.storeCode = data.storeCode
 	}
@@ -81,6 +83,7 @@ export async function service_v(url, method, data, isloading) {
 	md5Params = handleSingn(md5Params);
 	url = baseurl_v43 + url;
 	header.sign = md5Params;
+	
 	return nrequest(method, header, url, data, isloading)
 }
 //处理   md5 sign参数
