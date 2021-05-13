@@ -8,6 +8,14 @@
 			}
 		},
 		{
+			"path": "pages/wallet/wallet",
+			"style": {
+				"navigationBarTitleText": "充值",
+				"enablePullDownRefresh": false
+			}
+		
+		},
+		{
 			"path": "pages/address/address",
 			"style": {
 				"navigationBarTitleText": "地址管理"
@@ -109,14 +117,7 @@
 			}
 		},
 		
-		{
-			"path": "pages/wallet/wallet",
-			"style": {
-				"navigationBarTitleText": "充值",
-				"enablePullDownRefresh": false
-			}
-
-		},
+		
 
 		{
 			"path": "pages/mine/mine",

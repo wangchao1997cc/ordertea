@@ -4,12 +4,12 @@
 		globalData: {
 			remark: '', //订单的备注信息
 			//测试环境配置
-			// brandId: 456,
+			// brandId: 123487,
 			// menuId: 1804,
 			// brandIdc: 383,
 			// clientId: '32e58123cb58fe0bc7ed15933b4537f4fa0d07',
 			//正式环境配置
-			brandId: 7622,
+			brandId: 7622 , 
 			menuId: 1804,
 			brandIdc: 26000607,
 			clientId: 'f613e4e8c9fccdbf0c877d870f4ca157b24af1',

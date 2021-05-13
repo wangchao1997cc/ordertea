@@ -224,8 +224,9 @@ const getRecharge = (data, isloading) => {
 
 //微信充值下单接口
 const rechargeApi = (data, isloading) => {
-	
-	return service_v('v4_3/weixin/recharge', 'post', data, isloading)
+	let storeId = data.storeId;
+	delete data.storeId;
+	return service_v('v4_3/weixin/recharge/' + storeId, 'post', data, isloading)
 }
 
 //查询交易记录
@@ -352,11 +353,17 @@ const getNewsList = (data, isloading) => {
 	return service_v('v4_3/WxTweets/list', 'get', data, isloading)
 }
 
+//查询门店列表
+const getStores = (data, isloading) => {
+	return service_v('v4/cardSell/getStores', 'get', data, isloading)
+}
+
 
 
 
 
 module.exports = {
+	getStores:getStores,
 	getNewsList:getNewsList,
 	waitLineup:waitLineup,
 	getMenuBanner:getMenuBanner,

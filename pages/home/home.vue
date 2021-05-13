@@ -63,8 +63,8 @@
 				<view class="adver-tit">
 					新鲜事
 				</view>
-				<view class="adver-item" v-for="(item,index) in newsImag" :key="index" @click="bootNewBtn(index)">
-					<image :src="item" mode="aspectFill"></image>
+				<view class="adver-item" v-for="(item,index) in newsImag" :key="index" @click="bootNewBtn(item)">
+					<image :src="item.coverUrl" mode="aspectFill"></image>
 				</view>
 			</view>
 		</view>
@@ -178,10 +178,10 @@
 					progressbar: '0%',
 					progressheight: '6rpx',
 				},
-				newsImag: ["https://fnb-merchants.oss-cn-shanghai.aliyuncs.com/7622/product/6aaae7ad6a9a47d0db03372bbe972f70.jpg",
-					"https://fnb-merchants.oss-cn-shanghai.aliyuncs.com/7622/banner20201118151452.png"
-				],
-
+				newsImag: [],
+// "https://fnb-merchants.oss-cn-shanghai.aliyuncs.com/7622/product/6aaae7ad6a9a47d0db03372bbe972f70.jpg",
+// 					"https://fnb-merchants.oss-cn-shanghai.aliyuncs.com/7622/banner20201118151452.png"
+				
 				memberinfo: null, //用户信息
 				bannerData: {}, //轮播图数据
 				shareCoupons: null, //分享的优惠券
@@ -303,7 +303,10 @@
 			//获取新鲜事列表
 			async getNewsList(){
 				let res = await api.getNewsList();
-				console.log(res)
+				if(res.code == 200){
+					this.newsImag = res.data;
+				}
+				console.log(111111,res)
 			},
 			//打开集点卡介绍幕布
 			checkPonitDesc() {
@@ -508,18 +511,18 @@
 			async getLocation() {
 				let location = await getLocation();
 			},
-			bootNewBtn(index) {
+			bootNewBtn(item) {
 				let url = '';
-				switch (index) {
-					case 0:
-						url = 'https://mp.weixin.qq.com/s/rnxKxvnqzoc4ltYMcvFThg';
-						break
-					case 1:
-						url = 'https://mp.weixin.qq.com/s/zc3Gb3zEeWtHzm1-DHMNwQ';
-						break;
-				}
+				// switch (index) {
+				// 	case 0:
+				// 		url = 'https://mp.weixin.qq.com/s/rnxKxvnqzoc4ltYMcvFThg';
+				// 		break
+				// 	case 1:
+				// 		url = 'https://mp.weixin.qq.com/s/zc3Gb3zEeWtHzm1-DHMNwQ';
+				// 		break;
+				// }
 				uni.navigateTo({
-					url: '../webview/webview?url=' + url,
+					url: '../webview/webview?url=' + item.url,
 				})
 			},
 			jumpAdvertise(item, index) {

@@ -11,7 +11,8 @@ const default_value_s = 'SecretAction?' + 'key=6886173bf669d7bc'
 const key = 'rc09pv1O21dfY01nx8wx';   //正式环境
 const base_url_m = 'https://open6-wxa.can-dao.com/'; //正式环境   餐道
 const baseurl_v43 = 'https://crmapi.fnb-tech.com/openapi/' //正式环境	会员
-// const baseurl_v43 = 'http://192.168.1.61:8090/openapi/' //内网环境	会员
+
+// const baseurl_v43 = 'http://192.168.1.58:8090/openapi/' //内网环境	会员
 
 //测试环境key
 // const default_value_f = 'Action?' + 'key=93ba9db2f9f4f0e4'
@@ -69,6 +70,12 @@ export async function service_v(url, method, data, isloading) {
 		"clientId": app.globalData.clientId,
 		"timestamp": timestamp.data,
 	}
+	if(url == 'v4/cardSell/getStores'){
+		url = 'https://crmapi.fnb-tech.com/webapi/'+url
+		header.storeId = data.storeId
+	}else{
+		url = baseurl_v43 + url;
+	}
 	let storeCode = app.globalData.storeInfo.extraStoreId;
 	if (storeCode && url != 'v4_3/weixin/recharge') {
 		header.storeCode = storeCode;
@@ -81,7 +88,8 @@ export async function service_v(url, method, data, isloading) {
 	header.key = key;
 	Object.assign(md5Params, data);
 	md5Params = handleSingn(md5Params);
-	url = baseurl_v43 + url;
+	
+	
 	header.sign = md5Params;
 	
 	return nrequest(method, header, url, data, isloading)
@@ -172,7 +180,13 @@ function request(method, header, url, data, isloading) {
 					// if(e.data.status==11){
 					// 	console.log(3333)
 					// }
-				} else {}
+				} else {   //错误提示
+					uni.showToast({
+						title: e.data.msg,
+						icon: 'none',
+						duration: 2000,
+					})
+				}
 			},
 			fail(e) {
 				reject(e)

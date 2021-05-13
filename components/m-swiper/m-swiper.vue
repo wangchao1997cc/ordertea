@@ -1,13 +1,12 @@
 <template>
 	<view class="my-plan-style">
 		<!-- 3D轮播 -->
-		<swiper @change="intervalChange" class="imageContainer" previous-margin="45rpx" next-margin="45rpx">
+		<swiper @change="intervalChange" class="imageContainer" previous-margin="10rpx" next-margin="70rpx">
 			<block v-for="(item,index) in imgList" :key="index">
 				<swiper-item class="swiperitem" >
 					<view class="swiper-box" :style="{backgroundImage:'url('+ (item.backgroundUrl || 'https://fnb-merchants.oss-cn-shanghai.aliyuncs.com/7622/f9fab2fd32e4d180d0019c400af3651.png')+')'}">
 						<view class="recharge-tit">
 							<text>{{item.title}}</text>
-							
 						</view>
 						<!-- <view class="price-box">
 							<text>¥ {{item.amount}}</text>
