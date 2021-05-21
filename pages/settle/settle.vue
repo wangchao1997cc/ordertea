@@ -411,6 +411,7 @@
 							this.coupons = item;
 						}
 						if(item.type < 6){
+							// console.log('参加的活动'+item.type)
 							this.haveActive = true;
 						}
 					})
