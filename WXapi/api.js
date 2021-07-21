@@ -128,7 +128,6 @@ const getMenuBanner = (data, isloading) => {
 	return service('candao.product.getMenuBanner', 'post', data, isloading)
 }
 
-
 //normoal请求区域
 //微信登录
 const getWxOpenid = (data, isPlicing, isloading) => {
@@ -144,8 +143,6 @@ const setCache = (data, isPlicing, isloading) => {
 const phoneLogin = (data, isPlicing, isloading) => {
 	return normoal('LocalAction?method=autoLogin' + key, 'post', data, isPlicing, isloading)
 }
-
-
 
 
 //v_4.3接口地方  service_v
@@ -257,13 +254,11 @@ const pointStore = (data, isloading) => {
 
 //生成积分商品的订单
 const shopOrder = (data, isloading) => {
-	
 	return service_v('v4_3/pointProduct/orders/add', 'post', data, isloading)
 }
 
 //生成积分商品的微信支付参数
 const shopOrderPayParams = (data, isloading) => {
-	
 	return service_v('v4_3/pointProduct/orders/wxPay', 'post', data, isloading)
 }
 
@@ -349,7 +344,6 @@ const waitLineup = (data, isloading) => {
 
 //新鲜事列表
 const getNewsList = (data, isloading) => {
-
 	return service_v('v4_3/WxTweets/list', 'get', data, isloading)
 }
 

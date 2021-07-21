@@ -464,7 +464,6 @@ export default {
 			}
 			return name;
 		},
-
 		shopBoxHeight() {
 			let height = 0;
 			let computedHeight = this.computedHeight;
@@ -1178,11 +1177,13 @@ export default {
 		async getLocation() {
 			let that = this;
 			let location = await getLocation();
+			// console.log('当前本人所处位置经纬度为',location)
 			let lat = location.latitude;
 			let log = location.longitude;
 			if (location) {
 				that.location = location;
 				if (that.forhere) {
+					// console.log('几号桌')
 					return this.getStore(that.forhere.storeId);
 				}
 				if (!app.globalData.storeInfo.storeId) {
@@ -1200,8 +1201,6 @@ export default {
 			let location = that.location;
 			let data = {
 				coordinate: [location.longitude, location.latitude],
-				// coordinate: ['120.555910', '31.293695'],   //测试地理位置
-				// coordinate: ['120.68000030517578', '31.316667556762695'],   //测试地理位置
 				businessType: that.businessType,
 				pageNow: 0,
 				pageSize: 10
@@ -1217,6 +1216,7 @@ export default {
 					//如果附近多个店铺则展示选择店铺弹窗
 					that.loadingState = false;
 					that.$refs.chosestore.showChoseprop();
+					// app.globalData.nearNums = true;
 				} else if (nearList.length == 1) {
 					//只有一个则展现这个店铺
 					that.storeInfo = nearList[0];

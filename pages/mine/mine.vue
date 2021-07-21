@@ -135,7 +135,7 @@
 					text: '积分商城'
 				}, {
 					img: '../../static/my/active_icon.png',
-					text: '裂变活动'
+					text: '邀请有礼'
 				}, {
 					img: '../../static/my/lv_icon.png',
 					text: '会员等级'
@@ -148,7 +148,7 @@
 			}
 		},
 		onLoad() {
-			// this.getActiveInfo();   //查询是否有裂变活动
+			// this.getActiveInfo();   //查询是否有邀请有礼
 		},
 		async onShow() {
 			let member = app.globalData.member;
@@ -171,7 +171,7 @@
 			sildermine,
 		},
 		methods: {
-			//查询裂变活动
+			//查询邀请有礼
 			async getActiveInfo() {
 				let res = await api.fissionActive({}, true);
 				if (res.code == 200) {
@@ -280,7 +280,7 @@
 					case 5:
 						let activeinfo = await this.getActiveInfo();
 						if (!activeinfo) {
-							return this.$msg.showToast('非常抱歉，现在没有开启裂变活动，敬请期待！')
+							return this.$msg.showToast('非常抱歉，现在没有开启邀请有礼，敬请期待！')
 						}
 						url = '../active/active';
 						break;

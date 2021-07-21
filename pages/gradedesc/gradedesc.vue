@@ -60,7 +60,7 @@
 							this.interest = item;
 						}
 					})
-					this.gradeinfo = res.data;
+					this.gradeinfo = res.data.slice(0,4);
 				}
 			},
 			//前往等级说明

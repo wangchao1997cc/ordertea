@@ -23,6 +23,7 @@
 			orderRefresh: false, //下单后订单列表刷新
 			exchangeSuccess: false, //兑换成功
 			member: true, //是否启用会员部分
+			// nearNums:false,    //附近是否有多家门店
 		},
 		onLaunch: async function() {
 			updateApp();

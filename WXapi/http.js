@@ -17,9 +17,9 @@ const baseurl_v43 = 'https://crmapi.fnb-tech.com/openapi/' //正式环境	会员
 //测试环境key
 // const default_value_f = 'Action?' + 'key=93ba9db2f9f4f0e4'
 // const default_value_s = 'SecretAction?' + 'key=93ba9db2f9f4f0e4'
-// const key = 'jdhajshdjf871238767o';   //测试环境
-// const base_url_m ='https://qc.can-dao.com:7776/'  //测试环境
-// const baseurl_v43 = 'https://api.vi-ni.com/openapi/'   //测试环境 会员
+// const key = 'jdhajshdjf871238767o'; //测试环境
+// const base_url_m = 'https://qc.can-dao.com:7776/' //测试环境
+// const baseurl_v43 = 'https://api.vi-ni.com/openapi/' //测试环境 会员
 
 
 
@@ -63,35 +63,36 @@ const timestmpParams = {
 	url: baseurl_v43 + 'v4_3/getCurrentTimeMilli',
 }
 export async function service_v(url, method, data, isloading) {
-	let timestamp = await nrequest(timestmpParams.method, timestmpParams.header, timestmpParams.url, timestmpParams.data);
+	let timestamp = await nrequest(timestmpParams.method, timestmpParams.header, timestmpParams.url, timestmpParams
+		.data);
 	const header = {
 		// "content-type": method === 'get' ? 'application/x-www-form-urlencoded' : 'application/json',
 		"brandId": app.globalData.brandId,
 		"clientId": app.globalData.clientId,
 		"timestamp": timestamp.data,
 	}
-	if(url == 'v4/cardSell/getStores'){
-		url = 'https://crmapi.fnb-tech.com/webapi/'+url
+	if (url == 'v4/cardSell/getStores') {
+		url = 'https://crmapi.fnb-tech.com/webapi/' + url
 		header.storeId = data.storeId
-	}else{
+	} else {
 		url = baseurl_v43 + url;
 	}
 	let storeCode = app.globalData.storeInfo.extraStoreId;
 	if (storeCode && url != 'v4_3/weixin/recharge') {
 		header.storeCode = storeCode;
 	}
-	
-	if(data && data.storeCode){    //门店列表时，查询门店等待时间
+
+	if (data && data.storeCode) { //门店列表时，查询门店等待时间
 		header.storeCode = data.storeCode
 	}
 	let md5Params = Object.assign({}, header);
 	header.key = key;
 	Object.assign(md5Params, data);
 	md5Params = handleSingn(md5Params);
-	
-	
+
+
 	header.sign = md5Params;
-	
+
 	return nrequest(method, header, url, data, isloading)
 }
 //处理   md5 sign参数
@@ -157,7 +158,8 @@ function nrequest(method, header, url, data, isloading) {
 
 function request(method, header, url, data, isloading) {
 	if (isloading) uni.showLoading({
-		mask: true
+		mask: true,
+		title:'加载中...'
 	});
 	return new Promise((resolve, reject) => {
 		if (data) {
@@ -165,6 +167,7 @@ function request(method, header, url, data, isloading) {
 			delete data.way;
 		}
 		uni.request({
+
 			header: header,
 			url: base_url_m + (data && data.way ? default_value_s : default_value_f),
 			data: {
@@ -180,7 +183,7 @@ function request(method, header, url, data, isloading) {
 					// if(e.data.status==11){
 					// 	console.log(3333)
 					// }
-				} else {   //错误提示
+				} else { //错误提示
 					uni.showToast({
 						title: e.data.msg,
 						icon: 'none',

@@ -258,9 +258,7 @@
 				this.homeParams = options;
 			}
 			uni.showTabBar({})
-			uni.showLoading({
-				mask: true
-			})
+			uni.hideLoading();
 			this.init()
 		},
 
@@ -306,7 +304,6 @@
 				if(res.code == 200){
 					this.newsImag = res.data;
 				}
-				console.log(111111,res)
 			},
 			//打开集点卡介绍幕布
 			checkPonitDesc() {
@@ -362,7 +359,6 @@
 				let that = this;
 				let memberinfo = that.memberinfo;
 				if (!memberinfo) {
-					// this.redRewardInfo = null;
 					return that.$refs.authorM.showPop();
 				}
 				uni.showLoading({
@@ -427,7 +423,6 @@
 				} else {
 					let memberinfo = await getMemberInfo(true);
 					try{
-						console.log(1111,memberinfo)
 						that.integralarr[0].value = memberinfo.point;
 						that.integralarr[3].value = memberinfo.coupons.length + '张';
 						that.memberinfo = memberinfo;
@@ -437,7 +432,7 @@
 						that.pointActivity(); //查询积点活动
 						that.redReaward(memberinfo.id);
 					}catch(err){
-						console.log(333,err)
+						console.log(err)
 					}
 					
 				}
@@ -748,12 +743,9 @@
 	}
 
 	.head-info {
-		// @include rect(100%, 422upx);
 		@include rect(100%, 640upx);
 
-		// background-color: $main-color;.
 		swiper-item {
-			// @include rect(100%, 422upx);
 			@include rect(100%, 640upx);
 
 			image {

@@ -36,7 +36,7 @@
 		{
 			"path": "pages/active/active",
 			"style": {
-				"navigationBarTitleText": "邀请活动",
+				"navigationBarTitleText": "邀请有礼",
 				"navigationBarBackgroundColor": "#A8D732",
 				"navigationBarTextStyle": "white"
 			}
