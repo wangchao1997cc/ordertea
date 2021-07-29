@@ -140,8 +140,3 @@ export const wxPayment = (payment) => {
 	})
 
 }
-
-
-// module.exports = {
-// 	refreshUserInfo:refreshUserInfo
-// }

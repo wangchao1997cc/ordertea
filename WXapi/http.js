@@ -171,7 +171,7 @@ function request(method, header, url, data, isloading) {
 			url: base_url_m + (data && data.way ? default_value_s : default_value_f),
 			data: {
 				actionName: url,
-				content: data || '',
+				content: data || {},
 			},
 			method: method,
 			dataType: 'json',
