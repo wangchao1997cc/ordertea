@@ -66,7 +66,6 @@ export async function service_v(url, method, data, isloading) {
 	let timestamp = await nrequest(timestmpParams.method, timestmpParams.header, timestmpParams.url, timestmpParams
 		.data);
 	const header = {
-		// "content-type": method === 'get' ? 'application/x-www-form-urlencoded' : 'application/json',
 		"brandId": app.globalData.brandId,
 		"clientId": app.globalData.clientId,
 		"timestamp": timestamp.data,
@@ -180,9 +179,6 @@ function request(method, header, url, data, isloading) {
 				if (isloading) uni.hideLoading();
 				if (e.statusCode === 200) {
 					resolve(e.data);
-					// if(e.data.status==11){
-					// 	console.log(3333)
-					// }
 				} else { //错误提示
 					uni.showToast({
 						title: e.data.msg,

@@ -296,14 +296,14 @@ export default {
 			let res = await api.getStore(data);
 			if (res.status == 1) {
 				uni.hideLoading();
-				if (res.data.storeName == '东方之门店') {
-					this.showTitle = '请确认下单门店是否为东\n方之门店，附近还有一家\n苏州中心店。'
-				} else if (res.data.storeName == '苏州中心') {
-					this.showTitle = "请确认下单门店是否为苏\n州中心店，附近还有一家\n东方之门店。"
-				}
-				setTimeout(() => {
-					this.showTitle = null;
-				},4000)
+				// if (res.data.storeName == '东方之门店') {
+				// 	this.showTitle = '请确认下单门店是否为东\n方之门店，附近还有一家\n苏州中心店。'
+				// } else if (res.data.storeName == '苏州中心') {
+				// 	this.showTitle = "请确认下单门店是否为苏\n州中心店，附近还有一家\n东方之门店。"
+				// }
+				// setTimeout(() => {
+				// 	this.showTitle = null;
+				// },4000)
 				this.storeInfo = res.data;
 				this.computedTIme(res.data.appointmentTime);
 			}

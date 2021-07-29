@@ -242,9 +242,6 @@
 				this.pointActivity();
 			}
 		},
-		// computed:{
-		// 	...mapState(['isLogin']),
-		// },
 		async onLoad(options) {
 			uni.showLoading({
 				mask: 'true'
@@ -346,7 +343,6 @@
 						if (!res.data[0].description) {
 							res.data[0].description = '<div>暂无内容</div>'
 						}
-
 						this.pointActive = res.data[0];
 						if (res.data[0].endTime.slice(0, 4) > 2099) {
 							this.timelimit = false
