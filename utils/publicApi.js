@@ -16,23 +16,24 @@ export const refreshUserInfo = async callback => {
 	}
 }
 
+
 //等待排队
 export const waitLineUp = async data => {
 	let res = await api.waitLineup(data);
 	if (res.code == 200) {
 		return res;
 		// uni.setStorageSync('userinfo', res.data);
-	}else{
+	} else {
 		return '';
 	}
 }
 
 //获取充值套餐
 export const getRecharge = async callback => {
-	let res =  await api.getRecharge({},true);
+	let res = await api.getRecharge({}, true);
 	if (res && res.code == 200) {
 		let data = false;
-		if(res.data.length){
+		if (res.data.length) {
 			data = res.data;
 		}
 		return data;
@@ -41,30 +42,44 @@ export const getRecharge = async callback => {
 
 
 //获取会员用户信息
-export const getMemberInfo = async callback => {
-	if(!store.state.isLogin){
-		return null;
-	}
+export const getMemberInfo = async Summit => {
+	let wxCode = await wxLogin();
 	let data = {
-		mobile: store.state.isLogin,
+		APPID: app.globalData.appid,
+		CODE: wxCode,
+		Summit: Summit
 	}
-	let res = await api.getMemberInfo(data);
-	if (res && res.code == 200) {
-		if(!store.state.cardNo){
-			store.commit('setCardNo', res.data[0].cardNo);
-		}
-		uni.setStorageSync('memberinfo', res.data[0]);
-		if(callback){
-			return res.data[0];
-		}
-	}
+	let res = api.getMemberInfo(data);
+	console.log(res)
+	return res
+	// uni.request({
+	// 	 url: 'https://oapi.keqin89.com/KeQinOpenApi.asmx/WechatGetOpenIDXCX',
+	// 	 method: 'POST',
+
+	// })
+	// if(!store.state.isLogin){
+	// 	return null;
+	// }
+	// let data = {
+	// 	mobile: store.state.isLogin,
+	// }
+	// let res = await api.getMemberInfo(data);
+	// if (res && res.code == 200) {
+	// 	if(!store.state.cardNo){
+	// 		store.commit('setCardNo', res.data[0].cardNo);
+	// 	}
+	// 	uni.setStorageSync('memberinfo', res.data[0]);
+	// 	if(callback){
+	// 		return res.data[0];
+	// 	}
+	// }
 }
 
 
 //用户注册
 export const userRegister = async data => {
 	let activeParams = app.globalData.activeParams;
-	if(activeParams && !data.activityId){
+	if (activeParams && !data.activityId) {
 		data.recommendedId = activeParams.recommendedId;
 		data.activityId = activeParams.activityId;
 	}
@@ -111,7 +126,7 @@ export const ajaxUserLogin = async (takeit) => {
 	let data = {
 		code: wxCode,
 	};
-	let res = await api.getWxOpenid(data,true);
+	let res = await api.getWxOpenid(data, true);
 	refreshUserInfo();
 	if (res.status == 1) {
 		delete res.data.errcode;
@@ -140,6 +155,10 @@ export const wxPayment = (payment) => {
 	})
 
 }
+
+
+
+
 
 
 // module.exports = {

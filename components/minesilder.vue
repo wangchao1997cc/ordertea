@@ -23,7 +23,6 @@
 
 <style lang="scss">
 	.progressbar{
-
 		background-color: #F8FAF3;
 		border-radius: 14upx;
 		position: relative;
