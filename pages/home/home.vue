@@ -12,7 +12,6 @@
 			<view class="app-model">
 				<view class="model-box">
 					<!-- <view class="red_line">
-						
 					</view> -->
 					<view class="" @click="jumpMenu(2)">
 						<image src="../../static/homepage/home_takeit_pic.png" mode=""></image>

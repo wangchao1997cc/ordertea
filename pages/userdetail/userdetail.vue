@@ -82,11 +82,15 @@
 			//保存用户信息
 			saveUserInfo() {
 				let userinfo = this.userinfo;
+				if(!userinfo.name){
+					return this.$msg.showToast('请填写用户名');
+				}
 				let data = {
 					name: userinfo.name,
 					sex: this.value,
 					cardId: userinfo.id,
 				}
+				
 				if (!userinfo.birthday && this.birthday) {
 					this.$msg.showModal(json => {
 						if (json == 1) {

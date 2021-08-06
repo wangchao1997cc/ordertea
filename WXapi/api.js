@@ -151,7 +151,7 @@ const vUserLogin = (data, isloading) => {
 	return service_v('v4_3/card/register', 'post', data, isloading)
 }
 
-//用户注册
+//获取用户信息
 const getMemberInfo = (data, isloading) => {
 	let backurl;
 	if (data) {

@@ -11,8 +11,7 @@ const default_value_s = 'SecretAction?' + 'key=6886173bf669d7bc'
 const key = 'rc09pv1O21dfY01nx8wx';   //正式环境
 const base_url_m = 'https://open6-wxa.can-dao.com/'; //正式环境   餐道
 const baseurl_v43 = 'https://crmapi.fnb-tech.com/openapi/' //正式环境	会员
-
-// const baseurl_v43 = 'http://192.168.1.58:8090/openapi/' //内网环境	会员
+//const baseurl_v43 = 'http://192.168.1.58:8090/openapi/' //内网环境	会员
 
 //测试环境key
 // const default_value_f = 'Action?' + 'key=93ba9db2f9f4f0e4'
@@ -65,34 +64,39 @@ const timestmpParams = {
 export async function service_v(url, method, data, isloading) {
 	let timestamp = await nrequest(timestmpParams.method, timestmpParams.header, timestmpParams.url, timestmpParams
 		.data);
-	const header = {
-		"brandId": app.globalData.brandId,
-		"clientId": app.globalData.clientId,
-		"timestamp": timestamp.data,
+    try{
+		const header = {
+			"brandId": app.globalData.brandId,
+			"clientId": app.globalData.clientId,
+			"timestamp": timestamp.data,
+		}
+		if (url == 'v4/cardSell/getStores') {
+			url = 'https://crmapi.fnb-tech.com/webapi/' + url
+			header.storeId = data.storeId
+		} else {
+			url = baseurl_v43 + url;
+		}
+		let storeCode = app.globalData.storeInfo.extraStoreId;
+		if (storeCode && url != 'v4_3/weixin/recharge') {
+			header.storeCode = storeCode;
+		}
+		
+		if (data && data.storeCode) { //门店列表时，查询门店等待时间
+			header.storeCode = data.storeCode
+		}
+		let md5Params = Object.assign({}, header);
+		header.key = key;
+		Object.assign(md5Params, data);
+		md5Params = handleSingn(md5Params);
+		header.sign = md5Params;
+		return nrequest(method, header, url, data, isloading)
+	}catch(e){
+		uni.showToast({
+			title: '请反馈工作人员修复',
+			icon: 'none',
+			duration: 2000,
+		})
 	}
-	if (url == 'v4/cardSell/getStores') {
-		url = 'https://crmapi.fnb-tech.com/webapi/' + url
-		header.storeId = data.storeId
-	} else {
-		url = baseurl_v43 + url;
-	}
-	let storeCode = app.globalData.storeInfo.extraStoreId;
-	if (storeCode && url != 'v4_3/weixin/recharge') {
-		header.storeCode = storeCode;
-	}
-
-	if (data && data.storeCode) { //门店列表时，查询门店等待时间
-		header.storeCode = data.storeCode
-	}
-	let md5Params = Object.assign({}, header);
-	header.key = key;
-	Object.assign(md5Params, data);
-	md5Params = handleSingn(md5Params);
-
-
-	header.sign = md5Params;
-
-	return nrequest(method, header, url, data, isloading)
 }
 //处理   md5 sign参数
 function handleSingn(data) {
@@ -136,12 +140,7 @@ function nrequest(method, header, url, data, isloading) {
 				if (isloading) uni.hideLoading();
 				if (e.statusCode === 200) {
 					if (!JSESSIONID) {
-						// JSESSIONID = "cc8bef60-c231-4a26-b0e3-6c3e13549cbf; path=/; expires=Fri, 01-Jan-2021 02:47:00 GMT"
 						JSESSIONID = e.header["Set-Cookie"].match(/JSESSIONID=(.*)?;/)[1];
-						// console.log(JSESSIONID)
-						// let data = {
-						// 	"JSESSIONID": JSESSIONID
-						// };
 						store.commit('jessionid', JSESSIONID);
 					}
 					resolve(e.data);
