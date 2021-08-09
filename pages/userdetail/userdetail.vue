@@ -8,7 +8,7 @@
 			<view class="userinfo-item">
 				<text>手机号</text>
 				<view class="user-r">
-					{{userinfo.mobile}}
+					{{userinfo.mobile || ''}}
 				</view>
 			</view>
 			<view class="userinfo-item">
@@ -82,6 +82,9 @@
 			//保存用户信息
 			saveUserInfo() {
 				let userinfo = this.userinfo;
+				if(!userinfo.name){
+					return this.$msg.showToast('请填写完整信息')
+				}
 				let data = {
 					name: userinfo.name,
 					sex: this.value,
@@ -100,7 +103,7 @@
 			},
 			async userInfoApi(data) {
 				let res = await api.updateMember(data, true);
-				console.log(res)
+
 				if (res.code == 200) {
 					this.$msg.showToast('保存成功');
 					setTimeout(() => {

@@ -13,54 +13,53 @@
 			}
 		},
 		{
-		     "path" : "pages/mine/aboutM/aboutM",
-		     "style" : {
-						"navigationBarTitleText": "关于我们"
-					}
-		 },
+			"path": "pages/mine/aboutM/aboutM",
+			"style": {
+				"navigationBarTitleText": "关于我们"
+			}
+		},
 		{
 			"path": "pages/active/active",
 			"style": {
 				"navigationBarTitleText": "邀请活动",
-				"navigationBarBackgroundColor": "#c79d56",
+				"navigationBarBackgroundColor": "#B6D842",
 				"navigationBarTextStyle": "white"
 			}
-		
+
 		},
 		{
-		    "path" : "pages/exchangecoupons/exchangecoupons",
-		    "style" :                                                                                    
-		    {
-		        "navigationBarTitleText": "兑换优惠券",
-		        "enablePullDownRefresh": false
-		    }
+			"path": "pages/exchangecoupons/exchangecoupons",
+			"style": {
+				"navigationBarTitleText": "兑换优惠券",
+				"enablePullDownRefresh": false
+			}
 		},
-		
-		
-		
+
+
+
 		{
-		    "path" : "pages/membercode/membercode",
-		    "style" : {
+			"path": "pages/membercode/membercode",
+			"style": {
 				"navigationBarTitleText": "会员码"
 			}
 		},
 		{
-		    "path" : "pages/gradedesc/gradedesc",
-		    "style" : {
+			"path": "pages/gradedesc/gradedesc",
+			"style": {
 				"navigationBarTitleText": "会员权益"
 			}
 		},
 		{
-		    "path" : "pages/interestdesc/interestdesc",
-		    "style" : {
+			"path": "pages/interestdesc/interestdesc",
+			"style": {
 				"navigationBarTitleText": "权益说明"
 			}
 		},
 		{
-		     "path" : "pages/exchangerecord/exchangerecord",
-		     "style" : {
-						"navigationBarTitleText": "兑换记录"
-					}
+			"path": "pages/exchangerecord/exchangerecord",
+			"style": {
+				"navigationBarTitleText": "兑换记录"
+			}
 		},
 		{
 			"path": "pages/shopping/shopping",
@@ -74,18 +73,17 @@
 				"navigationBarTitleText": "确认订单",
 				"enablePullDownRefresh": false
 			}
-		
+
 		},
 		{
-		    "path" : "pages/pointstore/pointstore",
-		    "style" :                                                                                    
-		    {
-		        "navigationBarTitleText": "附近门店",
-		        "enablePullDownRefresh": false
-		    }
-		    
+			"path": "pages/pointstore/pointstore",
+			"style": {
+				"navigationBarTitleText": "附近门店",
+				"enablePullDownRefresh": false
+			}
+
 		},
-		
+
 		{
 			"path": "pages/transrecord/transrecord",
 			"style": {
@@ -94,14 +92,14 @@
 			}
 
 		},
-		
+
 		{
 			"path": "pages/userdetail/userdetail",
 			"style": {
 				"navigationBarTitleText": "个人信息"
 			}
 		},
-		
+
 		{
 			"path": "pages/wallet/wallet",
 			"style": {
@@ -120,11 +118,11 @@
 		{
 			"path": "pages/webview/webview",
 			"style": {
-				"navigationBarTitleText": "茶汤会"
+				"navigationBarTitleText": "小茶僮"
 			}
 		},
 
-		
+
 		{
 			"path": "pages/orderdetail/orderdetail",
 			"style": {
@@ -185,9 +183,9 @@
 				"navigationBarTitleText": "订单备注"
 			}
 		}
-        
-      
-    ],
+
+
+	],
 	"globalStyle": {
 		"navigationBarTextStyle": "black",
 		"navigationBarTitleText": "",
@@ -216,14 +214,13 @@
 				"iconPath": "static/tabbar/order_press.png",
 				"selectedIconPath": "static/tabbar/order.png",
 				"text": "订单"
+			},
+			{
+				"pagePath": "pages/mine/mine",
+				"iconPath": "static/tabbar/mine_press.png",
+				"selectedIconPath": "static/tabbar/mine.png",
+				"text": "我的"
 			}
-			// ,
-			// {
-			// 	"pagePath": "pages/mine/mine",
-			// 	"iconPath": "static/tabbar/mine_press.png",
-			// 	"selectedIconPath": "static/tabbar/mine.png",
-			// 	"text": "我的"
-			// }
 		]
 
 	}

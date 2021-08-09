@@ -9,10 +9,11 @@
 			// brandIdc: 383,
 			// clientId: '32e58123cb58fe0bc7ed15933b4537f4fa0d07',
 			//正式环境配置
-			// brandId: 7622,
-			// menuId: 1804,
-			brandIdc: 26004338,
-			// clientId: 'f613e4e8c9fccdbf0c877d870f4ca157b24af1',
+			brandId: 8243,
+			menuId: 1804,
+			brandIdc: 26000763,
+			// clientId:"32e58123cb58fe0bc7ed15933b4537f4fa0d07",
+			clientId: '96cb9162f2c539d6ce861a06e7e2b2a17a7f56',
 			storeInfo: {},   //当前的店铺信息
 			orderinfo: {},   //当前结算的订单信息
 			productPrimaryTypeName:null,   //广告的一级菜单名
@@ -22,7 +23,7 @@
 			orderSuccess:false,   //下单成功清除购物车
 			orderRefresh:false,   //下单后订单列表刷新
 			exchangeSuccess:false, //兑换成功
-			member:false,   //是否启用会员部分
+			member:true,   //是否启用会员部分
 		},
 		onLaunch: async function() {},
 		//测试环境配置

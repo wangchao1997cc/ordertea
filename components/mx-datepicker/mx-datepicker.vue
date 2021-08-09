@@ -239,7 +239,7 @@
 			//颜色
 			color: {
 				type: String,
-				default: '#c79d56'
+				default: '#B6D842'
 			},
 			//是否显示秒 针对type为datetime或time时生效
 			showSeconds: {

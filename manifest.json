@@ -58,9 +58,10 @@
     /* 小程序特有相关 */
     "mp-weixin" : {
         /*正式环境appid wx8f649c8d1677c169"*//*appid" : "wxc6db905d53eb2066",*//*测试环境appid*/
-        "appid" : "wxfbb9a172cad43d05",
+        "appid" : "wx559b455d9b8ebcbe",
         "setting" : {
-            "urlCheck" : false
+            "urlCheck" : false,
+            "minified" : false
         },
         "usingComponents" : true,
         "permission" : {

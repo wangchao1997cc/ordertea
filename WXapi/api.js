@@ -4,7 +4,7 @@ import {
 	service_v
 } from './http.js';
 //正式环境
-const key = '&key=41de034d6f72404d';
+const key = '&key=6e2c0bfb45bd7de3';
 //测试环境
 // const key = '&key=93ba9db2f9f4f0e4';
 

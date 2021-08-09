@@ -25,8 +25,8 @@ export const checkMobile = data => {
 
 export const appshare = () => {
 	return {
-		title: '欢迎来到茶汤会', // 分享标题
-		desc: '茶汤会欢迎您！', // 分享描述
+		title: '欢迎来到小茶僮', // 分享标题
+		desc: '小茶僮欢迎您！', // 分享描述
 		path: '/pages/ordermenu/ordermenu' // 分享路径
 	}
 }
@@ -234,8 +234,8 @@ export const showModal = (callback, content, tit, showCancel, cancelText, confir
 	uni.showModal({
 		title: tit || '提示',
 		content: content,
-		confirmColor: '#c79d56',
-		cancelColor: '#c79d56',
+		confirmColor: '#B6D842',
+		cancelColor: '#B6D842',
 		showCancel: showCancel,
 		cancelText: cancelText || '取消',
 		confirmText: confirmText || '确认',

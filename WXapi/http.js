@@ -6,11 +6,13 @@
 
 
 //正式环境 key
-const default_value_f = 'Action?' + 'key=41de034d6f72404d';
-const default_value_s = 'SecretAction?' + 'key=41de034d6f72404d';
-const key = 'rc09pv1O21dfY01nx8wx';   //正式环境
+const default_value_f = 'Action?' + 'key=6e2c0bfb45bd7de3';
+const default_value_s = 'SecretAction?' + 'key=6e2c0bfb45bd7de3';
+const key = 'jdhajshdjf871238243o';   //正式环境
 const base_url_m = 'https://open6-wxa.can-dao.com/'; //正式环境   餐道
 const baseurl_v43 = 'https://crmapi.fnb-tech.com/openapi/' //正式环境	会员
+// const baseurl_v43 = 'http://192.168.1.62:8080/openapi/' //正式环境	会员
+
 
 //测试环境key
 // const default_value_f = 'Action?' + 'key=93ba9db2f9f4f0e4'
@@ -82,6 +84,7 @@ export async function service_v(url, method, data, isloading) {
 	md5Params = handleSingn(md5Params);
 	url = baseurl_v43 + url;
 	header.sign = md5Params;
+	console.log(header,data,url)
 	return nrequest(method, header, url, data, isloading)
 }
 //处理   md5 sign参数

@@ -1,6 +1,9 @@
 import api from '../WXapi/api.js'
 import store from '../store/store.js'
 const app = getApp();
+import {
+	showToast
+} from './utils.js';
 
 //刷新用户信息
 export const refreshUserInfo = async callback => {
@@ -57,6 +60,8 @@ export const getMemberInfo = async callback => {
 		if(callback){
 			return res.data[0];
 		}
+	}else{
+		showToast(res.message)
 	}
 }
 

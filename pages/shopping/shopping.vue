@@ -43,6 +43,9 @@
 
 			</view>
 		</view>
+		<view class="nodata-juide" v-if="nodata">
+			暂无商品
+		</view>
 	</view>
 </template>
 
@@ -55,6 +58,7 @@
 				productList:[],   //商品列表
 				totalPageindex:null,  //总页数
 				memberinfo:{},  
+				nodata:false,
 				
 			}
 		},
@@ -93,6 +97,9 @@
 				let res = await api.getGoodsList(data,true);
 				if(res.code==200){
 					if(that.page==0){
+						if(!res.data.length){
+							this.nodata = true;
+						}
 						that.productList = res.data;
 						that.totalPageindex = Math.floor(res.total / 10);
 					}else{
@@ -229,5 +236,9 @@
 				}
 			}
 		}
+	}
+	.nodata-juide{
+		text-align: center;
+		margin-top: 100upx;
 	}
 </style>
