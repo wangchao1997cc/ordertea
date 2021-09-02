@@ -60,7 +60,8 @@
 							this.interest = item;
 						}
 					})
-					this.gradeinfo = res.data;
+					// res.data.splice()
+					this.gradeinfo = res.data.slice(0,4);
 				}
 			},
 			//前往等级说明
@@ -117,7 +118,7 @@
 			
 			.v-item{
 				image{
-					@include rect(80upx,80upx)
+					@include rect(74upx,74upx)
 				}
 				margin-bottom: 60upx;
 				display: flex;
@@ -131,7 +132,7 @@
 				text{
 					font-size: 24upx;
 					color: $main-color;
-					margin-left: -4upx;
+					margin-left: 4upx;
 					line-height: 44upx;
 					// border: 1upx red solid;
 				}

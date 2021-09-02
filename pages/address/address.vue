@@ -7,7 +7,7 @@
 					<view class="name-tel">
 						<view class="address-descinfo"><text>{{item.receiverAddress+item.appendReceiverAddress}}</text></view>
 						<view class="update-ad" @click.stop="prentEvent">
-							<image @click="addressEdit(item)" src="../../static/06_icon_编辑.png"></image>
+							<image @click="addressEdit(item)" src="../../static/address/edit_icon.png"></image>
 						</view>
 					</view>
 					<view class="address-desc">

@@ -2044,11 +2044,9 @@
 			border-radius: $radius-md;
 			overflow: hidden;
 			margin-bottom: 58upx;
-
 			swiper-item {
 				@include rect(100%, 100%);
 			}
-
 			image {
 				@include rect(100%, 100%);
 			}

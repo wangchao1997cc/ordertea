@@ -60,7 +60,7 @@
 					<view>{{orderdetails.address}}</view>
 					<view>
 						配送地址
-						<!-- <image @click="addressEdit(address)" src="../../static/06_icon_编辑.png"></image> -->
+						<!-- <image @click="addressEdit(address)" src="../../static/address/edit_icon.png"></image> -->
 					</view>
 				</view>
 				<view class="address-desc">

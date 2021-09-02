@@ -84,7 +84,6 @@ export async function service_v(url, method, data, isloading) {
 	md5Params = handleSingn(md5Params);
 	url = baseurl_v43 + url;
 	header.sign = md5Params;
-	console.log(header,data,url)
 	return nrequest(method, header, url, data, isloading)
 }
 //处理   md5 sign参数

@@ -40,8 +40,7 @@
 			async getMemberGrade() {
 				let res = await api.getLevel({},true);
 				if (res.code == 200) {
-					this.gradeinfo = res.data;
-					console.log(this.gradeinfo)
+					this.gradeinfo = res.data.slice(0,4);
 				}
 			},
 			//改变导航栏

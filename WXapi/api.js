@@ -132,7 +132,6 @@ const getMenuBanner = (data, isloading) => {
 	return service('candao.product.getMenuBanner', 'post', data, isloading)
 }
 
-
 //normoal请求区域
 //微信登录
 const getWxOpenid = (data, isPlicing, isloading) => {
@@ -354,7 +353,6 @@ const waitLineup = (data, isloading) => {
 const getNewsList = (data, isloading) => {
 	return service_v('v4_3/WxTweets/list', 'get', data, isloading)
 }
-
 
 
 
