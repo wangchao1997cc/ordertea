@@ -11,10 +11,10 @@
 					{{ storeInfo.cityName + storeInfo.districtName + storeInfo.storeAddress }}
 				</text>
 			</view>
-			<view class="takemeal-time" @click="openChooseTime">
+		<!-- 	<view class="takemeal-time" @click="openChooseTime">
 				<text>{{ type == 1 ? '预定送达时间' : '取餐时间' }}</text>
 				<text>{{ serviceTime ? serviceTime : '' }}</text>
-			</view>
+			</view> -->
 			<view class="takemeal-time">
 				<text>联系电话</text>
 				<text>{{ storeInfo.phoneNumberList[0] }}</text>
@@ -139,7 +139,7 @@
 								{{ item.date }}
 							</view>
 						</view>
-						<scroll-view class="date-r" scroll-y>
+						<!-- <scroll-view class="date-r" scroll-y>
 							<view
 								class="date-r-item"
 								v-for="(item, index) in timeData[choosetime].timearr"
@@ -148,7 +148,7 @@
 							>
 								{{ item }}
 							</view>
-						</scroll-view>
+						</scroll-view> -->
 					</view>
 				</view>
 				<!-- 选择餐具 -->
@@ -204,7 +204,7 @@ export default {
 			orderparams: {}, //请求的参数
 			interest: {}, //会员折扣信息
 			remark: null, //订单备注
-			serviceTime: null, //选择的预计送达时间
+			// serviceTime: null, //选择的预计送达时间
 			storeInfo: null, //店铺信息
 			type: null,
 			location: {}, //用户位置信息
@@ -340,10 +340,10 @@ export default {
 			this.chooseTimeShow = true;
 		},
 		//预计送达时间
-		chooseServer(item) {
-			this.serviceTime = this.timeData[this.choosetime].date + ' ' + item;
-			this.closeMask();
-		},
+		// chooseServer(item) {
+		// 	this.serviceTime = this.timeData[this.choosetime].date + ' ' + item;
+		// 	this.closeMask();
+		// },
 		//改变时间段
 		changeTimeFrag(index) {
 			if (this.choosetime == index) {

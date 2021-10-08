@@ -9,6 +9,7 @@
 			// brandIdc: 383,
 			// clientId: '32e58123cb58fe0bc7ed15933b4537f4fa0d07',
 			//正式环境配置
+			groupImg: [],
 			brandId: 7622 , 
 			menuId: 1804,
 			brandIdc: 26000607,

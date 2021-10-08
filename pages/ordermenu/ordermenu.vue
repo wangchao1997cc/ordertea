@@ -2202,7 +2202,7 @@ export default {
 			}
 
 			.oldprice {
-				font-size: 24upx;
+				font-size: 32upx;
 				color: #a5a5a5;
 				text-decoration: line-through;
 				font-weight: 400;

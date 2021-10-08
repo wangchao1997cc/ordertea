@@ -22,6 +22,12 @@
 			}
 		},
 		{
+			"path": "pages/address/edit/edit",
+			"style": {
+				"navigationBarTitleText": "地址管理"
+			}
+		},
+		{
 			"path": "pages/ordermenu/ordermenu",
 			"style": {
 				"navigationBarTitleText": "点餐"
@@ -177,15 +183,16 @@
 				"navigationBarTitleText": "历史订单"
 			}
 		},
-		{
-			"path": "pages/address/edit/edit",
-			"style": {
-				"navigationBarTitleText": "地址管理"
-			}
-		}, {
+		 {
 			"path": "pages/addremark/addremark",
 			"style": {
 				"navigationBarTitleText": "订单备注"
+			}
+		},
+		{
+			"path": "pages/groupbuy/groupbuy",
+			"style": {
+				"navigationBarTitleText": "团购活动"
 			}
 		}
         
