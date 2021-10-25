@@ -1,13 +1,16 @@
 import Vue from 'vue';
 import App from './App';
-import store from './store/store.js';
+import store from './store/index.js';
 import {
 	showToast,showModal
 } from './utils/utils.js';
 
-Vue.config.productionTip = false;
 Vue.prototype.$store = store;
 Vue.prototype.$msg = {showToast,showModal};
+
+Vue.prototype.$onLaunched = new Promise(resolve => {
+    Vue.prototype.$isResolve = resolve
+})
 
 App.mpType = 'app'
 

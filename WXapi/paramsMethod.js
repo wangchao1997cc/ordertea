@@ -1,22 +1,22 @@
-const app = getApp();
-const Timestamp = Date.parse(new Date()) / 1000;
-const GetTypes = "Post";   //请求类型 post
-const From = "XCX";  //访问的来源
-const Ver = 1;
-const Token = "";
-const APPID = app.globalData.appid;  //品牌appid 凭证
-const MachineSN = '';
-import md5 from 'blueimp-md5'
+// const app = getApp();
+import appconfig from '../config/index.js';
+const Timestamp = Date.parse(new Date()) / 1000,
+	   GetTypes = "Post", //请求类型 post
+	   From = "XCX", //访问的来源
+	   Ver = 1,
+	   Token = "",
+	   APPID = appconfig.appid, //品牌appid 凭证
+	   MachineSN = '';
+import md5 from 'blueimp-md5';
 
 const config = {
-	Timestamp:Timestamp,
-	GetTypes:GetTypes,
-	From:From,
-	Ver:Ver,
-	Token:Token,
-	APPID:APPID,
-	MachineSN:MachineSN,
-	UID: wxuuid()
+	From: From,
+	Ver: Ver,
+	Token: Token,
+	APPID: APPID,
+	MachineSN: MachineSN,
+	Timestamp: Timestamp,
+	UID: wxuuid(),
 }
 
 function wxuuid() {
@@ -33,19 +33,16 @@ function wxuuid() {
 	return uuid
 }
 
-
-function getSign(InterFaces, MachineSN, Message, Timestamp, Token, UID) {
+function getSign(InterFaces, data) {
 	let that = this;
-	let strsign = app.globalData.appid + From + GetTypes + InterFaces + MachineSN + Message + Timestamp + Token +
-		UID + Ver
-	let sign = md5(encodeURIComponent(strsign).toUpperCase() + app.globalData.signKeys);
+	let strsign = appconfig.appid + From + GetTypes + InterFaces + data + Timestamp + Token +
+		config.UID + Ver;
+	let sign = md5(encodeURIComponent(strsign).toUpperCase() + appconfig.signKeys);
 	return sign;
 }
-
-
 
 module.exports = {
 	wxuuid: wxuuid,
 	getSign: getSign,
-	config:config,
+	config: config,
 }

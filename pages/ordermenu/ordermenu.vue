@@ -8,7 +8,7 @@
 			<view class="store-control">
 				<view class="table-num" v-if="forhere">{{ forhere.deskId }}号桌</view>
 				<switchC v-else @switchTab="switchTab"></switchC>
-				<view class="check-juide" @click="checkDetail">
+				<view class="check-jstrItemBarCodee" @click="checkDetail">
 					{{ showdetail ? '更多门店信息' : '收起' }}
 					<image src="../../static/07_icon_right.png"></image>
 				</view>
@@ -26,7 +26,9 @@
 						>
 							{{ item.type == 5 ? '特' : '减' }}
 						</view>
-						<view class="rich_text"><rich-text :nodes="item.description"></rich-text></view>
+						<view class="rich_text">
+							<rich-text :nodes="item.description"></rich-text>
+						</view>
 					</view>
 				</view>
 			</scroll-view>
@@ -67,7 +69,7 @@
 			<scroll-view
 				scroll-y
 				class="left-aside"
-				:style="{ height: shopBoxHeight + 'rpx' }"
+				:style="{ height: shopBoxHeight + 'rpx'}"
 				:scroll-into-view="leftCurrtab"
 				scroll-with-animation
 				:scroll-top="leftScrollTop"
@@ -76,21 +78,21 @@
 					v-for="(item, index) in products"
 					:key="index"
 					class="f-item"
-					:class="{ active: item.uid === currentId }"
+					:class="{ active: item.strItemBarCode === currentId }"
 					@click="tabtap(item)"
-					:id="'left' + item.uid"
+					:id="'left' + item.strItemBarCode"
 				>
-					<!-- {{'leftm-'+item.uid}} -->
-					<image :src="item.typeImage" mode="aspectFill"></image>
-					{{ item.name }}
+					<!-- {{'leftm-'+item.strItemBarCode}} -->
+					<image :src="item.strImg" mode="aspectFill"></image>
+					{{ item.strItemName }}
 				</view>
 				<view class="blank-fill"></view>
 			</scroll-view>
 
 			<!-- 右侧饮品列表栏 -->
+			<!-- :scroll-into-view="currentId" -->
 			<scroll-view
 				scroll-with-animation
-				@scroll-into-view="currentId"
 				scroll-y
 				class="right-aside"
 				@scroll="asideScroll"
@@ -113,51 +115,60 @@
 						:key="index"
 						@click="jumpAdver(item, index)"
 					>
-						<image :src="item.picUrl" mode="aspectFill"></image>
+						<image :src="item.strImageUrl" mode="aspectFill"></image>
 					</swiper-item>
 				</swiper>
 				<!-- 对应产品列表 -->
-				<view v-for="(item, index) in products" :key="index" class="s-list" :id="'main-' + item.uid">
-					<view class="class_tit">{{ item.name }}</view>
+				<view
+					v-for="(item, index) in products"
+					:key="index"
+					class="s-list"
+					:id="'main-' + item.strItemBarCode"
+				>
+					<view class="class_tit">{{ item.strItemName }}</view>
 					<view class="t-list">
 						<view
 							class="t-item"
-							v-for="(titem, idx) in item.products"
+							v-for="(titem, idx) in item.detail"
 							:key="idx"
 							@click="openOrderMask(titem, index, idx)"
 						>
 							<view class="good-pic">
-								<image :src="titem.logo ? titem.logo : '../../static/menu/logo.png'"></image>
+								<image
+									:src="
+										titem.strPicUrl
+											? titem.strPicUrl
+											: '../../static/menu/logo.png'
+									"
+								></image>
 							</view>
 							<view class="goods-info">
-								<view class="goods-name">{{ titem.name }}</view>
+								<view class="goods-name">{{ titem.strProductName }}</view>
 								<view class="goods-desc">{{ titem.desc }}</view>
 								<view class="goods-footer">
 									<view class="goods-price">
 										<text>
-											¥{{ titem.activePrice ? titem.activePrice : titem.price }}
+											¥{{
+												titem.activePrice
+													? titem.activePrice
+													: titem.floPrice
+											}}
 										</text>
 										<text class="oldprice" v-if="titem.activePrice">
-											¥{{ titem.price }}
+											¥{{ titem.floPrice }}
 										</text>
 									</view>
 									<view class="btn-r">
 										<view
-											class="juide-text"
-											v-if="!titem.isInServiceTime || titem.isSoldOut"
+											class="jstrItemBarCodee-text"
+											v-if="titem.intSell < 0"
 										>
-											{{
-												!titem.isInServiceTime
-													? '非供应时间'
-													: titem.isSoldOut
-													? '商品已售罄'
-													: ''
-											}}
+											商品已售罄
 										</view>
 										<view v-else>
 											<view
 												@click.stop="prentEvents"
-												v-if="titem.type == 1 && !titem.property"
+												v-if="titem.intMultiple == 1 && titem.blnSet == 'False'"
 											>
 												<view class="goods-single">
 													<image
@@ -175,7 +186,9 @@
 												</view>
 											</view>
 											<view v-else class="meal">
-												<text>{{ titem.type == 2 ? '选套餐' : '选规格' }}</text>
+												<text>
+													{{ titem.blnSet == 'True' ? '选套餐' : '选规格' }}
+												</text>
 											</view>
 										</view>
 									</view>
@@ -187,13 +200,20 @@
 				<view class="blank"></view>
 			</scroll-view>
 		</view>
-		<view class="order-masker" v-if="allmask" catchtouchmove="prentEvents" @click="closeAllMask">
+		<view
+			class="order-masker"
+			v-if="allmask"
+			catchtouchmove="prentEvents"
+			@click="closeAllMask"
+		>
 			<view class="order-info" :animation="animationData" @click.stop="prentEvents">
 				<!-- 商品介绍规格参数等 -->
 				<view class="order_info_box" :hidden="maskarr.orderDescMask">
 					<view class="goods-pic">
 						<image
-							:src="chooseGoods.logo ? chooseGoods.logo : '../../static/menu/logo.png'"
+							:src="
+								chooseGoods.logo ? chooseGoods.logo : '../../static/menu/logo.png'
+							"
 						></image>
 						<view class="close-mask" @click="closeAllMask">
 							<image src="../../static/cha.png"></image>
@@ -210,7 +230,9 @@
 								<view class="arrt_Iitem-cont">
 									<view
 										class="arrt_Iitem"
-										:class="{ choose_item: aitem.selected || currtabarr[index] == idx }"
+										:class="{
+											choose_item: aitem.selected || currtabarr[index] == idx
+										}"
 										v-for="(aitem, idx) in item.items"
 										:key="idx"
 										@click="chooseAttr(index, idx)"
@@ -224,7 +246,11 @@
 					<view class="order-footer">
 						<view class="num-control">
 							<view class="price">
-								¥{{ chooseGoods.activePrice ? chooseGoods.activePrice : chooseGoods.price }}
+								¥{{
+									chooseGoods.activePrice
+										? chooseGoods.activePrice
+										: chooseGoods.price
+								}}
 							</view>
 							<view class="goods-single">
 								<image src="../../static/sub.png" @click="reduceTap(2)"></image>
@@ -255,7 +281,7 @@
 				</view> -->
 				<!-- 购物车 -->
 				<view class="shopcar-cont" :hidden="maskarr.shopCarCont">
-					<view class="head_juide">
+					<view class="head_jstrItemBarCodee">
 						<view @click="reductionData">
 							<image src="../../static/clear.png"></image>
 							<text>清空购物车</text>
@@ -281,9 +307,15 @@
 										<text>¥ {{ item.price }}</text>
 									</view>
 									<view class="goods-single">
-										<image src="../../static/sub.png" @click="reduceTap(3, item)"></image>
+										<image
+											src="../../static/sub.png"
+											@click="reduceTap(3, item)"
+										></image>
 										<view class="num">{{ item.nums }}</view>
-										<image src="../../static/add.png" @click="addTap(3, item)"></image>
+										<image
+											src="../../static/add.png"
+											@click="addTap(3, item)"
+										></image>
 									</view>
 								</view>
 							</view>
@@ -302,10 +334,10 @@
 			<view class="tab-l">
 				<view class="shop-car-icon" @click="openAnimation(2)">
 					<image src="../../static/shopcar_icon.png"></image>
-					<view class="nums-juide">{{ carnums }}</view>
+					<view class="nums-jstrItemBarCodee">{{ carnums }}</view>
 				</view>
 				<view class="total-price">¥{{ priceArr.totalPrice }}</view>
-				<view class="takeout-juide" v-if="model == 1">
+				<view class="takeout-jstrItemBarCodee" v-if="model == 1">
 					<text>配送费：{{ storeInfo.fee }}元，满{{ storeInfo.reachFee }}元起送\n</text>
 					<text v-if="storeInfo.reachFee - priceArr.totalPrice > 0">
 						还差{{ storeInfo.reachFee - priceArr.totalPrice }}元
@@ -317,13 +349,13 @@
 		<view
 			class="busy-cont"
 			:class="{ busy_open: busyOpen }"
-			@click="busyJuideSwitch"
+			@click="busyJstrItemBarCodeeSwitch"
 			v-if="busyData && busyData.orderCount"
 		>
 			<view class="busy-l">
 				<!-- <sildermine :config="sliderConfig"></sildermine> -->
 				<view class="busy-img"><image src="../../static/busy_pic.png"></image></view>
-				<view class="order-juide">
+				<view class="order-jstrItemBarCodee">
 					<text>{{ busyData.orderCount }}单制作中</text>
 					<view class="estima">预计{{ busyData.orderTime }}分钟后完成</view>
 				</view>
@@ -339,7 +371,7 @@
 		<choseStore :nearList="nearList" @switchStore="switchStore" ref="chosestore"></choseStore>
 		<loadpage :loadingState="loadingState"></loadpage>
 		<author ref="authorM" @loginSuccess="loginSuccess"></author>
-		<view class="nobusiness" v-if="!storeInfo.isServiceTime && !defaultS">
+		<view class="nobusiness" v-if="storeInfo.blnBusinessState == 'true'">
 			<text>门店休息中</text>
 			<view class="bussiness-time">
 				<text v-for="(item, index) in storeInfo.businessTimes" :key="index">
@@ -373,11 +405,11 @@ import {
 	refreshUserInfo,
 	waitLineUp
 } from '../../utils/publicApi.js';
-import { mapState, mapMutations } from 'vuex';
+import { mapGetters, mapMutations } from 'vuex';
 import { getLocation, getCityAddress, conversion, etdistance } from '../../utils/author.js';
 import { goChoseCity, goChoseStore, goUserAddress } from '../../utils/goToPage.js';
 import api from '../../WXapi/api.js';
-import { accMul, subtr, accAdd, jumpAdvertise, appshare } from '../../utils/utils.js';
+import { accMul, subtr, accAdd, jumpAdvertise, appshare, throttle } from '../../utils/utils.js';
 //排序函数
 function compare(key) {
 	return function(value1, value2) {
@@ -437,7 +469,8 @@ export default {
 			menuId: null, //餐单id
 			choseActive: null, //当前选则查看的活动
 			member: false, //当前门店是否需要会员部分
-			timelimit: false //活动时间限制
+			timelimit: false, //活动时间限制
+			goodsList: []
 		};
 	},
 
@@ -454,11 +487,11 @@ export default {
 		return appshare();
 	},
 	computed: {
-		...mapState(['openid', 'businessType', 'storeId', 'JSESSIONID', 'isLogin', 'productPrimaryTypeName']),
+		...mapGetters(['memberinfo', 'businessType']),
 		headerInfo() {
 			let name = '请选择下单门店 >';
 			if (this.model == 2) {
-				this.storeInfo.storeName ? (name = this.storeInfo.storeName) : '';
+				this.storeInfo.strShopName ? (name = this.storeInfo.strShopName) : '';
 			} else if (this.useraddress) {
 				name = this.useraddress.receiverAddress + this.useraddress.appendReceiverAddress;
 			}
@@ -469,11 +502,12 @@ export default {
 			let height = 0;
 			let computedHeight = this.computedHeight;
 			if (computedHeight) {
-				height = computedHeight - 142;
-				if (this.activelist.length) {
-					height = height - 105;
-				}
+				height = computedHeight - 276;
+				// if (this.activelist.length) {
+				// 	height = height - 105;
+				// }
 			}
+			console.log("height",height)
 			return height;
 		},
 		headerinfo_t() {
@@ -507,7 +541,7 @@ export default {
 		//外卖还是自取
 		model() {
 			let name = 2;
-			switch (this.businessType[0]) {
+			switch (this.businessType) {
 				case 1: //外卖模式
 					name = 1;
 					break;
@@ -588,77 +622,77 @@ export default {
 		}
 	},
 	async onLoad(options) {
-		if (!this.JSESSIONID) {
-			uni.hideTabBar({});
-			await ajaxUserLogin(); //先进行登录
-		}
-		if (options && options.deskId) {
-			this.forhere = options;
-			app.globalData.forhere = options;
-			this.$store.commit('changebussiness', [3]);
-		}
-		// this.juideOptions(options); //判断路径参数
-		uni.showTabBar({});
-		this.member = app.globalData.member;
+		// if (!this.JSESSIONID) {
+		// 	uni.hideTabBar({});
+		// 	await ajaxUserLogin(); //先进行登录
+		// }
+		// if (options && options.deskId) {
+		// 	this.forhere = options;
+		// 	app.globalData.forhere = options;
+		// 	this.$store.commit('changebussiness', [3]);
+		// }
+		// this.jstrItemBarCodeeOptions(options); //判断路径参数
+		// uni.showTabBar({});
+		// this.member = app.globalData.member;
 		this.init();
 	},
 
 	onShow: function onShow() {
-		let that = this;
-		if (that.storeId) {
-			//如果有storeId 并且不是同一家店铺则刷新点餐
-			if (that.storeInfo && that.storeInfo.storeId == that.storeId) {
-				this.getStore(this.storeInfo.storeId);
-			} else {
-				if (that.shopcar.length) {
-					this.reductionData();
-				}
-				if (this.$children[2].hiddenChoseStore) {
-					//选择其他门店   关闭附近门店选择弹窗
-					this.$children[2].hiddenChoseStore = false;
-				}
-				// that.shopcar = []; //清空购物车
-				that.storeInfo = app.globalData.storeInfo;
-				that.getStoreMenu(that.storeId);
-			}
-			that.$store.commit('copy', '');
-		} else if (newload && !that.storeInfo.storeId) {
-			if (!that.nearList.length) {
-				that.goToChoseCity();
-			}
-		} else if (this.storeInfo) {
-			//页面刷新  店铺
-			this.getStore(this.storeInfo.storeId);
-		}
-		if (app.globalData.orderSuccess) {
-			//下单成功
-			this.reductionData();
-			// that.shopcar = []; //清空购物车
-			app.globalData.orderSuccess = false;
-		}
-		let chooseAddress = uni.getStorageSync('selectAddress');
-		if (chooseAddress) {
-			//有地址
-			that.useraddress = chooseAddress;
-		}
-		if (that.products.length && that.products[0].top) {
-			that.$nextTick(async () => {
-				//解决DOM更新异步问题
-				await that.calcSize();
-				if (that.productPrimaryTypeName) {
-					that.jumpProduct();
-				}
-			});
-		}
+		// let that = this;
+		// if (that.storeId) {
+		//如果有storeId 并且不是同一家店铺则刷新点餐
+		// 	if (that.storeInfo && that.storeInfo.storeId == that.storeId) {
+		// 		this.getStore(this.storeInfo.storeId);
+		// 	} else {
+		// 		if (that.shopcar.length) {
+		// 			this.reductionData();
+		// 		}
+		// 		if (this.$children[2].hiddenChoseStore) {
+		// 			//选择其他门店   关闭附近门店选择弹窗
+		// 			this.$children[2].hiddenChoseStore = false;
+		// 		}
+		// 		// that.shopcar = []; //清空购物车
+		// 		that.storeInfo = app.globalData.storeInfo;
+		// 		that.getStoreMenu(that.storeId);
+		// 	}
+		// 	that.$store.commit('copy', '');
+		// } else if (newload && !that.storeInfo.storeId) {
+		// 	if (!that.nearList.length) {
+		// 		that.goToChoseCity();
+		// 	}
+		// } else if (this.storeInfo) {
+		// 	//页面刷新  店铺
+		// 	this.getStore(this.storeInfo.storeId);
+		// }
+		// if (app.globalData.orderSuccess) {
+		// 	//下单成功
+		// 	this.reductionData();
+		// 	// that.shopcar = []; //清空购物车
+		// 	app.globalData.orderSuccess = false;
+		// }
+		// let chooseAddress = uni.getStorageSync('selectAddress');
+		// if (chooseAddress) {
+		// 	//有地址
+		// 	that.useraddress = chooseAddress;
+		// }
+		// if (that.products.length && that.products[0].top) {
+		// 	that.$nextTick(async () => {
+		// 		//解决DOM更新异步问题
+		// 		await that.calcSize();
+		// 		if (that.productPrimaryTypeName) {
+		// 			that.jumpProduct();
+		// 		}
+		// 	});
+		// }
 	},
 	methods: {
-		// juideOptions(options) { //判断路径参数
+		// jstrItemBarCodeeOptions(options) { //判断路径参数
 		// 	if (app.globalData.productPrimaryTypeName) {
 		// 		this.productPrimaryTypeName = app.globalData.productPrimaryTypeName;
 		// 	}
 		// },
 		//商铺是否繁忙开关
-		busyJuideSwitch() {
+		busyJstrItemBarCodeeSwitch() {
 			this.busyOpen = !this.busyOpen;
 		},
 		noBussinessTime() {
@@ -686,9 +720,8 @@ export default {
 		},
 		init() {
 			let that = this;
-			that.juideUserInfo(); //判断用户是否登录
+			// that.jstrItemBarCodeeUserInfo(); //判断用户是否登录
 			that.computReftHe(); //计算右边商品列表的高度
-			// that.getBannerList(); //获取轮播图广告
 			that.getLocation(); //获取地理位置
 		},
 		//授权成功关闭弹窗
@@ -728,7 +761,7 @@ export default {
 			location = that.location;
 			let data = {
 				storeId: storeId,
-				businessType: that.$store.state.businessType[0],
+				businessType: that.$store.state.businessType,
 				coordinate: [location.longitude, location.latitude]
 			};
 			let res = await api.getStore(data);
@@ -738,7 +771,7 @@ export default {
 				that.storeInfo = storeInfo;
 				if (app.globalData.storeInfo.storeId != storeId) {
 					// 当onshow刷新店铺
-					that.getStoreMenu(storeInfo.storeId);
+					that.getStoreMenu(storeInfo.storeId); //获取餐单
 				}
 				app.globalData.storeInfo = storeInfo;
 			}
@@ -748,18 +781,18 @@ export default {
 		},
 		//跳转广告
 		jumpAdver(item, index) {
-			if (index == 0) {
-				uni.switchTab({
-					url: '../mine/mine'
-				});
-				return;
-			}
-			if (item.jumpType == 2) {
-				// this.$store.commit('adverStatus',item.productPrimaryTypeName);
-				this.jumpProduct(item.productPrimaryTypeName);
-			} else {
-				jumpAdvertise(item);
-			}
+			// if (index == 0) {
+			// 	uni.switchTab({
+			// 		url: '../mine/mine'
+			// 	});
+			// 	return;
+			// }
+			// if (item.jumpType == 2) {
+			// 	// this.$store.commit('adverStatus',item.productPrimaryTypeName);
+			// 	this.jumpProduct(item.productPrimaryTypeName);
+			// } else {
+			// 	jumpAdvertise(item);
+			// }
 		},
 		//data的数据初始化
 		// dataInit(){
@@ -781,12 +814,14 @@ export default {
 							//计算商品的折扣价格
 							menus.forEach(bitem => {
 								bitem.products.forEach(citem => {
-									if (citem.uid == aitem.productPosId) {
+									if (citem.strItemBarCode == aitem.productPosId) {
 										switch (aitem.discountType) {
 											case 0:
 												citem.activePrice =
 													Math.round(
-														parseFloat(accMul(citem.price, aitem.value)) * 100
+														parseFloat(
+															accMul(citem.price, aitem.value)
+														) * 100
 													) / 100;
 												break;
 											case 1:
@@ -806,7 +841,7 @@ export default {
 				return menus;
 			}
 		},
-		async juideUserInfo() {
+		async jstrItemBarCodeeUserInfo() {
 			if (!this.isLogin) {
 				let userinfo = await refreshUserInfo(true);
 				if (!userinfo || !userinfo.phone) {
@@ -815,13 +850,19 @@ export default {
 			}
 		},
 		//获取轮播图广告
-		// async getBannerList() {
-		// 	let res = await getBannerList();
-		// 	if (res) {
-		// 		this.bannerList = res.topBannerList;
-		// 	}
-		// },
-		//
+		async getBannerList() {
+			let data = {
+				Type: 'MenuSwiper',
+				PlatForm: 'XCX',
+				interFaces: 'getSwiperImage',
+				ShopCode: app.globalData.shopCode
+			};
+			let res = await api.getRotation(data);
+			if (res) {
+				this.bannerList = res.Message;
+			}
+		},
+
 		closeActiveMask() {
 			this.closeAllMask();
 		},
@@ -845,7 +886,8 @@ export default {
 					break;
 				case 3:
 					goods.nums++;
-					this.products[goods.indexarr.index].products[goods.indexarr.idx].nums = goods.nums; //同步餐单上的商品数据
+					this.products[goods.indexarr.index].products[goods.indexarr.idx].nums =
+						goods.nums; //同步餐单上的商品数据
 					break;
 			}
 		},
@@ -858,7 +900,7 @@ export default {
 					}
 					goods.nums--;
 					for (let i in this.shopcar) {
-						if (this.shopcar[i].uid == goods.uid) {
+						if (this.shopcar[i].strItemBarCode == goods.strItemBarCode) {
 							this.shopcar[i].nums--;
 						}
 					}
@@ -874,7 +916,8 @@ export default {
 						this.deleteShopCar(goods);
 					}
 					goods.nums--;
-					this.products[goods.indexarr.index].products[goods.indexarr.idx].nums = goods.nums; //同步餐单上的商品数据
+					this.products[goods.indexarr.index].products[goods.indexarr.idx].nums =
+						goods.nums; //同步餐单上的商品数据
 			}
 		},
 
@@ -882,7 +925,7 @@ export default {
 		deleteShopCar(goods) {
 			let shopcar = this.shopcar;
 			for (let i in shopcar) {
-				if (shopcar[i].uid == goods.uid) {
+				if (shopcar[i].strItemBarCode == goods.strItemBarCode) {
 					shopcar.splice(i, 1);
 				}
 			}
@@ -900,7 +943,8 @@ export default {
 				that.$set(that.chooseGoods, 'nums', that.nums);
 				goods = that.chooseGoods;
 				if (goods.indexarr) {
-					that.products[goods.indexarr.index].products[goods.indexarr.idx].nums = that.nums;
+					that.products[goods.indexarr.index].products[goods.indexarr.idx].nums =
+						that.nums;
 				}
 			}
 
@@ -908,8 +952,8 @@ export default {
 			let currtabarr = that.currtabarr;
 			let shopitem = {
 				//定义购物车单个变量
-				typeId: that.products[goods.indexarr.index].uid,
-				uid: goods.uid,
+				typeId: that.products[goods.indexarr.index].strItemBarCode,
+				strItemBarCode: goods.strItemBarCode,
 				name: goods.name,
 				price: goods.price,
 				nums: goods.nums,
@@ -954,17 +998,20 @@ export default {
 			let ishave = false;
 			if (shopcar.length) {
 				shopcar.forEach(item => {
-					if (item.uid == shopitem.uid) {
+					if (item.strItemBarCode == shopitem.strItemBarCode) {
 						//购物车内相同的商品数量直接++
 						if (item.property) {
-							if (JSON.stringify(item.property) == JSON.stringify(shopitem.property)) {
+							if (
+								JSON.stringify(item.property) == JSON.stringify(shopitem.property)
+							) {
 								ishave = true;
 								item.nums++;
 							}
 						} else {
 							ishave = true;
 							item.nums++;
-							that.products[goods.indexarr.index].products[goods.indexarr.idx].nums = item.nums;
+							that.products[goods.indexarr.index].products[goods.indexarr.idx].nums =
+								item.nums;
 						}
 					}
 				});
@@ -990,10 +1037,10 @@ export default {
 		//点击商品打开幕布
 		openOrderMask(goods, index, idx) {
 			let that = this;
-			if (this.storeInfo.isBusy) {
-				return this.$msg.showToast('茶饮制作繁忙中');
-			}
-			if (!goods.isInServiceTime || goods.isSoldOut) {
+			// if (this.storeInfo.isBusy) {
+			// 	return this.$msg.showToast('茶饮制作繁忙中');
+			// }
+			if (goods.intSell < 0  || goods.intSell == 0) {
 				//售罄和不在售时间内
 				return;
 			}
@@ -1018,7 +1065,9 @@ export default {
 			let price = null;
 			if (that.specarr[index].items[idx].isSoldOut) {
 				return this.$msg.showToast(
-					'很抱歉！' + that.specarr[index].items[idx].name + '已经售罄了哦，正在加紧补货中～'
+					'很抱歉！' +
+						that.specarr[index].items[idx].name +
+						'已经售罄了哦，正在加紧补货中～'
 				);
 			}
 			if (index == that.specarr.length - 1 && attr.hasOwnProperty('selected')) {
@@ -1104,35 +1153,37 @@ export default {
 				that.maskarr.shopCarShow = true;
 				that.maskarr.activeDesc = true;
 				uni.showTabBar({});
-			})
-		},
-		async getStoreMenu(storeId) {
-			waitLineUp().then(res => {
-				this.busyData = res;
 			});
-			this.loadingState = false;
+		},
+		async getStoreMenu() {
+			// waitLineUp().then(res => {
+			// 	this.busyData = res;
+			// });
 			let that = this;
+			that.loadingState = false;
 			let data = {
-				storeId: storeId,
-				sendType: that.model
+				ShopCode: this.storeInfo.strShopCode,
+				From: 'XCX',
+				interFaces: 'getMenu'
 			};
 			let res = await api.getProductMenu(data);
-			if (res && res.status == 1) {
-				this.getAdvertList({
-					//获取餐单广告
-					menuId: res.data.menuId,
-					storeId: storeId
-				}); //获取店铺广告
-				this.menuId = res.data.menuId;
-				this.defaultS = false;
-				this.handleShopData(res.data.bigs);
-				if (!this.storeInfo.isServiceTime) {
-					return this.noBussinessTime();
-				}
-				if (this.model == 1 && this.storeInfo.businessStatus[0].busy) {
-					this.noTakeOut();
-				}
+			// console.log('门店的餐单',res)
+			// if (res && res.status == 1) {
+			// 	this.getAdvertList({
+			// 		//获取餐单广告
+			// 		menuId: res.data.menuId,
+			// 		storeId: storeId
+			// 	}); //获取店铺广告
+			// 	this.menuId = res.data.menuId;
+			// 	this.defaultS = false;
+			that.handleShopData(res.Message);
+			if (that.storeInfo.blnBusinessState == 'true') {
+				return that.noBussinessTime();
 			}
+			// 	if (this.model == 1 && this.storeInfo.businessStatus[0].busy) {
+			// 		this.noTakeOut();
+			// 	}
+			// }
 		},
 		//不支持外卖提示
 		noTakeOut() {
@@ -1141,12 +1192,6 @@ export default {
 				res => {
 					if (res == 1) {
 						this.switchStoreOwn();
-						// goChoseStore({
-						// 	cityId: storeInfo.cityId,
-						// 	cityName: storeInfo.cityName,
-						// 	districtId: storeInfo.districtId,
-						// 	districtName: storeInfo.districtName,
-						// })
 					}
 				},
 				'目前因门店现状问题，我们暂时关闭了小程序外卖，非常抱歉，敬请谅解！',
@@ -1165,7 +1210,6 @@ export default {
 				low: windowHeight * 0.5
 			};
 			this.computedHeight = windowHeight * (750 / sysinfo.windowWidth); //系统高度rpx
-			console.log(this.computedHeight);
 			let animation = uni.createAnimation({
 				//定义动画
 				duration: 300,
@@ -1187,8 +1231,6 @@ export default {
 				}
 				if (!app.globalData.storeInfo.storeId) {
 					that.getNearShopList(); //获取距离最近的门店
-					// let res = await getCityAddress(lat, log); //获取地理详细信息
-					// console.log(1111,res)
 				}
 			} else {
 				that.getCategoryList(); //获取默认的商品列表
@@ -1199,36 +1241,52 @@ export default {
 			let that = this;
 			let location = that.location;
 			let data = {
-				coordinate: [location.longitude, location.latitude],
-				// coordinate: ['120.555910', '31.293695'],   //测试地理位置
-				// coordinate: ['120.68000030517578', '31.316667556762695'],   //测试地理位置
-				businessType: that.businessType,
-				pageNow: 0,
-				pageSize: 10
+				interFaces: 'getShopList',
+				latitude: location.longitude,
+				longitude: location.latitude,
+				GetType: 'onlyList',
+				Top: 10
 			};
-			let res = await api.getNearStoreList(data);
-			newload = true; //第二次从onshow刷新地理位置
-			if (res && res.status == 1) {
-				let nearList = res.data.rows;
-				nearList.forEach(item => {
-					item.newdistance = conversion(item.distance); //换算距离
-				});
-				if (nearList.length > 1) {
-					//如果附近多个店铺则展示选择店铺弹窗
-					that.loadingState = false;
-					that.$refs.chosestore.showChoseprop();
-				} else if (nearList.length == 1) {
-					//只有一个则展现这个店铺
-					that.storeInfo = nearList[0];
-					that.getStoreMenu(nearList[0].storeId);
-				} else {
-					//没有
-					that.goToChoseCity(); //前往选择省份
+			try {
+				let res = await api.getNearStoreList(data);
+				newload = true; //第二次从onshow刷新地理位置
+				let nearShopList = res.Message,
+					nearList = [];
+				for (let i in nearShopList) {
+					if (nearShopList[i].intDistance < 3) {
+						nearList.push(nearShopList[i]);
+					}
 				}
-				that.nearList = nearList;
-			} else {
-				that.goToChoseCity(); //前往选择省份
-			}
+				if (nearList.length) {
+					that.nearList = nearList;
+				} else {
+					that.storeInfo = nearShopList[0];
+					app.globalData.shopCode = nearShopList[0].strShopCode;
+					that.getBannerList(); //获取轮播图广告
+					that.getStoreMenu(); //获取菜单
+				}
+			} catch (err) {}
+			// if (res && res.status == 1) {
+			// 	let nearList = res.data.rows;
+			// 	nearList.forEach(item => {
+			// 		item.newdistance = conversion(item.distance); //换算距离
+			// 	});
+			// 	if (nearList.length > 1) {
+			// 		//如果附近多个店铺则展示选择店铺弹窗
+			// 		that.loadingState = false;
+			// 		that.$refs.chosestore.showChoseprop();
+			// 	} else if (nearList.length == 1) {
+			// 		//只有一个则展现这个店铺
+			// 		that.storeInfo = nearList[0];
+			// 		that.getStoreMenu(nearList[0].storeId);
+			// 	} else {
+			// 		//没有
+			// 		that.goToChoseCity(); //前往选择省份
+			// 	}
+			// 	that.nearList = nearList;
+			// } else {
+			// 	that.goToChoseCity(); //前往选择省份
+			// }
 		},
 		goToChoseCity() {
 			this.$msg.showModal(
@@ -1281,7 +1339,7 @@ export default {
 				let products = {
 					qty: item.nums,
 					discounted: item.discounted,
-					product_no: item.uid,
+					product_no: item.strItemBarCode,
 					name: item.name,
 					price: item.price,
 					condiments: [],
@@ -1308,7 +1366,7 @@ export default {
 							items: [
 								{
 									index: index,
-									uid: aitem.uid,
+									strItemBarCode: aitem.strItemBarCode,
 									name: aitem.name,
 									price: aitem.price
 								}
@@ -1359,39 +1417,60 @@ export default {
 		//处理获取到的商铺菜单
 		async handleShopData(data) {
 			let that = this;
-			if (that.member) {
-				//如果有会员部分就查看活动信息
-				let newdata = await that.getActivity(data); //获取活动信息
-				if (newdata) {
-					data = newdata;
+
+			// if (that.member) {
+			// 	//如果有会员部分就查看活动信息
+			// 	let newdata = await that.getActivity(data); //获取活动信息
+			// 	if (newdata) {
+			// 		data = newdata;
+			// 	}
+			// }
+			let products = [],
+				goodsList = [];
+			for (let i in data) {
+				if (data[i].MenuType == 'Item') {
+					products = data[i].Detail;
+				} else if (data[i].MenuType == 'Product') {
+					goodsList = data[i].Detail;
 				}
 			}
-
-			that.products = data;
-			that.currentId = data[0].uid;
+			for (let i in products) {
+				for (let a in goodsList) {
+					if (goodsList[a].strItemBarCode == products[i].strItemBarCode) {
+						if (!products[i].detail) {
+							products[i].detail = [goodsList[a]];
+						} else {
+							products[i].detail.push(goodsList[a]);
+						}
+					}
+				}
+			}
+			console.log(products);
+			that.products = products;
+			that.currentId = products[0].strItemBarCode;
 			that.loadingState = true;
 			that.$nextTick(async () => {
 				//解决DOM更新异步问题
 				await that.calcSize();
-				if (that.productPrimaryTypeName) {
-					that.jumpProduct();
-				}
+				// if (that.productPrimaryTypeName) {
+				// 	that.jumpProduct();
+				// }
 			});
 		},
 		//跳转到某一个一级分类
-		jumpProduct(productPrimaryTypeName) {
-			let that = this;
-			!productPrimaryTypeName ? (productPrimaryTypeName = that.productPrimaryTypeName) : '';
-			that.products.find(item => {
-				if (item.name == productPrimaryTypeName) {
-					that.currentId = item.uid;
-					that.tabScrollTop = item.top;
-					if (that.productPrimaryTypeName) {
-						this.$store.commit('adverStatus', null);
-					}
-				}
-			});
-		},
+		// jumpProduct(productPrimaryTypeName) {
+		// 	let that = this;
+		// 	!productPrimaryTypeName ? (productPrimaryTypeName = that.productPrimaryTypeName) : '';
+		// 	that.products.find(item => {
+		// 		if (item.name == productPrimaryTypeName) {
+		// 			that.currentId = item.strItemBarCode;
+		// 			that.tabScrollTop = item.top;
+		// 			if (that.productPrimaryTypeName) {
+		// 				this.$store.commit('adverStatus', null);
+		// 			}
+		// 		}
+		// 	});
+		// },
 		//获取默认商品数据
 		async getCategoryList() {
 			let data = {
@@ -1403,51 +1482,52 @@ export default {
 				this.handleShopData(res.data.bigs);
 			}
 		},
-		//获取默认广告banner
-		async getAdvertList(data) {
-			let res = await api.getMenuBanner(data);
-			if (res.status && res.data) {
-				this.bannerList = res.data.menuAdvertList;
-			}
-		},
+		// //获取默认广告banner
+		// async getAdvertList(data) {
+		// 	let res = await api.getMenuBanner(data);
+		// 	if (res.status && res.data) {
+		// 		this.bannerList = res.data.menuAdvertList;
+		// 	}
+		// },
 		//一级分类点击
 		tabtap(item) {
 			clearTimeout(this.timer);
-			this.currentId = item.uid;
-			let index = this.products.findIndex(sitem => sitem.uid === item.uid);
+			this.currentId = item.strItemBarCode;
+			let index = this.products.findIndex(
+				sitem => sitem.strItemBarCode === item.strItemBarCode
+			);
 			this.tabScrollTop = this.products[index].top;
 		},
-
 		//右侧栏滚动
-		asideScroll(e) {
+		asideScroll: throttle(function(e) {
 			let that = this;
-			let scrollTop = e.detail.scrollTop;
+			let scrollTop = e[0].detail.scrollTop;
 			let tabs = that.products.filter(item => item.top <= scrollTop).reverse();
 			if (tabs.length > 0) {
 				if (tabs.length == 1) {
 					this.leftScrollTop = this.leftScrollTop + 0.01;
 				}
-				if (that.currentId != tabs[0].uid) {
-					that.currentId = tabs[0].uid;
-					that.leftCurrtab = 'left' + tabs[0].uid;
+				if (that.currentId != tabs[0].strItemBarCode) {
+					that.currentId = tabs[0].strItemBarCode;
+					that.leftCurrtab = 'left' + tabs[0].strItemBarCode;
 				}
 			} else {
 				this.leftScrollTop = 0;
 			}
-		},
+		}, 50),
 		// 计算右侧栏每个tab的高度等信息
 		calcSize() {
 			return new Promise((res, ret) => {
 				let h = 0;
 				this.products.forEach((item, i) => {
-					let view = uni.createSelectorQuery().select('#main-' + item.uid);
+					let view = uni.createSelectorQuery().select('#main-' + item.strItemBarCode);
 					view.fields(
 						{
 							size: true
 						},
 						data => {
 							if (!data) return;
-							item.top = h + 140;
+							item.top = h + 123;
 							h += data.height;
 							if (i == this.products.length - 1) {
 								res();
@@ -1521,7 +1601,7 @@ export default {
 			}
 		}
 
-		.order-juide {
+		.order-jstrItemBarCodee {
 			/* height: 50px; */
 			margin-left: 8px;
 			margin-top: 8px;
@@ -1606,7 +1686,7 @@ export default {
 	justify-content: space-between;
 	box-shadow: 0px 8upx 21upx 0px rgba(19, 19, 20, 0.08);
 
-	.takeout-juide {
+	.takeout-jstrItemBarCodee {
 		/* position: absolute;
 			bottom: 8upx; */
 		font-size: 20upx;
@@ -1629,7 +1709,7 @@ export default {
 				@include rect(50upx, 45upx);
 			}
 
-			.nums-juide {
+			.nums-jstrItemBarCodee {
 				position: absolute;
 				@include rect(32upx, 32upx);
 				border-radius: 16upx;
@@ -1884,7 +1964,7 @@ export default {
 		/* height: 100%; */
 		text-align: center;
 
-		.check-juide {
+		.check-jstrItemBarCodee {
 			margin-top: 16upx;
 			font-size: 20upx;
 			color: #a0a0a0;
@@ -2210,7 +2290,7 @@ export default {
 			}
 
 			.btn-r {
-				.juide-text {
+				.jstrItemBarCodee-text {
 					color: #666666;
 					font-size: $font-sm;
 				}
@@ -2329,7 +2409,7 @@ export default {
 	overflow: hidden;
 }
 
-.head_juide {
+.head_jstrItemBarCodee {
 	@include rect(100%, 129upx);
 	@extend %flex-alcent;
 	justify-content: space-between;

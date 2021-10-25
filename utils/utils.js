@@ -1,21 +1,3 @@
-import store from '../store/store.js';
-export const jumpAdvertise = item => {
-	switch (item.jumpType) {
-		case 1:
-			uni.navigateTo({
-				url: '../../pages/webview/webview.vue?url=' + item.jumpUrl
-			})
-			break;
-		case 2:
-			console.log(item.productPrimaryTypeName)
-			store.commit('adverStatus', item.productPrimaryTypeName)
-			uni.switchTab({
-				url: '../../pages/ordermenu/ordermenu',
-			})
-			break;
-	}
-}
-
 //正则验证手机号码
 export const checkMobile = data => {
 	let checkphone = /^1\d{10}$/;
@@ -314,4 +296,18 @@ Date.prototype.format = function(fmt = 'yyyy-MM-dd hh:mm:ss') { //author: meizz
 		if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[
 			k]).substr(("" + o[k]).length)));
 	return fmt;
+}
+
+//函数节流
+export const throttle = (fn,interval) => {
+	var enterTime = 0,
+	    gapTime = interval || 200;
+	return function(){
+		var context = this;
+		var backTime = new Date(); //第一次函数return 时触发的时间
+		if(backTime - enterTime > gapTime){
+			fn.call(context,arguments);
+			enterTime = backTime
+		}
+	}
 }

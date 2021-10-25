@@ -1,6 +1,9 @@
 //定义环境 请求封装
-import store from '../store/store.js';
-import paramsM from './paramsMethod.js'
+import paramsM from './paramsMethod.js';
+import appConfig from '../config/index.js';
+import {
+	showToast
+} from '../utils/utils.js';
 
 //正式环境 key
 // const default_value_f = 'Action?' + 'key=6886173bf669d7bc'
@@ -20,13 +23,18 @@ const baseurl_v43 = 'https://crmapi.fnb-tech.com/openapi/' //正式环境	会员
 
 // var JSESSIONID = store.state.JSESSIONID;
 //使用 data.actionName   请求的方式
-export function service(url, Method, data, isloading) {
+export function service(url, InterFaces, Method, data, isloading) {
+	// if(url != 'Parameters'){
+	// 	url += '/'+InterFaces;
+	// }
+	data.HQCode = appConfig.hqcode;
 	data = JSON.stringify(data);
 	let params = {
-		InterFaces: Method,
+		GetTypes: 'Post',
+		InterFaces: InterFaces,
 		...paramsM.config,
 		Message: data,
-		Sign: paramsM.getSign(Method, data),
+		Sign: paramsM.getSign(InterFaces, data),
 	}
 	let header = {
 		'content-type': 'application/x-www-form-urlencoded',
@@ -38,7 +46,6 @@ export function service(url, Method, data, isloading) {
 
 // 正常请求方式
 export function normoal(url, data, isloading) {
-	// return console.log(1111)
 	let header = {
 		'content-type': 'application/x-www-form-urlencoded',
 	}
@@ -56,65 +63,7 @@ const timestmpParams = {
 	header: {},
 	url: baseurl_v43 + 'v4_3/getCurrentTimeMilli',
 }
-export async function service_v(url, method, data, isloading) {
-	let timestamp = await nrequest(timestmpParams.method, timestmpParams.header, timestmpParams.url, timestmpParams
-		.data);
-	const header = {
-		// "content-type": method === 'get' ? 'application/x-www-form-urlencoded' : 'application/json',
-		"brandId": app.globalData.brandId,
-		"clientId": app.globalData.clientId,
-		"timestamp": timestamp.data,
-	}
-	if (url == 'v4/cardSell/getStores') {
-		url = 'https://crmapi.fnb-tech.com/webapi/' + url
-		header.storeId = data.storeId
-	} else {
-		url = baseurl_v43 + url;
-	}
-	let storeCode = app.globalData.storeInfo.extraStoreId;
-	if (storeCode && url != 'v4_3/weixin/recharge') {
-		header.storeCode = storeCode;
-	}
 
-	if (data && data.storeCode) { //门店列表时，查询门店等待时间
-		header.storeCode = data.storeCode
-	}
-	let md5Params = Object.assign({}, header);
-	header.key = key;
-	Object.assign(md5Params, data);
-	md5Params = handleSingn(md5Params);
-
-
-	header.sign = md5Params;
-
-	return nrequest(method, header, url, data, isloading)
-}
-//处理   md5 sign参数
-function handleSingn(data) {
-	let newData = {};
-	Object.keys(data).sort().map(key => {
-		if (typeof(data[key]) == 'object') {
-			data[key] = JSON.stringify(data[key])
-		}
-		newData[key] = data[key]
-	})
-	newData.key = key;
-	newData = jsonToUrlForm(newData);
-	newData = md5(newData.substr(1));
-	return newData.toUpperCase();
-}
-
-/**
- * json拼接成url 请求那样
- */
-function jsonToUrlForm(paramJson) {
-	var formString = "";
-	for (var key in paramJson) {
-		var value = paramJson[key];
-		formString += "&" + key + "=" + value;
-	}
-	return formString;
-}
 
 function nrequest(header, url, data, isloading) {
 	if (isloading) uni.showLoading({
@@ -163,7 +112,13 @@ function request(header, url, data, isloading) {
 			async success(e) {
 				if (isloading) uni.hideLoading();
 				if (e.statusCode === 200) {
+					if (e.data.Result) {
+						resolve(e.data);
+					} else {
+						showToast(e.data.ErrorMsg || '错误请联系客服人员')
+					}
 				} else { //错误提示
+					showToast(e.errMsg)
 				}
 			},
 			fail(e) {

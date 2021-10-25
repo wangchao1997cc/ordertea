@@ -1,20 +1,19 @@
 import api from '../WXapi/api.js'
-import store from '../store/store.js'
-const app = getApp();
+import config from '../config/index.js'
 
 //刷新用户信息
-export const refreshUserInfo = async callback => {
-	let res = await api.getUserInfo();
-	if (res && res.status == 1) {
-		if (res.data.phone) {
-			store.commit('changeLogin', res.data.phone);
-		}
-		if (callback) {
-			return res.data;
-		}
-		uni.setStorageSync('userinfo', res.data);
-	}
-}
+// export const refreshUserInfo = async callback => {
+// 	let res = await api.getUserInfo();
+// 	if (res && res.status == 1) {
+// 		if (res.data.phone) {
+// 			store.commit('changeLogin', res.data.phone);
+// 		}
+// 		if (callback) {
+// 			return res.data;
+// 		}
+// 		uni.setStorageSync('userinfo', res.data);
+// 	}
+// }
 
 
 //等待排队
@@ -41,38 +40,26 @@ export const getRecharge = async callback => {
 }
 
 
+//获取用户openid seekey 等信息
+export const getUserOpenInfo = async Summit => {
+	let wxCode = await wxLogin();
+	let data = {
+		APPID: config.appid,
+		CODE: wxCode,
+		Summit: Summit
+	}
+	return api.getUserOpenInfo(data);
+}
+
 //获取会员用户信息
 export const getMemberInfo = async Summit => {
 	let wxCode = await wxLogin();
 	let data = {
-		APPID: app.globalData.appid,
+		APPID: config.appid,
 		CODE: wxCode,
 		Summit: Summit
 	}
-	let res = api.getMemberInfo(data);
-	console.log(res)
-	return res
-	// uni.request({
-	// 	 url: 'https://oapi.keqin89.com/KeQinOpenApi.asmx/WechatGetOpenIDXCX',
-	// 	 method: 'POST',
-
-	// })
-	// if(!store.state.isLogin){
-	// 	return null;
-	// }
-	// let data = {
-	// 	mobile: store.state.isLogin,
-	// }
-	// let res = await api.getMemberInfo(data);
-	// if (res && res.code == 200) {
-	// 	if(!store.state.cardNo){
-	// 		store.commit('setCardNo', res.data[0].cardNo);
-	// 	}
-	// 	uni.setStorageSync('memberinfo', res.data[0]);
-	// 	if(callback){
-	// 		return res.data[0];
-	// 	}
-	// }
+	return api.getMemberInfo(data);
 }
 
 
@@ -89,12 +76,12 @@ export const userRegister = async data => {
 	}
 }
 
-export const getBannerList = async callback => {
-	let res = await api.getBannerList({});
-	if (res.status == 1) {
-		return res.data
-	}
-}
+// export const getBannerList = async callback => {
+// 	let res = await api.getBannerList({});
+// 	if (res.status == 1) {
+// 		return res.data
+// 	}
+// }
 
 
 
@@ -121,19 +108,19 @@ export const getCityId = async (cityname, isboolean) => {
 }
 
 //小程序登录获取openid
-export const ajaxUserLogin = async (takeit) => {
-	let wxCode = await wxLogin();
-	let data = {
-		code: wxCode,
-	};
-	let res = await api.getWxOpenid(data, true);
-	refreshUserInfo();
-	if (res.status == 1) {
-		delete res.data.errcode;
-		store.commit('change', res.data);
-		return res.data;
-	}
-}
+// export const ajaxUserLogin = async (takeit) => {
+// 	let wxCode = await wxLogin();
+// 	let data = {
+// 		code: wxCode,
+// 	};
+// 	let res = await api.getWxOpenid(data, true);
+// 	refreshUserInfo();
+// 	if (res.status == 1) {
+// 		delete res.data.errcode;
+// 		store.commit('change', res.data);
+// 		return res.data;
+// 	}
+// }
 
 
 //微信支付

@@ -1,22 +1,11 @@
 <script>
-// import {ajaxUserLogin} from './utils/publicApi.js'
+import api from 'WXapi/api.js'
+import config from 'config/index.js'
+import store from 'store/index.js';
 export default {
 	globalData: {
 		remark: '', //订单的备注信息
-		//测试环境配置
-		// brandId: 123487,
-		// menuId: 1804,
-		// brandIdc: 383,
-		// clientId: '32e58123cb58fe0bc7ed15933b4537f4fa0d07',
-		//正式环境配置
-		// brandId: 7622 ,
-		// menuId: 1804,
-		// brandIdc: 26000607,
-		// clientId: 'f613e4e8c9fccdbf0c877d870f4ca157b24af1',
 		hqname: '客勤Dome',
-		hqcode: '898', //集团号
-		signKeys: 'JhcK8Az94pEr4UV',
-		appid: '898201923647154869965214',
 		storeInfo: {}, //当前的店铺信息
 		orderinfo: {}, //当前结算的订单信息
 		productPrimaryTypeName: null, //广告的一级菜单名
@@ -27,16 +16,39 @@ export default {
 		orderRefresh: false, //下单后订单列表刷新
 		exchangeSuccess: false, //兑换成功
 		member: false ,//是否启用会员部分
-		
+		shopCode: null,
 	},
 	onLaunch: async function() {
 		updateApp();
+		this.appletLogin();
+		//获取配置信息
+		this.getConfigure();
 		//测试环境配置
 	},
 	onShow: function() {},
-	onHide: function() {}
+	onHide: function() {},
+	methods:{
+		//小程序登录获取openid
+		async appletLogin(){
+			await store.dispatch('user/login');
+			this.$isResolve()
+		},
+		//获取小程序配置信息
+		async getConfigure() {
+			let data = {
+				Mobile: '',
+				MemberCode: '',
+				WXOpenID: '',
+				HQCode: config.hqcode,
+			};
+			try{
+				let res = await api.getConfigure(data);
+				store.commit('user/SET_CONFIGURE',res.Message)
+			}catch(err){
+			}
+		}
+	}
 };
-
 function updateApp() {
 	// 获取小程序更新机制兼容
 	if (uni.canIUse('getUpdateManager')) {

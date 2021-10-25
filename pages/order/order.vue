@@ -36,7 +36,7 @@
 <script>
 	const app = getApp();
 	import api from '../../WXapi/api.js'
-	import {goOrderDeatails} from '../../utils/goToPage.js'
+	import { goOrderDeatails } from '../../utils/goToPage.js'
 	import nodata from '../../components/nodata.vue';
 	export default {
 		data() {
