@@ -398,6 +398,7 @@ import choseStore from '../../components/choseStore.vue'; //选择店铺
 import loadpage from '../../components/loadingpage.vue'; //loading
 import switchC from '../../components/switch.vue'; //自定义switch
 import storeDetail from '../../components/storedetail.vue'; //店铺的其他信息展示
+
 // import sildermine from '../../components/minesilder.vue' //进度条
 import {
 	ajaxUserLogin,
@@ -855,7 +856,7 @@ export default {
 				Type: 'MenuSwiper',
 				PlatForm: 'XCX',
 				interFaces: 'getSwiperImage',
-				ShopCode: app.globalData.shopCode
+				ShopCode: app.globalData.shopCode,
 			};
 			let res = await api.getRotation(data);
 			if (res) {
@@ -1035,28 +1036,77 @@ export default {
 			// that.getActive(store.);
 		},
 		//点击商品打开幕布
-		openOrderMask(goods, index, idx) {
-			let that = this;
-			// if (this.storeInfo.isBusy) {
-			// 	return this.$msg.showToast('茶饮制作繁忙中');
-			// }
+		async openOrderMask(goods, index, idx) {
 			if (goods.intSell < 0  || goods.intSell == 0) {
 				//售罄和不在售时间内
 				return;
 			}
-			// let popHeightInfo = that.popHeightInfo;
-			let chooseGoods = Object.assign({}, goods); //第一层深拷贝，防止价格影响
-			chooseGoods.indexarr = {
-				idx: idx,
-				index: index
-			};
-			that.nums = 1;
-			this.chooseGoods = chooseGoods;
-			if (goods.type == 1 && goods.isRequirement) {
-				that.handleData(goods.property);
+			try{
+				let data = {
+					HQCode: '135',
+					ShopCode: '1001',
+					ItemBarCode: this.products[index].strItemBarCode,
+					ProductBarCode: goods.strProductBarCode,
+			        interFaces: "getOneProduct",
+					ProductName: goods.productname, 
+				}
+				let res = await api.getProductMenu(data,true);
+				let chooseGoods = res.Message;  //选择的商品
+				let specarr = chooseGoods.flavorGroup;   //规格数组
+				console.log(8888,chooseGoods,chooseGoods.flavorGroup)
+				if(chooseGoods.standard.length){ //规格
+					specarr.forEach((item,index) => {
+						switch(item.strFlavorGroupName){
+							case '无':
+							specarr.splice(index,1)
+							break;
+							case '温度':
+							if(chooseGoods.temp.length){
+								this.$set(specarr[index],'details',chooseGoods.temp);
+							}else{
+								specarr.splice(index,1)
+							}
+							break;
+							case '甜度':
+							if(chooseGoods.sweet.length){
+								this.$set(specarr[index],'details',chooseGoods.sweet);
+							}else{
+								specarr.splice(index,1)
+							}
+							break;
+							case '加料':
+							if(chooseGoods.flavor.length){
+								this.$set(specarr[index],'details',chooseGoods.flavor);
+							}else{
+								specarr.splice(index,1)
+							}
+							break;
+							
+						}
+						
+					})
+				}
+			}catch(err){
+				
 			}
-			that.maskarr.shopCarShow = false;
-			that.openAnimation(1);
+			// let that = this;
+			// if (this.storeInfo.isBusy) {
+			// 	return this.$msg.showToast('茶饮制作繁忙中');
+			// }
+			
+			// let popHeightInfo = that.popHeightInfo;
+			// let chooseGoods = Object.assign({}, goods); //第一层深拷贝，防止价格影响
+			// chooseGoods.indexarr = {
+			// 	idx: idx,
+			// 	index: index
+			// };
+			// that.nums = 1;
+			// this.chooseGoods = chooseGoods;
+			// if (goods.type == 1 && goods.isRequirement) {
+			// 	that.handleData(goods.property);
+			// }
+			// that.maskarr.shopCarShow = false;
+			// that.openAnimation(1);
 		},
 		//选择规格
 		chooseAttr(index, idx) {

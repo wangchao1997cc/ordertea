@@ -3,6 +3,7 @@ import {
 	normoal,
 	service_v
 } from './http.js';
+import appConfig from '../config/index.js';
 //正式环境
 // const key = '&key=6886173bf669d7bc';
 //测试环境
@@ -39,16 +40,18 @@ const getMemberInfo = (data, isloading) => {
 }
 
 //获取附近门店列表
-const getNearStoreList = (data, isPlicing, isloading) => {
+const getNearStoreList = (data, isloading) => {
 	let interFaces = data.interFaces;
 	return service("Shop",interFaces , "post", data, isloading)
 }
 
-//获取门店对应餐单
-const getProductMenu = (data, isPlicing, isloading) => {
+//获取门店对应餐单   //单个商品详情
+const getProductMenu = (data, isloading) => {
+	console.log(11111,data)
 	let interFaces = data.interFaces;
 	return service("Menu",interFaces , "post", data, isloading)
 }
+
 
 
 //获取banner轮播图
