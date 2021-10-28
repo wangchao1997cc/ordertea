@@ -69,7 +69,7 @@
 			<scroll-view
 				scroll-y
 				class="left-aside"
-				:style="{ height: shopBoxHeight + 'rpx'}"
+				:style="{ height: shopBoxHeight + 'rpx' }"
 				:scroll-into-view="leftCurrtab"
 				scroll-with-animation
 				:scroll-top="leftScrollTop"
@@ -168,7 +168,10 @@
 										<view v-else>
 											<view
 												@click.stop="prentEvents"
-												v-if="titem.intMultiple == 1 && titem.blnSet == 'False'"
+												v-if="
+													titem.intMultiple == 1 &&
+														titem.blnSet == 'False'
+												"
 											>
 												<view class="goods-single">
 													<image
@@ -187,7 +190,9 @@
 											</view>
 											<view v-else class="meal">
 												<text>
-													{{ titem.blnSet == 'True' ? '选套餐' : '选规格' }}
+													{{
+														titem.blnSet == 'True' ? '选套餐' : '选规格'
+													}}
 												</text>
 											</view>
 										</view>
@@ -226,18 +231,16 @@
 						</view>
 						<view class="arrt-cont" v-if="chooseGoods.isRequirement">
 							<view class="arrt-item" v-for="(item, index) in specarr" :key="index">
-								<view class="arrt_name">{{ item.title }}</view>
+								<view class="arrt_name">{{ item.GroupName }}</view>
 								<view class="arrt_Iitem-cont">
 									<view
 										class="arrt_Iitem"
-										:class="{
-											choose_item: aitem.selected || currtabarr[index] == idx
-										}"
-										v-for="(aitem, idx) in item.items"
+										v-for="(aitem, idx) in item.details"
+										:class="{choose_item: aitem.Checked}"
 										:key="idx"
 										@click="chooseAttr(index, idx)"
 									>
-										{{ aitem.name }}
+										{{ aitem.strFlavorName }}
 									</view>
 								</view>
 							</view>
@@ -508,7 +511,7 @@ export default {
 				// 	height = height - 105;
 				// }
 			}
-			console.log("height",height)
+			console.log('height', height);
 			return height;
 		},
 		headerinfo_t() {
@@ -856,7 +859,7 @@ export default {
 				Type: 'MenuSwiper',
 				PlatForm: 'XCX',
 				interFaces: 'getSwiperImage',
-				ShopCode: app.globalData.shopCode,
+				ShopCode: app.globalData.shopCode
 			};
 			let res = await api.getRotation(data);
 			if (res) {
@@ -1037,63 +1040,30 @@ export default {
 		},
 		//点击商品打开幕布
 		async openOrderMask(goods, index, idx) {
-			if (goods.intSell < 0  || goods.intSell == 0) {
+			if (goods.intSell < 0 || goods.intSell == 0) {
 				//售罄和不在售时间内
 				return;
 			}
-			try{
+			try {
 				let data = {
 					HQCode: '135',
 					ShopCode: '1001',
 					ItemBarCode: this.products[index].strItemBarCode,
 					ProductBarCode: goods.strProductBarCode,
-			        interFaces: "getOneProduct",
-					ProductName: goods.productname, 
-				}
-				let res = await api.getProductMenu(data,true);
-				let chooseGoods = res.Message;  //选择的商品
-				let specarr = chooseGoods.flavorGroup;   //规格数组
-				console.log(8888,chooseGoods,chooseGoods.flavorGroup)
-				if(chooseGoods.standard.length){ //规格
-					specarr.forEach((item,index) => {
-						switch(item.strFlavorGroupName){
-							case '无':
-							specarr.splice(index,1)
-							break;
-							case '温度':
-							if(chooseGoods.temp.length){
-								this.$set(specarr[index],'details',chooseGoods.temp);
-							}else{
-								specarr.splice(index,1)
-							}
-							break;
-							case '甜度':
-							if(chooseGoods.sweet.length){
-								this.$set(specarr[index],'details',chooseGoods.sweet);
-							}else{
-								specarr.splice(index,1)
-							}
-							break;
-							case '加料':
-							if(chooseGoods.flavor.length){
-								this.$set(specarr[index],'details',chooseGoods.flavor);
-							}else{
-								specarr.splice(index,1)
-							}
-							break;
-							
-						}
-						
-					})
-				}
-			}catch(err){
-				
-			}
+					interFaces: 'getOneProduct',
+					ProductName: goods.productname
+				};
+				let res = await api.getProductMenu(data, true);
+				let chooseGoods = res.Message; //选择的商品
+
+				console.log(8888, chooseGoods, chooseGoods.flavorGroup);
+				this.handleData(chooseGoods); //处理规格属性
+			} catch (err) {}
 			// let that = this;
 			// if (this.storeInfo.isBusy) {
 			// 	return this.$msg.showToast('茶饮制作繁忙中');
 			// }
-			
+
 			// let popHeightInfo = that.popHeightInfo;
 			// let chooseGoods = Object.assign({}, goods); //第一层深拷贝，防止价格影响
 			// chooseGoods.indexarr = {
@@ -1148,26 +1118,70 @@ export default {
 		},
 		//处理规格属性
 		handleData(data) {
-			let specarr = [];
-			let currtabarr = [];
-			if (data.standard) {
-				specarr.push(data.standard);
-			}
-			for (let i in data.propertys) {
-				specarr.push(data.propertys[i]);
-			}
-			for (let i = 0; i < specarr.length; i++) {
-				this.computeSpecPrice(0, specarr[i].items[0].price);
-				currtabarr.push(0);
-			}
-			this.currtabarr = currtabarr;
-			if (data.choices) {
-				data.choices.items.forEach(item => {
-					this.$set(item, 'selected', false);
-				});
-				specarr.push(data.choices);
-			}
+			let specarr = chooseGoods.flavorGroup; //规格数组
+			specarr.forEach((item, index) => {
+				switch (item.strFlavorGroupName) {
+					case '无':
+						specarr.splice(index, 1);
+						break;
+					case '规格':
+						if (chooseGoods.standard.length) {
+							this.$set(specarr[index], 'details', chooseGoods.standard);
+						} else {
+							specarr.splice(index, 1);
+						}
+						break;
+					case '口味':
+						if (chooseGoods.addoption.length) {
+							this.$set(specarr[index], 'details', chooseGoods.addoption);
+						} else {
+							specarr.splice(index, 1);
+						}
+						break;
+					case '温度':
+						if (chooseGoods.temp.length) {
+							this.$set(specarr[index], 'details', chooseGoods.temp);
+						} else {
+							specarr.splice(index, 1);
+						}
+						break;
+					case '甜度':
+						if (chooseGoods.sweet.length) {
+							this.$set(specarr[index], 'details', chooseGoods.sweet);
+						} else {
+							specarr.splice(index, 1);
+						}
+						break;
+					case '加料':
+						if (chooseGoods.flavor.length) {
+							this.$set(specarr[index], 'details', chooseGoods.flavor);
+						} else {
+							specarr.splice(index, 1);
+						}
+						break;
+				}
+			});
 			this.specarr = specarr;
+			// let specarr = [];
+			// let currtabarr = [];
+			// if (data.standard) {
+			// 	specarr.push(data.standard);
+			// }
+			// for (let i in data.propertys) {
+			// 	specarr.push(data.propertys[i]);
+			// }
+			// for (let i = 0; i < specarr.length; i++) {
+			// 	this.computeSpecPrice(0, specarr[i].items[0].price);
+			// 	currtabarr.push(0);
+			// }
+			// this.currtabarr = currtabarr;
+			// if (data.choices) {
+			// 	data.choices.items.forEach(item => {
+			// 		this.$set(item, 'selected', false);
+			// 	});
+			// 	specarr.push(data.choices);
+			// }
+			// this.specarr = specarr;
 		},
 		//展现动画
 		openAnimation(type) {
