@@ -140,6 +140,7 @@
 											? titem.strPicUrl
 											: '../../static/menu/logo.png'
 									"
+									mode="aspectFill"
 								></image>
 							</view>
 							<view class="goods-info">
@@ -217,44 +218,50 @@
 					<view class="goods-pic">
 						<image
 							:src="
-								chooseGoods.logo ? chooseGoods.logo : '../../static/menu/logo.png'
+								chooseGoods.strPicUrl
+									? chooseGoods.strPicUrl
+									: '../../static/menu/logo.png'
 							"
 						></image>
 						<view class="close-mask" @click="closeAllMask">
 							<image src="../../static/cha.png"></image>
 						</view>
 					</view>
+				
 					<scroll-view scroll-y class="tea_attr">
 						<view class="order-desc">
-							<text>{{ chooseGoods.name }}\n</text>
-							<text>{{ chooseGoods.desc }}</text>
+						<text>{{ chooseGoods.strProductName }}\n</text>
+							<text>{{ chooseGoods.strDescription || '' }}</text>
 						</view>
-						<view class="arrt-cont" v-if="chooseGoods.isRequirement">
-							<view class="arrt-item" v-for="(item, index) in specarr" :key="index">
-								<view class="arrt_name">{{ item.GroupName }}</view>
-								<view class="arrt_Iitem-cont">
-									<view
-										class="arrt_Iitem"
-										v-for="(aitem, idx) in item.details"
-										:class="{choose_item: aitem.Checked}"
-										:key="idx"
-										@click="chooseAttr(index, idx)"
-									>
-										{{ aitem.strFlavorName }}
+						<view
+							class="arrt-cont"
+							v-if="chooseGoods.intMultiple != 1 || chooseGoods.blnSet == 'True'"
+						>
+							<template>
+								<view
+									class="arrt-item"
+									v-for="(item, index) in specarr"
+									:key="index"
+								>
+									<view class="arrt_name">{{ item.strFlavorGroupName }}</view>
+									<view class="arrt_Iitem-cont">
+										<view
+											class="arrt_Iitem"
+											v-for="(aitem, idx) in item.details"
+											:class="{ choose_item: aitem.Checked }"
+											:key="idx"
+											@click="chooseAttr(index,aitem)"
+										>
+											{{ aitem.strFlavorName }}
+										</view>
 									</view>
 								</view>
-							</view>
+							</template>
 						</view>
 					</scroll-view>
 					<view class="order-footer">
 						<view class="num-control">
-							<view class="price">
-								¥{{
-									chooseGoods.activePrice
-										? chooseGoods.activePrice
-										: chooseGoods.price
-								}}
-							</view>
+							<view class="price">¥{{ choosePrice }}</view>
 							<view class="goods-single">
 								<image src="../../static/sub.png" @click="reduceTap(2)"></image>
 								<view class="num">{{ nums }}</view>
@@ -492,6 +499,9 @@ export default {
 	},
 	computed: {
 		...mapGetters(['memberinfo', 'businessType']),
+		choosePrice() {
+			return 0;
+		},
 		headerInfo() {
 			let name = '请选择下单门店 >';
 			if (this.model == 2) {
@@ -1040,6 +1050,7 @@ export default {
 		},
 		//点击商品打开幕布
 		async openOrderMask(goods, index, idx) {
+			let that = this;
 			if (goods.intSell < 0 || goods.intSell == 0) {
 				//售罄和不在售时间内
 				return;
@@ -1051,32 +1062,26 @@ export default {
 					ItemBarCode: this.products[index].strItemBarCode,
 					ProductBarCode: goods.strProductBarCode,
 					interFaces: 'getOneProduct',
-					ProductName: goods.productname
+					ProductName: goods.strProductName
 				};
+				console.log(11111,data)
 				let res = await api.getProductMenu(data, true);
-				let chooseGoods = res.Message; //选择的商品
-
-				console.log(8888, chooseGoods, chooseGoods.flavorGroup);
-				this.handleData(chooseGoods); //处理规格属性
-			} catch (err) {}
-			// let that = this;
-			// if (this.storeInfo.isBusy) {
-			// 	return this.$msg.showToast('茶饮制作繁忙中');
-			// }
-
-			// let popHeightInfo = that.popHeightInfo;
-			// let chooseGoods = Object.assign({}, goods); //第一层深拷贝，防止价格影响
-			// chooseGoods.indexarr = {
-			// 	idx: idx,
-			// 	index: index
-			// };
-			// that.nums = 1;
-			// this.chooseGoods = chooseGoods;
-			// if (goods.type == 1 && goods.isRequirement) {
-			// 	that.handleData(goods.property);
-			// }
-			// that.maskarr.shopCarShow = false;
-			// that.openAnimation(1);
+				let newObj = {
+					strDescription: res.Message.product[0].strDescription,
+					standard: res.Message.standard,
+				}
+				let chooseGoods = Object.assign(newObj, goods); //第一层深拷贝，防止价格影响
+				that.handleData(res.Message); //处理规格属性
+				chooseGoods.indexarr = {
+					idx: idx,
+					index: index
+				};
+				that.nums = 1;
+				that.chooseGoods = chooseGoods;
+				that.maskarr.shopCarShow = false;
+				that.openAnimation(1);
+			} catch (err) {
+			}
 		},
 		//选择规格
 		chooseAttr(index, idx) {
@@ -1118,70 +1123,21 @@ export default {
 		},
 		//处理规格属性
 		handleData(data) {
-			let specarr = chooseGoods.flavorGroup; //规格数组
-			specarr.forEach((item, index) => {
-				switch (item.strFlavorGroupName) {
-					case '无':
-						specarr.splice(index, 1);
-						break;
-					case '规格':
-						if (chooseGoods.standard.length) {
-							this.$set(specarr[index], 'details', chooseGoods.standard);
-						} else {
-							specarr.splice(index, 1);
-						}
-						break;
-					case '口味':
-						if (chooseGoods.addoption.length) {
-							this.$set(specarr[index], 'details', chooseGoods.addoption);
-						} else {
-							specarr.splice(index, 1);
-						}
-						break;
-					case '温度':
-						if (chooseGoods.temp.length) {
-							this.$set(specarr[index], 'details', chooseGoods.temp);
-						} else {
-							specarr.splice(index, 1);
-						}
-						break;
-					case '甜度':
-						if (chooseGoods.sweet.length) {
-							this.$set(specarr[index], 'details', chooseGoods.sweet);
-						} else {
-							specarr.splice(index, 1);
-						}
-						break;
-					case '加料':
-						if (chooseGoods.flavor.length) {
-							this.$set(specarr[index], 'details', chooseGoods.flavor);
-						} else {
-							specarr.splice(index, 1);
-						}
-						break;
+			let specarr = [], //规格数组
+				params = ['addoption', 'temp', 'sweet', 'flavor', 'noodle'];
+			for (let i in params) {
+				if (data[params[i]].length) {
+					data[params[i]].forEach(item => {
+						item.Checked = false;
+					});
+					specarr.push({
+						details: data[params[i]],
+						strFlavorGroupName: data[params[i]][0].GroupName, //分组名称
+						MaxSelect: data[params[i]][0].MaxSelect //最多可选
+					});
 				}
-			});
+			}
 			this.specarr = specarr;
-			// let specarr = [];
-			// let currtabarr = [];
-			// if (data.standard) {
-			// 	specarr.push(data.standard);
-			// }
-			// for (let i in data.propertys) {
-			// 	specarr.push(data.propertys[i]);
-			// }
-			// for (let i = 0; i < specarr.length; i++) {
-			// 	this.computeSpecPrice(0, specarr[i].items[0].price);
-			// 	currtabarr.push(0);
-			// }
-			// this.currtabarr = currtabarr;
-			// if (data.choices) {
-			// 	data.choices.items.forEach(item => {
-			// 		this.$set(item, 'selected', false);
-			// 	});
-			// 	specarr.push(data.choices);
-			// }
-			// this.specarr = specarr;
 		},
 		//展现动画
 		openAnimation(type) {
@@ -1845,10 +1801,10 @@ export default {
 			margin: 0 auto;
 			@extend %flex-alcent;
 			justify-content: center;
-			border-radius: $radius-md;
 
 			image {
-				@include rect(372upx, 100%);
+				@include rect(100%, 100%);
+				border-radius: $radius-md;
 			}
 
 			.close-mask {
