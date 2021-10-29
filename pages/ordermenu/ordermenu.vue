@@ -1086,41 +1086,49 @@ export default {
 		//选择规格
 		chooseAttr(index, idx) {
 			let that = this;
-			let attr = that.specarr[index].items[idx];
-			let price = null;
-			if (that.specarr[index].items[idx].isSoldOut) {
-				return this.$msg.showToast(
-					'很抱歉！' +
-						that.specarr[index].items[idx].name +
-						'已经售罄了哦，正在加紧补货中～'
-				);
-			}
-			if (index == that.specarr.length - 1 && attr.hasOwnProperty('selected')) {
-				if (that.specarr[index].items[idx].selected) {
-					//已经选中情况   减去价格
-					that.computeSpecPrice(attr.price, 0);
-				} else {
-					//选中情况   增加价格
-					that.computeSpecPrice(0, attr.price);
+			console.log(1111,that.specarr[index])
+			let checkNums = that.specarr[index].details.reduce((total,cur) => {
+				console.log(cur.Checked)
+				if(cur.Checked){
+					return total++
 				}
-				that.specarr[index].items[idx].selected = !attr.selected;
-			} else {
-				let price = that.specarr[index].items[that.currtabarr[index]].price;
-				that.computeSpecPrice(price, attr.price); //先减
-				that.currtabarr.splice(index, 1, idx);
-			}
+			},0)
+			console.log(checkNums)
+			// let attr = that.specarr[index].items[idx];
+			// let price = null;
+			// if (that.specarr[index].items[idx].isSoldOut) {
+			// 	return this.$msg.showToast(
+			// 		'很抱歉！' +
+			// 			that.specarr[index].items[idx].name +
+			// 			'已经售罄了哦，正在加紧补货中～'
+			// 	);
+			// }
+			// if (index == that.specarr.length - 1 && attr.hasOwnProperty('selected')) {
+			// 	if (that.specarr[index].items[idx].selected) {
+			// 		//已经选中情况   减去价格
+			// 		that.computeSpecPrice(attr.price, 0);
+			// 	} else {
+			// 		//选中情况   增加价格
+			// 		that.computeSpecPrice(0, attr.price);
+			// 	}
+			// 	that.specarr[index].items[idx].selected = !attr.selected;
+			// } else {
+			// 	let price = that.specarr[index].items[that.currtabarr[index]].price;
+			// 	that.computeSpecPrice(price, attr.price); //先减
+			// 	that.currtabarr.splice(index, 1, idx);
+			// }
 		},
 		//计算商品的规格价格
-		computeSpecPrice(price, attrPrice) {
-			let chooseGoods = this.chooseGoods;
-			if (chooseGoods.activePrice) {
-				let activePrice = subtr(chooseGoods.activePrice, price);
-				this.chooseGoods.activePrice = accAdd(activePrice, attrPrice);
-			} else {
-				let nochangePrice = subtr(chooseGoods.price, price);
-				this.chooseGoods.price = accAdd(nochangePrice, attrPrice);
-			}
-		},
+		// computeSpecPrice(price, attrPrice) {
+		// 	let chooseGoods = this.chooseGoods;
+		// 	if (chooseGoods.activePrice) {
+		// 		let activePrice = subtr(chooseGoods.activePrice, price);
+		// 		this.chooseGoods.activePrice = accAdd(activePrice, attrPrice);
+		// 	} else {
+		// 		let nochangePrice = subtr(chooseGoods.price, price);
+		// 		this.chooseGoods.price = accAdd(nochangePrice, attrPrice);
+		// 	}
+		// },
 		//处理规格属性
 		handleData(data) {
 			let specarr = [], //规格数组
