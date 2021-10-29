@@ -27,7 +27,7 @@
 						<image src="../../static/homepage/home_takeit_pic.png" mode=""></image>
 					</view>
 					<view class="" @click="jumpMenu(1)">
-						<image src="../../static/homepage/home_takeout_pic.png"></image>
+						<image src="../../static/homepage/home_coupon.jpeg"></image>
 					</view>
 				</view>
 			</view>
@@ -524,7 +524,10 @@ export default {
 		//跳转点单页，判断自取或外卖
 		jumpMenu(type) {
 			if (type == 1) {
-				goUserAddress('select');
+				// goUserAddress('select');
+				uni.navigateTo({
+					url:'../discount/discount'
+				})
 			} else {
 				this.$store.commit('changebussiness', [2]);
 				uni.switchTab({

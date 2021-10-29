@@ -82,7 +82,6 @@ export default {
 			let res =  await api.getStores({
 				storeId: app.globalData.brandId
 			},true);
-			console.log(6666,res)
 			if(res.code == 200){
 				this.storeList = res.data;
 				this.ischoseStore = !this.ischoseStore;

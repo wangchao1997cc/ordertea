@@ -198,6 +198,15 @@
         
       
        
+        ,{
+            "path" : "pages/discount/discount",
+            "style" :                                                                                    
+            {
+                "navigationBarTitleText": "双十一特惠",
+                "enablePullDownRefresh": false
+            }
+            
+        }
     ],
 	"globalStyle": {
 		"navigationBarTextStyle": "black",

@@ -1,6 +1,6 @@
 <template>
 	<view class="content">
-		<view class="shopping-head">
+		<!-- <view class="shopping-head">
 			<view class="tit-juide">
 				可用积分
 			</view>
@@ -10,7 +10,7 @@
 					兑换记录
 				</view>
 			</view>
-		</view>
+		</view> -->
 		<view class="goods-box">
 			<view class="goods-item" v-for="(item,index) in productList" :key="index" @click="jumpGoodsDesc(item)">
 				<view class="goods-pic">
@@ -94,19 +94,19 @@
 				if(res.code==200){
 					let productList = [];
 					if(res.data.length){
-						for(let i in res.data){
-							if(res.data[i].id != '1837' && res.data[i].id != 1838){
-								productList.push(res.data[i])
+						res.data.forEach(item => {
+							if(item.id == '1838' || item.id == '1837'){
+								productList.push(item)
 							}
-						}
+						})
 					}
-					
-					if(that.page==0){
-						that.productList = productList;
-						that.totalPageindex = Math.floor(res.total / 10);
-					}else{
-						that.productList = that.productList.concat(productList);
-					}
+					this.productList = productList;
+					// if(that.page==0){
+					// 	that.productList = res.data;
+					// 	that.totalPageindex = Math.floor(res.total / 10);
+					// }else{
+					// 	that.productList = that.productList.concat(res.data);
+					// }
 				}
 			},
 			//跳转兑换记录

@@ -11,7 +11,7 @@
 					{{ storeInfo.cityName + storeInfo.districtName + storeInfo.storeAddress }}
 				</text>
 			</view>
-		<!-- 	<view class="takemeal-time" @click="openChooseTime">
+			<!-- 	<view class="takemeal-time" @click="openChooseTime">
 				<text>{{ type == 1 ? '预定送达时间' : '取餐时间' }}</text>
 				<text>{{ serviceTime ? serviceTime : '' }}</text>
 			</view> -->
@@ -98,6 +98,28 @@
 				</view>
 			</view>
 		</view>
+		<!-- 充值套餐提示 -->
+		<view class="recharge-info" v-if="member" @click="jumpRecharge">
+			<view class="recharge-tit">
+				<view class="item-t">
+					<image class="re_juide" src="../../static/recharge_juide.png"></image>
+					<text>任选充值</text>
+				</view>
+				<view class="item-t">
+					去查看
+					<image class="arrow_right" src="../../static/homepage/right.png"></image>
+				</view>
+			</view>
+			<scroll-view class="recharge-box" scroll-x>
+				<view class="recharge-item" v-for="(item, index) in rechargeList" :key="index">
+					<image v-if="index==0" class="discount-tag" src="../../static/recharge_tag.png"></image>
+					<view class="recharge-desc">
+						<text>充值 ¥ {{ item.amount }}</text>
+						<view class="describe">{{ item.ticketNames }}</view>
+					</view>
+				</view>
+			</scroll-view>
+		</view>
 		<view class="otherinfo">
 			<view class="other-item" @click="jumpOrederReark">
 				<text>订单备注</text>
@@ -173,7 +195,9 @@
 		</view>
 		<view class="toast-box" v-if="showTitle">
 			<view class="wx-toast-content">
-				<view class="wx-toast-toast"> <text>{{ showTitle }}</text> </view>
+				<view class="wx-toast-toast">
+					<text>{{ showTitle }}</text>
+				</view>
 			</view>
 		</view>
 	</view>
@@ -181,7 +205,7 @@
 
 <script>
 import api from '../../WXapi/api.js';
-import { wxPayment } from '../../utils/publicApi.js';
+import { wxPayment, getRecharge } from '../../utils/publicApi.js';
 import { subtr } from '../../utils/utils.js';
 import { goOrderDeatails } from '../../utils/goToPage.js';
 const app = getApp();
@@ -200,7 +224,7 @@ export default {
 			chooseTimeShow: false, //预约时间幕布
 			chooseWareShow: false, //预约餐具幕布
 			animationData: {},
-			timeData: [], //预约时间
+			// timeData: [], //预约时间
 			orderparams: {}, //请求的参数
 			interest: {}, //会员折扣信息
 			remark: null, //订单备注
@@ -211,7 +235,8 @@ export default {
 			address: null, //用户地址
 			forhere: null, //堂食
 			templateIds: [], //微信订阅消息
-			member: false //当前门店是否需要会员部分
+			member: false, //当前门店是否需要会员部分
+			rechargeList: [] //储蓄套餐列表
 		};
 	},
 	onLoad(options) {
@@ -224,6 +249,7 @@ export default {
 		if (that.member) {
 			// uni.showLoading({});
 			that.memberInterest(orderparams); //会员权益计算
+			that.getPackage(); //获取充值套餐
 		} else {
 			that.handleShowData(orderparams); //不使用会员部分
 		}
@@ -244,7 +270,7 @@ export default {
 		if (orderparams.ticketId) {
 			//如果有优惠券
 			this.orderparams = orderparams;
-			this.memberInterest(orderparams,true); //会员权益计算
+			this.memberInterest(orderparams, true); //会员权益计算
 		}
 		if (remark) {
 			this.remark = remark;
@@ -284,6 +310,14 @@ export default {
 			interest.boxFee = data.priceArr.lunchboxfee; //餐盒费
 			this.interest = interest;
 		},
+		//获取充值套餐信息
+		async getPackage() {
+			let res = await getRecharge();
+			if (res && res.length) {
+				this.rechargeList = res;
+				console.log('充值套餐', res);
+			}
+		},
 		//获取当前门店信息
 		async getStore(storeId) {
 			let location = uni.getStorageSync('location');
@@ -305,7 +339,7 @@ export default {
 				// 	this.showTitle = null;
 				// },4000)
 				this.storeInfo = res.data;
-				this.computedTIme(res.data.appointmentTime);
+				// this.computedTIme(res.data.appointmentTime);
 			}
 		},
 		//切换是否使用余额
@@ -376,41 +410,41 @@ export default {
 			});
 		},
 		//计算预约时间
-		computedTIme(timeData) {
-			timeData.forEach(item => {
-				item.times.forEach(aitem => {
-					let timearr = aitem.split('~');
-					timearr = this.handerTime(item.date, timearr[0], timearr[1]);
-					if (item.timearr) {
-						item.timearr.push(...timearr);
-					} else {
-						item.timearr = timearr;
-					}
-				});
-			});
+		// computedTIme(timeData) {
+		// 	timeData.forEach(item => {
+		// 		item.times.forEach(aitem => {
+		// 			let timearr = aitem.split('~');
+		// 			timearr = this.handerTime(item.date, timearr[0], timearr[1]);
+		// 			if (item.timearr) {
+		// 				item.timearr.push(...timearr);
+		// 			} else {
+		// 				item.timearr = timearr;
+		// 			}
+		// 		});
+		// 	});
 
-			this.serviceTime = timeData[0].date + ' ' + timeData[0].timearr[0];
-			this.timeData = timeData;
-		},
+		// 	this.serviceTime = timeData[0].date + ' ' + timeData[0].timearr[0];
+		// 	this.timeData = timeData;
+		// },
 		//时间切段   15分钟为一个时间段
-		handerTime(date, startTime, endTime) {
-			let timerarr = [];
-			startTime = date + ' ' + startTime; //自取开始时间
-			startTime = new Date(startTime.replace(/-/g, '/'));
-			startTime = Date.parse(startTime); //转为时间戳
-			// + (45 * 60000)
-			timerarr.push(new Date(startTime).format('hh:mm:ss'));
-			endTime = date + ' ' + endTime;
-			endTime = new Date(endTime.replace(/-/g, '/'));
-			endTime = Date.parse(endTime); //转为时间戳
-			let totalnum = Math.floor((endTime - startTime) / 1000 / 60 / 15);
-			for (let i = 0; i < totalnum; i++) {
-				startTime += 15 * 60000;
-				timerarr.push(new Date(startTime).format('hh:mm:ss'));
-			}
+		// handerTime(date, startTime, endTime) {
+		// 	let timerarr = [];
+		// 	startTime = date + ' ' + startTime; //自取开始时间
+		// 	startTime = new Date(startTime.replace(/-/g, '/'));
+		// 	startTime = Date.parse(startTime); //转为时间戳
+		// 	// + (45 * 60000)
+		// 	timerarr.push(new Date(startTime).format('hh:mm:ss'));
+		// 	endTime = date + ' ' + endTime;
+		// 	endTime = new Date(endTime.replace(/-/g, '/'));
+		// 	endTime = Date.parse(endTime); //转为时间戳
+		// 	let totalnum = Math.floor((endTime - startTime) / 1000 / 60 / 15);
+		// 	for (let i = 0; i < totalnum; i++) {
+		// 		startTime += 15 * 60000;
+		// 		timerarr.push(new Date(startTime).format('hh:mm:ss'));
+		// 	}
 
-			return timerarr;
-		},
+		// 	return timerarr;
+		// },
 		//前往使用优惠券页面
 		jumpUseCoupons() {
 			if (!this.interest.canUseTotal) {
@@ -524,7 +558,7 @@ export default {
 				latitude: that.location.latitude,
 				menuId: orderparams.menuId,
 				type: type,
-				selfGetTime: that.serviceTime,
+				// selfGetTime: that.serviceTime,
 				payType: 2,
 				// name: interest.card.name,
 				// phone: interest.card.mobile,
@@ -598,8 +632,10 @@ export default {
 						params.products = products;
 						params.memberPreferentials = memberPreferentials;
 						// if (that.type == 3) {
+							
 						await that.requestSubscribeMessage();
 						// }
+						console.log('下单的参数',params)
 						// params = JSON.parse(JSON.stringify(params))
 						let res = await api.placeOrder(params);
 						// uni.hideLoading();
@@ -632,7 +668,12 @@ export default {
 				});
 			});
 		},
-
+		//跳转充值页
+		jumpRecharge(){
+			uni.navigateTo({
+				url: '../wallet/wallet'
+			})
+		},
 		//获取订单详情
 		async getOrderDetail(orderid) {
 			let data = {
@@ -682,6 +723,46 @@ $line-color: rgba(0, 0, 0, 0.14);
 
 .mask {
 	@extend %all-mask;
+}
+.recharge-box {
+	width: 100%;
+	margin-top: 16upx;
+	height: 170upx;
+	white-space: nowrap;
+}
+.recharge-item {
+	@include rect(162upx, 170upx);
+	background: url('https://fnb-merchants.oss-cn-shanghai.aliyuncs.com/409/level/1725dc97ff9b5a7a04dc7366b1a97a9d.png')
+		no-repeat 0 8upx;
+	background-size: 162upx 162upx;
+	position: relative;
+	display: inline-block;
+	margin-left: 48upx;
+	.recharge-desc {
+		@include rect(162upx, 162upx);
+		margin-top: 8upx;
+		padding-top: 40upx;
+		box-sizing: border-box;
+		text-align: center;
+		color: #a8d732;
+
+		text {
+			font-size: 28upx;
+			font-weight: 700;
+		}
+	}
+
+	&:first-child {
+		margin-left: 0;
+	}
+
+	.discount-tag {
+		@include rect(96upx, 32upx);
+		position: absolute;
+		top: 0upx;
+		left: 0upx;
+		z-index: 100;
+	}
 }
 
 .toast-box {
@@ -1082,5 +1163,46 @@ $line-color: rgba(0, 0, 0, 0.14);
 			margin: 18upx 0;
 		}
 	}
+}
+.recharge-info {
+	@include rect(698upx, 314upx);
+	@extend %box-style;
+
+	.recharge-tit {
+		display: flex;
+		height: 44upx;
+		justify-content: space-between;
+		align-items: center;
+		margin-top: 26upx;
+	    view {
+			display: flex;
+		}
+		.item-t {
+			height: 44upx;
+			align-items: center;
+			line-height: 44upx;
+			
+			.re_juide {
+				@include rect(96upx, 32upx);
+				margin-right: 8upx;
+			}
+			text {
+				font-size: 32upx;
+				font-weight: 700;
+			}
+			.arrow_right {
+				@include rect(11upx, 18upx);
+				margin-left: 26upx;
+			}
+		}
+	}
+}
+.describe {
+	white-space: normal;
+	display: block;
+	font-size: 20upx;
+	width: 142upx;
+	margin: 6upx auto 0 auto;
+	@include lineAny(2);
 }
 </style>
