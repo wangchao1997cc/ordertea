@@ -27,7 +27,7 @@
 						<image src="../../static/homepage/home_takeit_pic.png" mode=""></image>
 					</view>
 					<view class="" @click="jumpMenu(1)">
-						<image src="../../static/homepage/home_coupon.jpeg"></image>
+						<image src="../../static/homepage/home_coupon_top.png"></image>
 					</view>
 				</view>
 			</view>

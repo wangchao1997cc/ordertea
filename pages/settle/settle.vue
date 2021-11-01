@@ -77,6 +77,31 @@
 				</text>
 			</view>
 		</view>
+		<!-- 充值套餐提示 -->
+		<view class="recharge-info" v-if="member" @click="jumpRecharge">
+			<view class="recharge-tit">
+				<view class="item-t">
+					<image class="re_juide" src="../../static/recharge_juide.png"></image>
+					<text>任选充值</text>
+				</view>
+				<view class="item-t">
+					去查看
+					<image class="arrow_right" src="../../static/homepage/right.png"></image>
+				</view>
+			</view>
+			<!-- <scroll-view class="recharge-box" scroll-x> -->
+				<view class="recharge-item" v-for="(item, index) in rechargeList" :key="index">
+					<image v-if="index==0" class="discount-tag" src="../../static/recharge_tag.png"></image>
+					<view class="recharge-desc">
+						充值<text> ¥{{ item.amount }}</text>
+						<view class="give-box">
+							送
+						</view>
+						<text>{{ ' ¥' + item.give }}</text>
+					</view>
+				</view>
+			<!-- </scroll-view> -->
+		</view>
 		<view class="balance" @click="switchUseBalance" v-if="member">
 			<text>会员余额支付</text>
 			<view class="box-l">
@@ -98,28 +123,7 @@
 				</view>
 			</view>
 		</view>
-		<!-- 充值套餐提示 -->
-		<view class="recharge-info" v-if="member" @click="jumpRecharge">
-			<view class="recharge-tit">
-				<view class="item-t">
-					<image class="re_juide" src="../../static/recharge_juide.png"></image>
-					<text>任选充值</text>
-				</view>
-				<view class="item-t">
-					去查看
-					<image class="arrow_right" src="../../static/homepage/right.png"></image>
-				</view>
-			</view>
-			<scroll-view class="recharge-box" scroll-x>
-				<view class="recharge-item" v-for="(item, index) in rechargeList" :key="index">
-					<image v-if="index==0" class="discount-tag" src="../../static/recharge_tag.png"></image>
-					<view class="recharge-desc">
-						<text>充值 ¥ {{ item.amount }}</text>
-						<view class="describe">{{ item.ticketNames }}</view>
-					</view>
-				</view>
-			</scroll-view>
-		</view>
+		
 		<view class="otherinfo">
 			<view class="other-item" @click="jumpOrederReark">
 				<text>订单备注</text>
@@ -228,7 +232,7 @@ export default {
 			orderparams: {}, //请求的参数
 			interest: {}, //会员折扣信息
 			remark: null, //订单备注
-			// serviceTime: null, //选择的预计送达时间
+			serviceTime: null, //选择的预计送达时间
 			storeInfo: null, //店铺信息
 			type: null,
 			location: {}, //用户位置信息
@@ -339,7 +343,7 @@ export default {
 				// 	this.showTitle = null;
 				// },4000)
 				this.storeInfo = res.data;
-				// this.computedTIme(res.data.appointmentTime);
+				this.computedTIme(res.data.appointmentTime);
 			}
 		},
 		//切换是否使用余额
@@ -410,41 +414,40 @@ export default {
 			});
 		},
 		//计算预约时间
-		// computedTIme(timeData) {
-		// 	timeData.forEach(item => {
-		// 		item.times.forEach(aitem => {
-		// 			let timearr = aitem.split('~');
-		// 			timearr = this.handerTime(item.date, timearr[0], timearr[1]);
-		// 			if (item.timearr) {
-		// 				item.timearr.push(...timearr);
-		// 			} else {
-		// 				item.timearr = timearr;
-		// 			}
-		// 		});
-		// 	});
-
-		// 	this.serviceTime = timeData[0].date + ' ' + timeData[0].timearr[0];
-		// 	this.timeData = timeData;
-		// },
+		computedTIme(timeData) {
+			timeData.forEach(item => {
+				item.times.forEach(aitem => {
+					let timearr = aitem.split('~');
+					timearr = this.handerTime(item.date, timearr[0], timearr[1]);
+					if (item.timearr) {
+						item.timearr.push(...timearr);
+					} else {
+						item.timearr = timearr;
+					}
+				});
+			});
+			this.serviceTime = timeData[0].date + ' ' + timeData[0].timearr[0];
+			this.timeData = timeData;
+		},
 		//时间切段   15分钟为一个时间段
-		// handerTime(date, startTime, endTime) {
-		// 	let timerarr = [];
-		// 	startTime = date + ' ' + startTime; //自取开始时间
-		// 	startTime = new Date(startTime.replace(/-/g, '/'));
-		// 	startTime = Date.parse(startTime); //转为时间戳
-		// 	// + (45 * 60000)
-		// 	timerarr.push(new Date(startTime).format('hh:mm:ss'));
-		// 	endTime = date + ' ' + endTime;
-		// 	endTime = new Date(endTime.replace(/-/g, '/'));
-		// 	endTime = Date.parse(endTime); //转为时间戳
-		// 	let totalnum = Math.floor((endTime - startTime) / 1000 / 60 / 15);
-		// 	for (let i = 0; i < totalnum; i++) {
-		// 		startTime += 15 * 60000;
-		// 		timerarr.push(new Date(startTime).format('hh:mm:ss'));
-		// 	}
+		handerTime(date, startTime, endTime) {
+			let timerarr = [];
+			startTime = date + ' ' + startTime; //自取开始时间
+			startTime = new Date(startTime.replace(/-/g, '/'));
+			startTime = Date.parse(startTime); //转为时间戳
+			// + (45 * 60000)
+			timerarr.push(new Date(startTime).format('hh:mm:ss'));
+			endTime = date + ' ' + endTime;
+			endTime = new Date(endTime.replace(/-/g, '/'));
+			endTime = Date.parse(endTime); //转为时间戳
+			let totalnum = Math.floor((endTime - startTime) / 1000 / 60 / 15);
+			for (let i = 0; i < totalnum; i++) {
+				startTime += 15 * 60000;
+				timerarr.push(new Date(startTime).format('hh:mm:ss'));
+			}
 
-		// 	return timerarr;
-		// },
+			return timerarr;
+		},
 		//前往使用优惠券页面
 		jumpUseCoupons() {
 			if (!this.interest.canUseTotal) {
@@ -558,7 +561,7 @@ export default {
 				latitude: that.location.latitude,
 				menuId: orderparams.menuId,
 				type: type,
-				// selfGetTime: that.serviceTime,
+				selfGetTime: that.serviceTime,
 				payType: 2,
 				// name: interest.card.name,
 				// phone: interest.card.mobile,
@@ -731,25 +734,41 @@ $line-color: rgba(0, 0, 0, 0.14);
 	white-space: nowrap;
 }
 .recharge-item {
-	@include rect(162upx, 170upx);
-	background: url('https://fnb-merchants.oss-cn-shanghai.aliyuncs.com/409/level/1725dc97ff9b5a7a04dc7366b1a97a9d.png')
-		no-repeat 0 8upx;
-	background-size: 162upx 162upx;
-	position: relative;
-	display: inline-block;
-	margin-left: 48upx;
+	@include rect(100%, 170upx);
+	background: #F7FBEB;
+	border-radius: 8upx;
+	// background-size: 162upx 162upx;
+	// position: relative;
+	// margin-left: 48upx;
+	margin-top: 16upx;
 	.recharge-desc {
-		@include rect(162upx, 162upx);
-		margin-top: 8upx;
-		padding-top: 40upx;
+		@include rect(100%, 170upx);
 		box-sizing: border-box;
 		text-align: center;
 		color: #a8d732;
-
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		
 		text {
-			font-size: 28upx;
-			font-weight: 700;
+			font-size: 46upx;
+			// font-weight: 500;
+			margin-left: 10upx;
+			&:last-child{
+				font-size: 62upx;
+			}
 		}
+	}
+	.give-box{
+		@include rect(68upx,68upx);
+		border-radius: 34upx;
+		line-height: 68upx;
+		background-color: #FA4D4D;
+		transform: rotate(-25deg);
+		margin-left: 18upx;
+		margin-right: 8upx;
+		color: white;
+		font-size: 44upx;
 	}
 
 	&:first-child {
@@ -1165,8 +1184,9 @@ $line-color: rgba(0, 0, 0, 0.14);
 	}
 }
 .recharge-info {
-	@include rect(698upx, 314upx);
+	width: 698upx;
 	@extend %box-style;
+	padding-bottom: 56upx;
 
 	.recharge-tit {
 		display: flex;
@@ -1174,6 +1194,8 @@ $line-color: rgba(0, 0, 0, 0.14);
 		justify-content: space-between;
 		align-items: center;
 		margin-top: 26upx;
+		margin-bottom: 20upx;
+		
 	    view {
 			display: flex;
 		}
@@ -1197,12 +1219,9 @@ $line-color: rgba(0, 0, 0, 0.14);
 		}
 	}
 }
-.describe {
-	white-space: normal;
-	display: block;
-	font-size: 20upx;
-	width: 142upx;
-	margin: 6upx auto 0 auto;
-	@include lineAny(2);
-}
+// .describe {
+// 	text{
+// 		font-size: 62upx;
+// 	}
+// }
 </style>
