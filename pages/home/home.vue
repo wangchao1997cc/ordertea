@@ -254,7 +254,6 @@ export default {
 			interFaces : 'MemberInfoGet',
 		};
 		let memberinfo = await api.getMemberInfo(params);
-		console.log('会员信息',memberinfo.Message[0])
 		this.SET_MEMBERINFO(memberinfo.Message[0]);
 	},
 	onShareAppMessage(res) {

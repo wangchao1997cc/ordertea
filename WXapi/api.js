@@ -47,11 +47,15 @@ const getNearStoreList = (data, isloading) => {
 
 //获取门店对应餐单   //单个商品详情
 const getProductMenu = (data, isloading) => {
-	console.log(11111,data)
 	let interFaces = data.interFaces;
 	return service("Menu",interFaces , "post", data, isloading)
 }
 
+//购物车 订单部分 //添加 //修改 //获取 //订单记录
+const shopCarControl = (data, isloading) => {
+	let interFaces = data.interFaces;
+	return service("Order",interFaces , "post", data, isloading)
+}
 
 
 //获取banner轮播图
@@ -404,4 +408,5 @@ module.exports = {
 	getMemberInfo,
 	getNearStoreList,
 	getProductMenu,
+	shopCarControl,
 }

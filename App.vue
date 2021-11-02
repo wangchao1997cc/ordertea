@@ -16,7 +16,8 @@ export default {
 		orderRefresh: false, //下单后订单列表刷新
 		exchangeSuccess: false, //兑换成功
 		member: false ,//是否启用会员部分
-		shopCode: null,
+		shopCode: null,  //当前店铺code 
+		tablecode: '',  //扫码获取的餐台码
 	},
 	onLaunch: async function() {
 		updateApp();

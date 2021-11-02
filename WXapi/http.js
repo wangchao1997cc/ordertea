@@ -24,9 +24,6 @@ const baseurl_v43 = 'https://crmapi.fnb-tech.com/openapi/' //正式环境	会员
 // var JSESSIONID = store.state.JSESSIONID;
 //使用 data.actionName   请求的方式
 export function service(url, InterFaces, Method, data, isloading) {
-	// if(url != 'Parameters'){
-	// 	url += '/'+InterFaces;
-	// }
 	data.HQCode = appConfig.hqcode;
 	data = JSON.stringify(data);
 	let params = {
