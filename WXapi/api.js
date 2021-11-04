@@ -39,7 +39,7 @@ const getMemberInfo = (data, isloading) => {
 	return service("Member",interFaces , "post", data, isloading)
 }
 
-//获取附近门店列表
+//获取附近门店列表 //门店信息  //门店的城市
 const getNearStoreList = (data, isloading) => {
 	let interFaces = data.interFaces;
 	return service("Shop",interFaces , "post", data, isloading)

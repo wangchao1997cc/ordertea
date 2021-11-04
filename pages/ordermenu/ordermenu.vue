@@ -175,17 +175,17 @@
 												"
 											>
 												<view class="goods-single">
-													<image
+													<!-- <image
 														v-if="titem.nums"
 														src="../../static/sub.png"
 														@click="reduceTap(1, titem)"
 													></image>
 													<view class="num">
 														{{ titem.nums ? titem.nums : '' }}
-													</view>
+													</view> -->
 													<image
 														src="../../static/add.png"
-														@click="addTap(1, titem, index, idx)"
+														@click="addTap(1, titem)"
 													></image>
 												</view>
 											</view>
@@ -292,10 +292,9 @@
 				<!-- 购物车 -->
 				<view class="shopcar-cont" :hidden="maskarr.shopCarCont">
 					<view class="head_jstrItemBarCodee">
-						<view >
-							<!-- @click="reductionData" -->
-							<!-- <image src="../../static/clear.png"></image>
-							<text>清空购物车</text> -->
+						<view @click="reductionData">
+							<image src="../../static/clear.png"></image>
+							<text>清空购物车</text>
 						</view>
 						<view class="close-img" @click="closeAllMask">
 							<image class="close-icon" src="../../static/cha.png"></image>
@@ -571,22 +570,22 @@ export default {
 		// 	return nums;
 		// },
 		//	当前选中商品的价格
-		// productPrice() {
-		// 	let specarr = this.specarr,
-		// 		chooseGoods = this.chooseGoods,
-		// 		productPrice = chooseGoods.floPrice;
-		// 	if (specarr.length) {
-		// 		specarr.forEach(item => {
-		// 			productPrice = item.details.reduce((pre, cur) => {
-		// 				if (cur.Checked) {
-		// 					pre = Number(pre) + Number(cur.floPrice);
-		// 				}
-		// 				return pre;
-		// 			}, productPrice);
-		// 		});
-		// 	}
-		// 	return Number(productPrice) || 0;
-		// },
+		productPrice() {
+			let specarr = this.specarr,
+				chooseGoods = this.chooseGoods,
+				productPrice = chooseGoods.floPrice;
+			if (specarr.length) {
+				specarr.forEach(item => {
+					productPrice = item.details.reduce((pre, cur) => {
+						if (cur.Checked) {
+							pre = Number(pre) + Number(cur.floPrice);
+						}
+						return pre;
+					}, productPrice);
+				});
+			}
+			return Number(productPrice) || 0;
+		},
 		//商品总价格
 	// 	priceArr() {
 	// 		let totalPrice = 0; //总价格
@@ -650,7 +649,7 @@ export default {
 	async onLoad(options) {
 		this.member = app.globalData.member;
 		await this.$onLaunched;
-		console.log(this.openidinfo);
+		// console.log(this.openidinfo);
 		// if (!this.JSESSIONID) {
 		// 	uni.hideTabBar({});
 		// 	await ajaxUserLogin(); //先进行登录
@@ -818,7 +817,7 @@ export default {
 			// }
 			// if (item.jumpType == 2) {
 			// 	// this.$store.commit('adverStatus',item.productPrimaryTypeName);
-			// 	this.jumpProduct(item.productPrimaryTypeName);
+			// 	this.jumpProduct(item.productPrimaryTypeName);	
 			// } else {
 			// 	jumpAdvertise(item);
 			// }
@@ -896,29 +895,69 @@ export default {
 			this.closeAllMask();
 		},
 		//添加按钮
-		addTap(type, goods, index, idx) {
+		addTap(type, goods) {
 			switch (type) {
 				case 1:
-					goods.indexarr = {
-						idx: idx,
-						index: index
-					};
-					if (!goods.nums) {
-						this.$set(goods, 'nums', 1);
-					} else {
-						goods.nums++;
-					}
+					// goods.indexarr = {
+					// 	idx: idx,
+					// 	index: index
+					// };
+					// if (!goods.nums) {
+					// 	this.$set(goods, 'nums', 1);
+					// } else {
+					// 	goods.nums++;
+					// }
 					this.addShopCar(goods);
 					break;
 				case 2:
 					this.nums++;
 					break;
 				case 3:
-					goods.nums++;
-					this.products[goods.indexarr.index].products[goods.indexarr.idx].nums =
-						goods.nums; //同步餐单上的商品数据
+					// goods.nums++;
+					// this.products[goods.indexarr.index].products[goods.indexarr.idx].nums =
+					// 	goods.nums; //同步餐单上的商品数据
+					this.updateShopNums(goods,1);
 					break;
 			}
+		},
+		//修改购物车数量
+		updateShopNums(goods,intQuantity){
+			uni.showLoading({
+				mask:true
+			})
+			let iscombo = false;
+			if(goods.strType.toLowerCase()=='set'){
+				iscombo = true;
+			}
+			let that = this;
+			let product = {
+				intID: goods.intID,//intID=-1时视为新加 非-1时为更新数量
+				ProductBarCode: goods.strProductBarCode,
+				ProductName: '',
+				ProductNum: goods.intProductNum,
+				Quantity: intQuantity,
+				IsCombo:iscombo,
+				Price: 0,
+			    Type: goods.strType,
+				Set: [],
+				Standard: {},
+				Flavor: [],
+				Combo: [],
+			};
+			let message = {
+				HQCode: appConfig.hqcode,
+				ShopCode: app.globalData.shopCode,
+				TableCode: app.globalData.tablecode,
+				Mobile: that.memberinfo.strMobilePhone,
+				MemberCode: that.memberinfo.strMemberCode,
+				WXOpenID: that.openidinfo.openid,
+				Product: [product],
+				interFaces: 'OrderAdd'
+			};
+			api.shopCarControl(message).then(res => {
+				this.shopcar = res.Message[0];
+				this.toUpdateShopCar();//更新购物车
+			});
 		},
 		//减按钮
 		reduceTap(type, goods) {
@@ -941,12 +980,14 @@ export default {
 					this.nums--;
 					break;
 				case 3:
-					if (goods.nums == 1) {
-						this.deleteShopCar(goods);
-					}
-					goods.nums--;
-					this.products[goods.indexarr.index].products[goods.indexarr.idx].nums =
-						goods.nums; //同步餐单上的商品数据
+					// if (goods.nums == 1) {
+					// 	this.deleteShopCar(goods);
+					// }
+					// goods.nums--;
+					// this.products[goods.indexarr.index].products[goods.indexarr.idx].nums =
+					// 	goods.nums; //同步餐单上的商品数据
+					this.updateShopNums(goods,-1);
+					break;
 			}
 		},
 
@@ -977,10 +1018,24 @@ export default {
 				Sender: 'ordermenu'
 			};
 			api.shopCarControl(message).then(res => {
+				uni.hideLoading();
 				this.shopcar = res.Message[0];
+				// this.toUpdateProductNums();  //同步到右侧菜单栏
 				// that.hadleShopCarData(res.Message[0]);
 			});
 		},
+		//购物车数量同步到右侧菜单栏
+		// toUpdateProductNums(){
+		// 	this.products.forEach(item => {
+		// 		item.detail.forEach(aitem => {
+		// 			this.shopcar.forEach(jitem => {
+		// 				if(jitem.strProductBarCode == aitem.strProductBarCode){
+		// 					this.$set(item,'nums',jitem.floQuantity)
+		// 				}
+		// 			})
+		// 		})
+		// 	})
+		// },
 		// hadleShopCarData(data) {
 		// 	// let shopCarData = [];
 		// 	let shopCarData  = data.Detail.map(item => {
@@ -1023,6 +1078,7 @@ export default {
 				...attsArr,
 				Combo: []
 			};
+			
 			let message = {
 				HQCode: appConfig.hqcode,
 				ShopCode: app.globalData.shopCode,
@@ -1034,22 +1090,21 @@ export default {
 				interFaces: 'OrderAdd'
 			};
 			api.shopCarControl(message).then(res => {
+				that.toUpdateShopCar();
 				if (that.allmask) {
 					that.closeAllMask();
-					that.toUpdateShopCar();
-					// that.maskarr.shopCarShow = true;
+					//that.maskarr.shopCarShow = true;
 				}
 			});
-			console.log(message);
+			
 			// if (!goods) {
 			// 	that.$set(that.chooseGoods, 'nums', that.nums);
-			// 	goods = that.chooseGoods;
+			// 	goods = that.chooseGoods;	
 			// 	if (goods.indexarr) {
 			// 		that.products[goods.indexarr.index].products[goods.indexarr.idx].nums =
 			// 			that.nums;
 			// 	}
 			// }
-
 			// let shopcar = this.shopcar;
 			// let currtabarr = that.currtabarr;
 			// let shopitem = {
@@ -1155,10 +1210,10 @@ export default {
 				};
 				let chooseGoods = Object.assign(newObj, goods); //第一层深拷贝，防止价格变动影响
 				that.handleData(res.Message); //处理规格属性
-				chooseGoods.indexarr = {
-					idx: idx,
-					index: index
-				};
+				// chooseGoods.indexarr = {
+				// 	idx: idx,
+				// 	index: index
+				// };
 				that.nums = 1;
 				that.chooseGoods = chooseGoods;
 				that.maskarr.shopCarShow = false;
@@ -1417,11 +1472,11 @@ export default {
 		},
 		//跳转订单页面
 		jumpOrder() {
-			if (this.model == 1 && this.storeInfo.businessStatus[0].busy) {
-				this.noTakeOut();
-				return;
-			}
-			this.closeAllMask();
+			// if (this.model == 1 && this.storeInfo.businessStatus[0].busy) {
+			// 	this.noTakeOut();
+			// 	return;
+			// }
+			// this.closeAllMask();
 			let storeInfo = app.globalData.storeInfo;
 			let memberinfo = uni.getStorageSync('memberinfo');
 			if (!memberinfo && this.member) {
@@ -1429,10 +1484,10 @@ export default {
 			}
 			let shopcar = this.shopcar;
 			let order = [];
-			shopcar.forEach((item, index) => {
+			shopcar.Detail.forEach((item, index) => {
 				let products = {
 					qty: item.nums,
-					discounted: item.discounted,
+					// discounted: item.discounted, //是否享受折扣
 					product_no: item.strItemBarCode,
 					name: item.name,
 					price: item.price,
@@ -1539,7 +1594,7 @@ export default {
 					}
 				}
 			}
-			console.log(products);
+			
 			that.products = products;
 			that.currentId = products[0].strItemBarCode;
 			that.loadingState = true;
@@ -2451,7 +2506,7 @@ export default {
 
 		.shopcar-item-pic {
 			@include rect(150upx, 150upx);
-
+			
 			/* border: 1upx $main-color solid; */
 			image {
 				@include rect(100%, 100%);
@@ -2510,13 +2565,16 @@ export default {
 
 	.close-icon {
 		@include rect(55upx, 55upx);
-		margin-left: 22upx;
+		margin-left: 25upx;
+		margin-top: 15upx;
 	}
 
 	.close-img {
+		
 		@include rect(100upx, 100upx);
 		padding-top: 1upx;
 		margin-right: 12upx;
+		
 	}
 
 	view {
