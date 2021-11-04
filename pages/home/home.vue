@@ -47,7 +47,7 @@
 							<text>再集{{(pointActive.number - pointNum)?(pointActive.number - pointNum):(pointActive.number || 0)}}单可获得好礼</text>
 							<sildermine :config="sliderConfig"></sildermine>
 						</view> -->
-						<view class="juide-text">
+						<!-- <view class="juide-text">
 							<text>
 								再集{{
 									pointActive.number - pointNum
@@ -55,7 +55,7 @@
 										: pointActive.number || 0
 								}}单可获得好礼
 							</text>
-						</view>
+						</view> -->
 					</view>
 					<view class="integral_s" @click="jumpClissIfy(4)">
 						<image src="../../static/homepage/grounp_buy.png"></image>
