@@ -28,7 +28,11 @@
 				currtab: 0,
 				navarr: ['省份', '城市', '区域'],
 				addressData: [], //渲染数据
-				citydata: '', //选中的城市数据
+				citydata: {
+					Region:'',
+					City:'',
+					Area:'',
+				}, //选中的城市数据
 				alldata: [], //返回的所有省份和城市数据
 			}
 		},
@@ -49,24 +53,6 @@
 				}catch(err){
 					
 				}
-				
-				// let data = {
-				// 	sortType: 0
-				// }
-				// let res = await api.getOpenCityList(data, true);
-				// if (res.status == 1) {
-				// 	let province = [];
-				// 	let newobj = [];
-				// 	province = res.data.reduce((preVal, curVal) => { //省份去重
-				// 		newobj[curVal.provinceName] ? '' : newobj[curVal.provinceName] = preVal.push({
-				// 			name: curVal.provinceName,
-				// 			provinceId: curVal.provinceId
-				// 		});
-				// 		return preVal
-				// 	}, [])
-				// 	this.alldata = res.data;
-				// 	this.addressData.push(province);
-				// }
 			},
 			//切换导航栏
 			tabNav(index) {
@@ -75,18 +61,6 @@
 				}
 				this.currtab = index;
 			},
-			//获取省份对应的城市列表
-			// getCityArr(provinceId) {
-			// 	let data = this.alldata;
-			// 	let cityarr = []
-			// 	data.forEach((item) => {
-			// 		item.provinceId == provinceId ? cityarr.push({
-			// 			name: item.cityName,
-			// 			cityId: item.cityId
-			// 		}) : ''
-			// 	})
-			// 	return cityarr;
-			// },
 			//切换地区
 			async switchRegion(item) {
 				let that = this;
@@ -94,20 +68,16 @@
 				let data = {};
 				if (that.currtab != 2) {
 					res = item.children;
-					// switch (that.currtab) {
-					// 	case 0: //通过省份选择城市
-					// 		
-					// 		break;
-					// 	case 1: //通过城市id获取对应的区域
-					// 		res = item.children;
-					// 		break;
-					// };
+					if(that.currtab==0){
+						this.citydata.Region = item.value;
+					}else{
+						this.citydata.City = item.value;
+					}
 					that.navarr[that.currtab] = item.label; //导航栏视图更新
 					that.currtab += 1;
 					if (that.currtab == 2) { //添加全部区域搜索
 						res.unshift({
 							label: '全部区域',
-							districtId: 0,
 						});
 					}
 					if (that.addressData[this.currtab]) { //如果存在则覆盖
@@ -118,6 +88,10 @@
 					
 				} else {
 					that.navarr.splice(2, 1, item.label); //导航栏视图更新
+					this.citydata.Area = item.value;
+					goChoseStore({
+						...this.citydata,
+					})
 					// `?cityId=${that.cityId}&districtId=${item.districtId}`
 					// let citydata = that.citydata;
 					// goChoseStore({
