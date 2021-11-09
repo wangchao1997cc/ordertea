@@ -57,6 +57,21 @@ const shopCarControl = (data, isloading) => {
 	return service("Order",interFaces , "post", data, isloading)
 }
 
+//获取微信订阅消息
+
+
+//获取支付参数
+const getPayMentParams = (data, isloading) => {
+	let interFaces = data.interFaces;
+	return service("Payment", interFaces , "post", data, isloading)
+}
+
+//获取订阅消息
+const getWxaSubscribeTemplates = (data, isloading) => {
+	let interFaces = data.interFaces;
+	return service("WechatAPI", interFaces , "post", data, isloading)
+}
+
 
 //获取banner轮播图
 // const getBannerList = (data, isloading) => {
@@ -133,10 +148,7 @@ const shopCarControl = (data, isloading) => {
 // 	return service('candao.user.getBaseInfo', 'post', data, isloading)
 // }
 
-// //创建订单
-// const placeOrder = (data, isloading) => {
-// 	return service('candao.orderOwn.postOrder', 'post', data, isloading)
-// }
+
 
 // //获取微信订阅消息ID列表
 // const getWxaSubscribeTemplates = (data, isloading) => {
@@ -401,6 +413,8 @@ const shopCarControl = (data, isloading) => {
 
 
 module.exports = {
+	getPayMentParams,
+	getWxaSubscribeTemplates,
 	getConfigure,
 	getUserOpenInfo,
 	getRotation,

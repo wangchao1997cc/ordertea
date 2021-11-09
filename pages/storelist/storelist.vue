@@ -2,7 +2,7 @@
 	<!-- 门店列表 -->
 	<view class="content">
 		<view class="region" @click="choseCity">
-			<text>{{`${address.cityName} ${address.districtName}`}}</text>
+			<text>{{`${address.cityName} ${address.areaName}`}}</text>
 			<image src="../../static/my/right.png"></image>
 		</view>
 		<map id="store-map" :style="{height:unfoldStow?'0px':'400rpx'}" show-location :longitude="maplocation[0]" :latitude="maplocation[1]"
@@ -21,6 +21,7 @@
 	import {
 		conversion
 	} from '../../utils/author.js'
+	import config from '../../config/index.js'
 	import {
 		getRouteParams,
 		goChoseCity
@@ -59,6 +60,7 @@
 		},
 		onLoad() {
 			let data = getRouteParams();
+			// console.log()
 			this.address = data;
 			this.getStoreList(data); //获取地区对应的门店列表
 		},
@@ -74,27 +76,26 @@
 			},
 			//获取地区所对应的门店列表
 			async getStoreList(data) {
-
 				let location = uni.getStorageSync('location');
 				let that = this;
 				let params = {
-					cityId: data.cityId,
-					businessType: that.businessType,
-					coordinate: [location.longitude, location.latitude],
-					pageNow: that.pageindex,
-					pageSize: 30
+					HQCode: config.hqcode,
+					Distance: location, //当前设备的位置
+					interFaces: 'getShopList',
+					GetType: 'onlyList',
+					...data,
 				}
-				data.districtId ? params.districtId = data.districtId : '';
-				let res = await api.getStoreList(params);
-				console.log(res)
-				if (res.status == 1) {
-					let storeList = res.data.rows;
-					storeList.forEach(item => { //换算距离
-						item.distance = item.newdistance = conversion(item.distance) //换算距离
-					})
+				try{
+					let res = await api.getNearStoreList(params);
+					let storeList = res.Message;
+					that.maplocation = {
+						latitude: storeList.floLatitude,
+						longitude: storeList.floLongitude
+					};
 					that.storeList = storeList;
-					that.maplocation = that.storeList[0].coordinate;
 					that.handleMarkers(storeList); //处理地图标记点
+				}catch(err){
+					this.$msg.showToast('当前无营业门店')
 				}
 			},
 			handleMarkers(storeList) {
@@ -104,7 +105,7 @@
 				if (storeList.length) {
 					storeList.forEach((item, index) => {
 						callout = {
-							content: item.storeName,
+							content: item.strShopName,
 							color: "#333333",
 							fontSize: 11,
 							display: "ALWAYS",
@@ -119,8 +120,8 @@
 						data = {
 							id: index,
 							iconPath: "../../static/map/shop.png",
-							longitude: item.coordinate[0],
-							latitude: item.coordinate[1],
+							longitude: item.floLongitude,
+							latitude: item.floLatitude,
 							callout: callout
 						};
 						markers.push(data)

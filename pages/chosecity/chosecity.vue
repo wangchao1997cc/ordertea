@@ -30,8 +30,12 @@
 				addressData: [], //渲染数据
 				citydata: {
 					Region:'',
+					regionName:'',
 					City:'',
+					cityName:'',
 					Area:'',
+					areaName:'',
+					chosecity:true,
 				}, //选中的城市数据
 				alldata: [], //返回的所有省份和城市数据
 			}
@@ -44,10 +48,11 @@
 			async getProvince() {
 				let params = {
 					HQCode:config.hqcode,
+					OpenBusiness:true,
 					interFaces: 'GetOpenBusiness'
 				}
 				try{
-					let res = await api.getNearStoreList(params);
+					let res = await api.getNearStoreList(params,true);
 					this.alldata = res.Message;
 					this.addressData.push(res.Message);
 				}catch(err){
@@ -70,8 +75,10 @@
 					res = item.children;
 					if(that.currtab==0){
 						this.citydata.Region = item.value;
+						this.citydata.regionName = item.label;
 					}else{
 						this.citydata.City = item.value;
+						this.citydata.cityName = item.label;
 					}
 					that.navarr[that.currtab] = item.label; //导航栏视图更新
 					that.currtab += 1;
@@ -88,19 +95,16 @@
 					
 				} else {
 					that.navarr.splice(2, 1, item.label); //导航栏视图更新
-					this.citydata.Area = item.value;
+					this.citydata.areaName = item.label;
+					if(!item.value){
+						delete this.citydata.Area
+					}else{
+						this.citydata.Area = item.value
+					}
+					
 					goChoseStore({
 						...this.citydata,
 					})
-					// `?cityId=${that.cityId}&districtId=${item.districtId}`
-					// let citydata = that.citydata;
-					// goChoseStore({
-					// 	cityId: citydata.cityId,
-					// 	cityName: citydata.cityName,
-					// 	districtId: item.districtId,
-					// 	districtName: item.name,
-					// 	chosecity: true,
-					// }); //前往选择门店
 				}
 			},
 		}

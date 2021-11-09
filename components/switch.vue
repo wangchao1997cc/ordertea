@@ -8,6 +8,7 @@
 
 <script>
 	import {goUserAddress} from '../utils/goToPage.js'
+	import { mapMutations } from 'vuex';
 	export default {
 		data() {
 			return {
@@ -16,13 +17,14 @@
 			};
 		},
 		methods:{
+			...mapMutations('control', ['SET_BUSINESSTYPE']),
 			switchIcon(){
 				let currtab = this.currtab;
-				this.$emit('switchTab',currtab);
+				// this.$emit('switchTab',currtab);
 				if(currtab==0){
 					return goUserAddress('select');
 				}else{
-					this.$store.commit('changebussiness',[2])
+					this.SET_BUSINESSTYPE(2)
 					currtab = 0;
 				}
 				this.currtab = currtab;

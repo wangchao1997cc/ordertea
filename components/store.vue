@@ -4,24 +4,22 @@
 		 @click="choseStore(index,item)">
 			<view class="single-l-info">
 				<view class="single-store-name">
-					<view class="single-store-label" v-if="type" :class="{greybg:!item.isServiceTime}">
-						{{item.isServiceTime?(item.isBusy?'繁忙中':'营业中'):'休息中'}}
+					<view class="single-store-label" v-if="type" :class="{greybg:item.blnBusinessState == 'True'}">
+						{{item.strBusinessState}}
 						<!-- isServiceTime -->
 					</view>
-					<text>{{item.storeName}}</text>
+					<text>{{item.strShopName}}</text>
 				</view>
 				<view class="single-address">
 					<image src="../static/address_icon.png"></image>
 					<view class="single-address-info">
-						{{`${item.provinceName}-${item.districtName}-${item.storeAddress}`}}
+						{{`${item.strRegionName}-${item.strCityName}-${item.strAreaName}`}}
 					</view>
 				</view>
 				<view class="time-info" v-if="type">
 					<image src="../static/time_icon.png"></image>
 					<view class="time-box">
-						<block v-for="(time_item,idx) in item.businessTimes" :key="idx">
-							<text>{{`${time_item.beginTime}-${time_item.endTime}`}}\n</text>
-						</block>
+						{{item.strBusinessTime}}
 					</view>
 					<!-- <text>10:00-24:00</text> -->
 				</view>
@@ -33,10 +31,10 @@
 			<view class="single_r" :class="{on:type}">
 				<view class="go-look" @click="jumpSoreMenu(item)">
 					<view class="place_order" v-if="type">去下单\n</view>
-					<text>距离您{{item.newdistance}}</text>
+					<text>距离您{{item.strDistance}}</text>
 				</view>
 				<view class="tel-info" v-if="type">
-					<image src="../static/tel_icon.png" @click="callPhone(item.phoneNumberList[0])"></image>
+					<image src="../static/tel_icon.png" @click="callPhone(item.strTelephoneNum)"></image>
 					<image src="../static/store_address_icon.png" @click="jumpMap(item)"></image>
 				</view>
 			</view>
@@ -77,46 +75,46 @@
 		components: {
 			minesilder,
 		},
-		watch:{
-			nearList(nearList){
-				let callcarr = [];
-				// let nearList = this.nearList;
-				if (nearList.length) {
-					for (let i in nearList) {
-						callcarr[i] = waitLineUp({
-							storeCode: nearList[i].extraStoreId
-						})
-					}
-					Promise.all(callcarr).then(values => {
-						let sliderConfig = this.sliderConfig;
-						values.forEach(item => {
-							if (item && item.orderCount) {
-								let percent;
-								let orderTime = item.orderTime;
-								if (orderTime < 15 && orderTime != 0) {
-									percent = 5
-								} else if (orderTime > 15 && orderTime < 25) {
-									percent = 20
-								} else if (orderTime > 25 && orderTime < 45) {
-									percent = 40
-								} else if (orderTime > 45 && orderTime < 65) {
-									percent = 60
-								} else if (orderTime > 65 && orderTime < 90) {
-									percent = 80
-								} else if (orderTime > 90) {
-									percent = 100
-								}
-								sliderConfig.progressbar = percent + "%";
-								item.sliderConfig = sliderConfig;
-							}
-						})
-						// console.log(1111,values)
-						this.busyarr =  values;
-					})
+		// watch:{
+		// 	nearList(nearList){
+		// 		let callcarr = [];
+		// 		// let nearList = this.nearList;
+		// 		if (nearList.length) {
+		// 			for (let i in nearList) {
+		// 				callcarr[i] = waitLineUp({
+		// 					storeCode: nearList[i].extraStoreId
+		// 				})
+		// 			}
+		// 			Promise.all(callcarr).then(values => {
+		// 				let sliderConfig = this.sliderConfig;
+		// 				values.forEach(item => {
+		// 					if (item && item.orderCount) {
+		// 						let percent;
+		// 						let orderTime = item.orderTime;
+		// 						if (orderTime < 15 && orderTime != 0) {
+		// 							percent = 5
+		// 						} else if (orderTime > 15 && orderTime < 25) {
+		// 							percent = 20
+		// 						} else if (orderTime > 25 && orderTime < 45) {
+		// 							percent = 40
+		// 						} else if (orderTime > 45 && orderTime < 65) {
+		// 							percent = 60
+		// 						} else if (orderTime > 65 && orderTime < 90) {
+		// 							percent = 80
+		// 						} else if (orderTime > 90) {
+		// 							percent = 100
+		// 						}
+		// 						sliderConfig.progressbar = percent + "%";
+		// 						item.sliderConfig = sliderConfig;
+		// 					}
+		// 				})
+		// 				// console.log(1111,values)
+		// 				this.busyarr =  values;
+		// 			})
 					
-				}
-			}
-		},
+		// 		}
+		// 	}
+		// },
 		// computed: {
 			// aaa(){
 			// 	return 1111
@@ -158,9 +156,9 @@
 			},
 			//前往此店铺的点餐页
 			jumpSoreMenu(item) {
-				if (item.isBusy) {
-					return this.$msg.showToast('门店忙碌中，请选择其他门店')
-				}
+				// if (item.blnBusinessState == 'True') {
+				// 	return this.$msg.showToast('门店忙碌中，请选择其他门店')
+				// }
 				app.globalData.storeInfo = item;
 				if (this.type) {
 					this.$store.commit('copy', item.storeId);

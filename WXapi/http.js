@@ -112,6 +112,7 @@ function request(header, url, data, isloading) {
 					if (e.data.Result) {
 						resolve(e.data);
 					} else {
+						reject(e.data)
 						showToast(e.data.ErrorMsg || '错误请联系客服人员')
 					}
 				} else { //错误提示

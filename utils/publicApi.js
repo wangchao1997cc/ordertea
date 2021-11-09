@@ -128,8 +128,8 @@ export const wxPayment = (payment) => {
 	return new Promise((resolve, reject) => {
 		uni.requestPayment({
 			'timeStamp': payment.timeStamp,
-			'nonceStr': payment.nonceStr,
-			'package': payment.package,
+			'nonceStr': payment.Noncestr,
+			'package': 'prepay_id=' + payment.prepay_id,
 			'signType': payment.signType,
 			'paySign': payment.paySign,
 			'success': function(res) {

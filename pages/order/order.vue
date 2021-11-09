@@ -38,12 +38,13 @@
 	import api from '../../WXapi/api.js'
 	import { goOrderDeatails } from '../../utils/goToPage.js'
 	import nodata from '../../components/nodata.vue';
+	import {mapGetters} from 'vuex';
+	import appConfig from '../../config/index.js'
+	
 	export default {
 		data() {
 			return {
-				pageNow:0,   //当前页数
 				orderList: [],  //订单列表
-				isNexPage:true,   //是否有下一页
 			}
 		},
 		onLoad() {
@@ -53,12 +54,11 @@
 			let orderRefresh = app.globalData.orderRefresh;
 			if(orderRefresh){
 				app.globalData.orderRefresh = false;
-				this.pageNow = 0;
-				this.isNexPage = true;
 				this.getOrderList();
 			}
 		},
 		computed:{
+			...mapGetters(['memberinfo', 'businessType', 'paymentMode']),
 			config() {
 				let nodatashow = true;
 				if (this.orderList && !this.orderList.length) {
@@ -70,39 +70,45 @@
 				}
 			},
 		},
-		//页面触底加载分页
-		onReachBottom: function() {
-			let that = this;
-			if (!that.isNexPage) {
-				return
-			}
-			that.pageNow++;
-			that.getOrderList();
-		},
+		// //页面触底加载分页
+		// onReachBottom: function() {
+		// 	let that = this;
+		// 	if (!that.isNexPage) {
+		// 		return
+		// 	}
+		// 	that.pageNow++;
+		// 	that.getOrderList();
+		// },
 		components:{
 			nodata
 		},
 		methods: {
 			//获取订单数据
 		    async getOrderList(){
+				let that = this;
 				let data = {
-					pageNow: this.pageNow,
-					pageSize: 10,
+					HQCode: appConfig.hqcode,
+					MemberCode: that.memberinfo.strMemberCode,
+					Mobile: that.memberinfo.strMobilePhone,
+					WXOpenID: that.memberinfo.strWXOpenID,
+					GetDetail: false,
+					interFaces: 'OrderRecord'
 				}
-				let res = await api.getOrderList(data,true);
-				if(res.status==1){
-					if(!res.data.length){
-						return this.isNexPage = false;
-					}
-					if(res.data.length < 10){
-						this.isNexPage = false
-					}
-					if(this.pageNow==0){
-						this.orderList = res.data
-					}else{
-						this.orderList = this.orderList.concat(res.data)
-					}
-				}
+				let res = await api.shopCarControl(data,true);
+				console.log('获取订单数据',res)
+				// if(res.status==1){
+				// 	if(!res.data.length){
+				// 		return this.isNexPage = false;
+				// 	}
+				// 	if(res.data.length < 10){
+				// 		this.isNexPage = false
+				// 	}
+				// 	if(this.pageNow==0){
+				// 		this.orderList = res.data
+				// 	}else{
+				// 		this.orderList = this.orderList.concat(res.data)
+				// 	}
+				// }
 			},
 			//跳转订单详情
 			jumpOrderDetail(orderId){
