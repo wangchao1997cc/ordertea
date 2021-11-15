@@ -70,7 +70,6 @@
 				type: Boolean,
 				default: false,
 			},
-
 		},
 		components: {
 			minesilder,
@@ -130,6 +129,7 @@
 		// 	}
 		// },
 		methods: {
+			// ...mapMutations('control', ['SET_STOREID']),
 			//点击选择店铺
 			choseStore(index, item) {
 				if (this.currtab == index) {
@@ -156,12 +156,13 @@
 			},
 			//前往此店铺的点餐页
 			jumpSoreMenu(item) {
-				// if (item.blnBusinessState == 'True') {
-				// 	return this.$msg.showToast('门店忙碌中，请选择其他门店')
-				// }
+				if (item.blnBusinessState == 'True') {
+					return this.$msg.showToast('门店忙碌中，请选择其他门店')
+				}
 				app.globalData.storeInfo = item;
+				app.globalData.shopCode = item.strShopCode;
 				if (this.type) {
-					this.$store.commit('copy', item.storeId);
+					// this.SET_STOREID(item.storeId)
 					uni.switchTab({
 						url: '../ordermenu/ordermenu'
 					})

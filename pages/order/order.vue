@@ -1,33 +1,36 @@
 <template>
 	<view class="content">
-		<view class="order-item" v-for="(item,index) in orderList" :key="index" @click="jumpOrderDetail(item.orderId)">
+		<view class="order-item" v-for="(item,index) in orderList" :key="index" @click="jumpOrderDetail(item)">
 			<view class="order-header">
 				<view class="order-header-l">
 					<view class="order-status">
-						{{item.orderType==2?'自取':(item.orderType==3?'堂食':'外卖')}}<!-- {{item.orderType==2?'自取':(item.orderType==3?'堂食':'外卖')}} -->
+						{{item.strOrderType}}<!-- {{item.orderType==2?'自取':(item.orderType==3?'堂食':'外卖')}} -->
 					</view>
-					<text>{{item.storeName}}</text>
+					<text>{{item.strShopName}}</text>
 				</view>
-				<text class="color-grey">{{item.statusName}}</text>
+				<text class="color-grey">{{item.strTakeMode}}</text>
 			</view>
-			<view class="order-cont">
-				<view class="order-cont-l">
+			<view class="order-cont" v-for="(aitem,idx) in item.Detail" :key="idx">
+				<view class="order-cont-l" >
 					<view class="good-pic">
-						<image :src="item.brandLogo"></image>
+						<image :src="aitem.strPicUrl"></image>
 					</view>
-					<text>{{item.brandName}}</text>
+					<text>{{aitem.strProductName}}</text>
 				</view>
 				<!-- <view class="cont-r">
 					x1
 				</view> -->
 			</view>
 			<view class="time-price">
-				<text>{{item.createTime}}</text>
-				<text>￥{{item.totalPrice}}</text>
+				<text>{{item.datOrderTime}}</text>
+				<text>￥{{item.floTotal}}</text>
 			</view>
-			<view class="order-num">
-				{{item.takeMealSn?'取餐号：'+item.takeMealSn:item.statusName}}
+			<view class="order-num-box">
+				<view class="order-num">
+					{{!item.blnPayed?'待支付':(item.strSelfCode?'取餐号：'+item.strSelfCode:item.strTakeMode)}}
+				</view>
 			</view>
+			
 		</view>
 		<nodata :conf="config"></nodata>
 	</view>
@@ -94,25 +97,17 @@
 					GetDetail: false,
 					interFaces: 'OrderRecord'
 				}
-				let res = await api.shopCarControl(data,true);
-				console.log('获取订单数据',res)
-				// if(res.status==1){
-				// 	if(!res.data.length){
-				// 		return this.isNexPage = false;
-				// 	}
-				// 	if(res.data.length < 10){
-				// 		this.isNexPage = false
-				// 	}
-				// 	if(this.pageNow==0){
-				// 		this.orderList = res.data
-				// 	}else{
-				// 		this.orderList = this.orderList.concat(res.data)
-				// 	}
-				// }
+				try{
+					let res = await api.shopCarControl(data,true);
+					this.orderList = res.Message;
+				}catch(err){
+					
+				}
 			},
 			//跳转订单详情
-			jumpOrderDetail(orderId){
-				goOrderDeatails(orderId)
+			jumpOrderDetail(data){
+				app.globalData.orderDetail = data;
+				goOrderDeatails(data.strSaleOrderNum)
 			}
 		}
 	}
@@ -128,10 +123,11 @@
 		color: #999999;
 	}
 	.order-item{
-		@include rect(698upx,386upx);
+		
 		background-color: $bg-white;
 		border-radius: $radius-md;
 		margin: 25upx auto;
+		padding-bottom: 80upx;
 		@include box-padding(35upx);
 		
 		.order-header{
@@ -185,16 +181,19 @@
 				color: #999999;
 			}
 		}
-		.order-num{
+		.order-num-box{
+			height: 98upx;
 			
+		}
+		.order-num{
 			height: 68upx;
-			// @include box-padding(28upx);
+			padding: 0 28upx;
 			text-align: center;
 			line-height:68upx;
 			border:1upx $main-color solid;
 			color: $main-color;
 			border-radius: 34upx;
-			width: 200upx;
+			// width: 2upx;
 			float: right;
 		}
 	}

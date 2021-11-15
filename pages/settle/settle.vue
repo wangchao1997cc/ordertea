@@ -526,13 +526,11 @@ export default {
 			let rand = Math.floor(Math.random() * 100000000);
 			rand = rand.toString().substring(0, 4);
 			let saleOrderNum = appConfig.hqcode + app.globalData.shopCode + timestamp + rand;
-
 			if (reso == 1) {
 				that.jumpUseCoupons(); //去选择优惠券
 				return;
 			}
 			let currtab = 0;
-
 			let orderparams = that.orderparams;
 			let interest = that.interest;
 			let storeInfo = that.storeInfo;
@@ -549,26 +547,25 @@ export default {
 				sub_openid: that.memberinfo.strWXOpenID,
 				WXOpenID: that.memberinfo.strWXOpenID,
 				timestamp: timestamp,
-				saleOrderNum: saleOrderNum, //订单号
+				SaleOrderNum: saleOrderNum, //订单号
 				noncestr: wxuuid().replace(/-/g, ''), //随机字符串
 				Mobile: that.memberinfo.strMobilePhone, //手机号
-				Memo: that.remark, //备注
+				Memo: that.remark || '', //备注
 				SaleMode: that.businessType, //售卖模式
 				PayMentMode: that.paymentMode[currtab].intPaymentMode, //支付方式
 				PayMentModeName: that.paymentMode[currtab].strPaymentMode, //支付名
 				TakeMode: that.businessType,
-				TakeTime: that.serviceTime.value,
+				TakeTime: that.serviceTime.value,  //预约时间
 				OrderType: 'online', //支付订单的类型online普通订单 groupbuy拼团订单
 				PayTotal: that.interest.afterDiscountTotal,
-				interFaces: 'Prepay'
+				interFaces: 'Prepay',
+				OrderCreate:true,
 			};
-			console.log(params)
 			let data = {
 				...params,
 				PaymentContent: params
 			};
-			console.log(data);
-			let tit = `是否前往【${storeInfo.strShopName}】自提`;
+			let tit = `是否前往【${storeInfo.strShopName}】自提`;	
 			if (type == 1) {
 				tit = '是否确认配送地址';
 			}
@@ -583,8 +580,6 @@ export default {
 							await that.requestSubscribeMessage();
 						}
 						
-						// }
-						// params = JSON.parse(JSON.stringify(params))
 						try {
 							let res = await api.getPayMentParams(data);
 							uni.hideLoading();
@@ -601,17 +596,12 @@ export default {
 										//生成订单记录
 									})
 									.catch(ret => {
-										console.log(ret)
+										goOrderDeatails(params.SaleOrderNum,true) //跳转订单详情
 									});
 							}
-							
-							
 						} catch (err) {
-							
 						}
-
 						// if (res.Result == ) {
-
 						// 	// this.getOrderDetail(res.data); //获取订单详情
 						// } else {
 						// 	this.$msg.showToast(res.msg);
@@ -628,9 +618,13 @@ export default {
 		async checkOutPay(params){
 			try{
 				let payRes = await api.shopCarControl(params);
+				if(payRes.Message[0].strSaleOrderNum){ 
+					goOrderDeatails(payRes.Message[0].strSaleOrderNum,true) //跳转订单详情
+				}
 			}catch(err){
 			}
 		},
+		//发起订阅消息
 		requestSubscribeMessage() {
 			return new Promise((result, ret) => {
 				uni.requestSubscribeMessage({
@@ -643,7 +637,6 @@ export default {
 				});
 			});
 		},
-
 		// //获取订单详情
 		// async getOrderDetail(orderid) {
 		// 	let data = {
@@ -681,9 +674,9 @@ export default {
 			uni.navigateBack({});
 		},
 		//前往订单详情页面
-		goToOrderDetail(orderid) {
-			goOrderDeatails(orderid, true);
-		}
+		// goToOrderDetail(orderid) {
+			
+		// }
 	}
 };
 </script>

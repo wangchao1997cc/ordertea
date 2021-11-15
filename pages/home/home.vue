@@ -246,9 +246,11 @@ export default {
 	},
 	async onLoad(options) {
 		// this.$refs.authorM.showPop();
+		uni.hideTabBar({})
 		this.member = app.globalData.member;
 		await this.$onLaunched;
 		this.init();
+		uni.showTabBar({})
 		let params = {
 			WXOpenID: this.openidinfo.openid,
 			interFaces : 'MemberInfoGet',

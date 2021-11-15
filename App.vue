@@ -18,6 +18,8 @@ export default {
 		member: false ,//是否启用会员部分
 		shopCode: null,  //当前店铺code 
 		tablecode: '',  //扫码获取的餐台码
+		orderDetail: null,
+		payMethod: null,
 	},
 	onLaunch: async function() {
 		updateApp();

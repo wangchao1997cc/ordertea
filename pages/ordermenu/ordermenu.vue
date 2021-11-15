@@ -148,13 +148,12 @@
 								<view class="goods-desc">{{ titem.desc }}</view>
 								<view class="goods-footer">
 									<view class="goods-price">
-										<text>
+										
 											¥{{
 												titem.activePrice
 													? titem.activePrice
 													: titem.floPrice
-											}}
-										</text>
+											}} <text>/{{titem.strUnitName}} {{titem.strStartRate || ''}}</text>
 										<text class="oldprice" v-if="titem.activePrice">
 											¥{{ titem.floPrice }}
 										</text>
@@ -252,6 +251,7 @@
 											:key="idx"
 											@click="chooseAttr(index, aitem)"
 										>
+										
 											{{ aitem.strFlavorName }}
 										</view>
 									</view>
@@ -390,8 +390,8 @@
 		<view class="nobusiness" v-if="storeInfo.blnBusinessState == 'True'">
 			<text>门店休息中</text>
 			<view class="bussiness-time">
-				<text v-for="(item, index) in storeInfo.businessTimes" :key="index">
-					营业时间：{{ ' ' + item.beginTime + '-' + item.endTime }}
+				<text >
+					营业时间：{{storeInfo.strBusinessTime}}
 				</text>
 			</view>
 		</view>
@@ -593,6 +593,11 @@ export default {
 	},
 
 	onShow: function onShow() {
+		let storeInfo = app.globalData.storeInfo;
+		if(storeInfo && this.storeInfo.strShopCode != storeInfo.strShopCode){
+			this.storeInfo = storeInfo;
+			this.getShopControlInfo();
+		}
 		// let that = this;
 		// if (that.storeId) {
 		//如果有storeId 并且不是同一家店铺则刷新点餐
@@ -731,26 +736,26 @@ export default {
 			
 		},
 		//获取当前门店信息
-		async getStore(storeId) {
-			let that = this;
-			location = that.location;
-			let data = {
-				storeId: storeId,
-				businessType: that.$store.state.businessType,
-				coordinate: [location.longitude, location.latitude]
-			};
-			let res = await api.getStore(data);
-			if (res.status == 1) {
-				let storeInfo = res.data;
-				storeInfo.newdistance = conversion(storeInfo.distance); //换算距离
-				that.storeInfo = storeInfo;
-				if (app.globalData.storeInfo.storeId != storeId) {
-					// 当onshow刷新店铺
-					that.getStoreMenu(storeInfo.storeId); //获取餐单
-				}
-				app.globalData.storeInfo = storeInfo;
-			}
-		},
+		// async getStore(storeId) {
+		// 	let that = this;
+		// 	location = that.location;
+		// 	let data = {
+		// 		storeId: storeId,
+		// 		businessType: that.$store.state.businessType,
+		// 		coordinate: [location.longitude, location.latitude]
+		// 	};
+		// 	let res = await api.getStore(data);
+		// 	if (res.status == 1) {
+		// 		let storeInfo = res.data;
+		// 		storeInfo.newdistance = conversion(storeInfo.distance); //换算距离
+		// 		that.storeInfo = storeInfo;
+		// 		if (app.globalData.storeInfo.storeId != storeId) {
+		// 			// 当onshow刷新店铺
+		// 			that.getStoreMenu(storeInfo.storeId); //获取餐单
+		// 		}
+		// 		app.globalData.storeInfo = storeInfo;
+		// 	}
+		// },
 		// switchTab() {
 		// 	this.showdetail = true;
 		// },
@@ -985,7 +990,6 @@ export default {
 				...attsArr,
 				Combo: []
 			};
-
 			let message = {
 				HQCode: appConfig.hqcode,
 				ShopCode: app.globalData.shopCode,
@@ -1011,12 +1015,11 @@ export default {
 		//确认选择的店铺
 		switchStore(store) {
 			this.storeInfo = store;
-			this.getStoreMenu(store.storeId);
+			this.getStoreMenu();
 			// that.getActive(store.);
 		},
 		//点击商品打开幕布
 		async openOrderMask(goods, index, idx) {
-			console.log(goods)
 			let that = this;
 			if (goods.intSell < 0 || goods.intSell == 0) {
 				//售罄和不在售时间内
@@ -1028,24 +1031,30 @@ export default {
 					ShopCode: app.globalData.shopCode,
 					ItemBarCode: that.products[index].strItemBarCode,
 					ProductBarCode: goods.strProductBarCode,
-					interFaces: 'getOneProduct',
+					interFaces: 'getProductDetail',
 					ProductName: goods.strProductName
 				};
-				let res = await api.getProductMenu(data, true);
-				let newObj = {
-					strDescription: res.Message.product[0].strDescription,
-					standard: res.Message.standard
-				};
-				let chooseGoods = Object.assign(newObj, goods); //第一层深拷贝，防止价格变动影响
-				that.handleData(res.Message); //处理规格属性
+				try{
+					let res = await api.getProductMenu(data, true);
+					let newObj = {
+						strDescription: res.Message.product[0].strDescription,
+						standard: res.Message.standard
+					};
+					let chooseGoods = Object.assign(newObj, goods); //第一层深拷贝，防止价格变动影响
+					that.handleData(res.Message); //处理规格属性
+					that.nums = 1;
+					that.chooseGoods = chooseGoods;
+					that.maskarr.shopCarShow = false;
+					that.openAnimation(1);
+				}catch(err){
+					console.log(err)
+				}
+				
 				// chooseGoods.indexarr = {
 				// 	idx: idx,
 				// 	index: index
 				// };
-				that.nums = 1;
-				that.chooseGoods = chooseGoods;
-				that.maskarr.shopCarShow = false;
-				that.openAnimation(1);
+				
 			} catch (err) {}
 		},
 		//选择规格
@@ -1094,7 +1103,6 @@ export default {
 					specarr.push(arrts);
 				}
 			}
-			console.log('规格属性', specarr);
 			this.specarr = specarr;
 		},
 		//展现动画
@@ -1142,7 +1150,7 @@ export default {
 			let data = {
 				ShopCode: this.storeInfo.strShopCode,
 				From: 'XCX',
-				interFaces: 'getMenu'
+				interFaces: 'getMenuPublish'
 			};
 			let res = await api.getProductMenu(data);
 			that.handleShopData(res.Message);
@@ -2121,7 +2129,7 @@ export default {
 .right-aside {
 	flex: 1;
 	overflow: hidden;
-	padding: 0 46upx 0 20upx;
+	padding: 0 36upx 0 20upx;
 	box-sizing: border-box;
 	background-color: $bg-white;
 
@@ -2212,6 +2220,11 @@ export default {
 				font-size: 32upx;
 				font-weight: 700;
 				color: $color-red;
+				text{
+					font-size: 22upx;
+					color: #8e8e8e;
+					margin-left: 10upx;
+				}
 			}
 
 			.oldprice {
