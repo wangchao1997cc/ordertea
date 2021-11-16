@@ -617,10 +617,11 @@ export default {
 		//发起结账动作
 		async checkOutPay(params){
 			try{
-				let payRes = await api.shopCarControl(params);
+				let payRes = await api.shopCarControl(params,true);
 				if(payRes.Message[0].strSaleOrderNum){ 
 					goOrderDeatails(payRes.Message[0].strSaleOrderNum,true) //跳转订单详情
 				}
+				uni.hideLoading()
 			}catch(err){
 			}
 		},

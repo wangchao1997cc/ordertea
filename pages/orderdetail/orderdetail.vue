@@ -264,13 +264,12 @@ export default {
 				OrderType: 'online', //支付订单的类型online普通订单 groupbuy拼团订单
 				PayTotal: that.orderdetails.Detail[0].floPricePay,
 				interFaces: 'Prepay',
-				OrderCreate: false,
+				OrderCreate: true,
 			};
 			let data = {
 				...params,
 				PaymentContent: params
 			};
-			console.log(data)
 			try {
 				let res = await api.getPayMentParams(data);
 				uni.hideLoading();

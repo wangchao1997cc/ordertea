@@ -598,6 +598,11 @@ export default {
 			this.storeInfo = storeInfo;
 			this.getShopControlInfo();
 		}
+		if (app.globalData.orderSuccess) {
+			//下单成功
+			this.toUpdateShopCar();
+			app.globalData.orderSuccess = false;
+		}
 		// let that = this;
 		// if (that.storeId) {
 		//如果有storeId 并且不是同一家店铺则刷新点餐
@@ -624,12 +629,7 @@ export default {
 		// 	//页面刷新  店铺
 		// 	this.getStore(this.storeInfo.storeId);
 		// }
-		// if (app.globalData.orderSuccess) {
-		// 	//下单成功
-		// 	this.reductionData();
-		// 	// that.shopcar = []; //清空购物车
-		// 	app.globalData.orderSuccess = false;
-		// }
+		
 		// let chooseAddress = uni.getStorageSync('selectAddress');
 		// if (chooseAddress) {
 		// 	//有地址
@@ -933,6 +933,7 @@ export default {
 				}
 				that.shopcar = res.Message[0];
 				that.hadleShopCarData(res.Message[0].MergeDetail);
+				this.closeAllMask();
 			});
 		},
 		//同步购物车以及菜单
@@ -1468,7 +1469,7 @@ export default {
 						},
 						data => {
 							if (!data) return;
-							item.top = h + 123;
+							item.top = h + 124;
 							h += data.height;
 							if (i == this.products.length - 1) {
 								res();
