@@ -23,8 +23,8 @@
 <script>
 const app = getApp();
 import api from '../WXapi/api.js';
-import { refreshUserInfo, userRegister, ajaxUserLogin } from '../utils/publicApi.js';
-import { mapGetters } from 'vuex';
+import { refreshUserInfo, userRegister } from '../utils/publicApi.js';
+import { mapGetters,mapMutations } from 'vuex';
 import config from '../config/index.js';
 export default {
 	data() {
@@ -37,10 +37,10 @@ export default {
 		...mapGetters(['openidinfo'])
 	},
 	mounted() {
-		console.log(this.openidinfo);
 		this.member = app.globalData.member;
 	},
 	methods: {
+		...mapMutations('user', ['SET_PLUSINFO']),
 		moveHandle() {
 			return;
 		},
@@ -51,33 +51,34 @@ export default {
 			this.isauthorPhone = true;
 		},
 		async decryptPhoneNumber(res) {
+			let that = this;
 			if (res.detail.errMsg == 'getPhoneNumber:ok') {
 				let data = {
 					encryptedData: res.detail.encryptedData,
 					iv: res.detail.iv,
-					SessionKey: this.openidinfo.session_key
+					SessionKey: that.openidinfo.session_key
 				};
 				try {
-					let result = await api.decryptPhoneNumber(data, true);
+					let result = await api.decryptPhoneNumber(data, true); //获取手机号
 					let phone = result.Message.phoneNumber;
-					this.$emit('loginSuccess',true);
-				} catch (err) {}
-				// let memberinfo = null;
-				// if(result && result.status==1){
-				// 	this.$msg.showToast('登录成功');
-				// 	this.$store.commit('changeLogin',true);
-				// 	let userinfo = await refreshUserInfo(true);   //刷新用户信息
-				// 	if(!this.member){    //如果不需要会员部分
-				// 		return
-				// 	}
-				// 	let userdata = {
-				// 		mobile:userinfo.phone,
-				// 		openId:this.$store.state.openid,
-				// 	}
-				// 	memberinfo = await userRegister(userdata);
-				// 	uni.setStorageSync('memberinfo', memberinfo);
-				// }
-				// this.$emit('loginSuccess',memberinfo);
+					let params = {
+						HQCode: config.hqcode,
+						WXOpenID: that.openidinfo.openid,
+						Mobile: phone,
+						interFaces: 'MemberInfoRegister'
+					};
+					let plusInfo =  await api.getUserInfo(params); //plus 注册会员
+					this.SET_PLUSINFO(plusInfo.Message);  //存储会员code
+					if (this.member) {
+						let userdata = {
+							mobile: phone,
+							openId: that.openidinfo.openid
+						};
+						await userRegister(userdata);  //vka 注册会员
+					}
+				} catch (err) {
+					console.log(err);
+				}
 			}
 		}
 	}

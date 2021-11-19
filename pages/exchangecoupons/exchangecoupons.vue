@@ -18,15 +18,15 @@
 <script>
 	const app = getApp();
 	import api from '../../WXapi/api.js'
+	import { mapGetters } from 'vuex';
 	export default {
 		data() {
 			return {
-				memberinfo:null,
 				ticketCode:'',
 			}
 		},
-		onLoad() {
-			this.memberinfo = uni.getStorageSync('memberinfo');
+		computed:{
+			...mapGetters(['memberinfo']),
 		},
 		methods: {
 			//开始兑换

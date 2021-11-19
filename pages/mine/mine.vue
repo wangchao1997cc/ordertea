@@ -109,11 +109,11 @@
 	import {
 		subtr
 	} from '../../utils/utils.js'
+	import { mapGetters } from 'vuex';
 	export default {
 		data() {
 			return {
 				notAuth: false,
-				memberinfo: null,
 				sliderConfig: {
 					progresswidth: '320upx',
 					progressbar: '0%'
@@ -150,22 +150,26 @@
 		onLoad() {
 			// this.getActiveInfo();   //查询是否有裂变活动
 		},
+		computed:{
+			...mapGetters(['memberinfo']),
+		},
 		async onShow() {
-			let member = app.globalData.member;
+			let that = this,
+			    member = app.globalData.member;
 			if(member){
-				let memberinfo = await getMemberInfo(true);
-				this.memberinfo = memberinfo;
-				this.getGradeInfo(); //获取当前等级信息
+				let memberinfo = that.memberinfo;
+				console.log('会员信息',memberinfo)
+				that.getGradeInfo(); //获取当前等级信息
 				if (!memberinfo || !memberinfo.name) {
-					this.notAuth = true;
+					that.notAuth = true;
 				}
 			}else{
-				this.servicearr = [{
+				that.servicearr = [{
 					img: '../../static/my/about_icon.png',
 					text: '关于我们'
 				},]
 			}
-			this.member = member;
+			that.member = member;
 		},
 		components: {
 			sildermine,
@@ -183,9 +187,10 @@
 			},
 			//获取当前等级信息
 			async getGradeInfo() {
+				let that = this;
 				let res = await api.getLevel({});
 				if (res.code == 200) {
-					let experience = this.memberinfo.experience;
+					let experience = that.memberinfo.experience;
 					let lev = res.data.filter(item => {
 						return (experience == item.lowerLimit || experience > item.lowerLimit) && (experience < item.upperLimit ||
 							experience == item.lowerLimit)
@@ -194,13 +199,13 @@
 						lev.push(res.data[res.data.length - 1])
 					}
 					let width = 0;
-					width = Math.floor((this.memberinfo.experience / lev[0].upperLimit) * 100);
+					width = Math.floor((that.memberinfo.experience / lev[0].upperLimit) * 100);
 					if (width) {
-						this.sliderConfig.progressbar = width + '%';
+						that.sliderConfig.progressbar = width + '%';
 					}
-					this.currentLev = lev[0];
+					that.currentLev = lev[0];
 				} else {
-					this.$msg.showToast(res.message)
+					that.$msg.showToast(res.message)
 				}
 			},
 			//用户授权信息

@@ -178,14 +178,12 @@
 			 */
 			async getUserAddress() {
 				let res = await api.getUserAddress({});
-				console.log(res)
 				if (res.status == 1) {
 					if (res.data) {
 						this.addressList = res.data;
 					} else {
 						this.addressList = []
 					}
-
 				}
 			},
 			//修改地址

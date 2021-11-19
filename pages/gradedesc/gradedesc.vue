@@ -36,19 +36,21 @@
 
 <script>
 	import api from '../../WXapi/api.js';
+	import { mapGetters } from 'vuex';
 	export default {
 		data() {
 			return {
-				memberinfo:{},
 				interest:[],   //当前所享受权益
 				gradeinfo:[],   //当前等级信息
 				// imgs:['../../static/my/level1.png','../../static/my/level1.png','../../static/my/level1.png','../../static/my/level1.png',]
 			}
 		},
+		
 		onLoad() {
-			let memberinfo = uni.getStorageSync('memberinfo');
-			this.memberinfo = memberinfo;
 			this.getMemberGrade();  //获取会员等级信息
+		},
+		computed:{
+			...mapGetters(['memberinfo']),
 		},
 		methods: {
 			//获取会员等级信息

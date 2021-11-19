@@ -4,16 +4,14 @@ import appConfig from '../config/index.js';
 import {
 	showToast
 } from '../utils/utils.js';
-
+var app;
 //正式环境 key
 // const default_value_f = 'Action?' + 'key=6886173bf669d7bc'
 // const default_value_s = 'SecretAction?' + 'key=6886173bf669d7bc'
-// const key = 'rc09pv1O21dfY01nx8wx';   //正式环境
-const base_url_m = 'https://apitest.fnb-tech.com/FNBOpenApi.asmx/'; //正式环境   餐道
-const baseurl_v43 = 'https://crmapi.fnb-tech.com/openapi/' //正式环境	会员
-
-// const baseurl_v43 = 'http://192.168.1.58:8090/openapi/' //内网环境	会员
-
+const key = 'axyljyomiiautxqgqpzuw';   //正式环境
+const base_url_m = 'https://apitest.fnb-tech.com/FNBOpenApi.asmx/';  //正式环境   plus
+// const baseurl_v43 = 'https://crmapi.fnb-tech.com/openapi/'; //正式环境	会员
+const baseurl_v43 = 'http://192.168.1.63:8090/openapi/' //内网环境	会员
 //测试环境key
 // const default_value_f = 'Action?' + 'key=93ba9db2f9f4f0e4'
 // const default_value_s = 'SecretAction?' + 'key=93ba9db2f9f4f0e4'
@@ -47,12 +45,13 @@ export function normoal(url, data, isloading) {
 		'content-type': 'application/x-www-form-urlencoded',
 	}
 	url = base_url_m + url;
-	return nrequest(header, url, data, isloading)
+	return nrequest('post',header, url, data, isloading)
 }
 
 
-//v_4.3接口请求
 
+//v_4.3接口请求
+import md5 from 'blueimp-md5'
 // const sign = md5('1.0.9asdf1234')
 
 const timestmpParams = {
@@ -60,9 +59,77 @@ const timestmpParams = {
 	header: {},
 	url: baseurl_v43 + 'v4_3/getCurrentTimeMilli',
 }
+export async function service_v(url, method, data, isloading) {
+	let timestamp = await nrequest(timestmpParams.method, timestmpParams.header, timestmpParams.url, timestmpParams
+		.data);
+    try{
+		const header = {
+			"brandId": appConfig.brandId,
+			"clientId": appConfig.clientId,
+			"timestamp": timestamp.data,
+		}
+		if (url == 'v4/cardSell/getStores') {
+			url = 'https://crmapi.fnb-tech.com/webapi/' + url
+			header.storeId = data.storeId
+		} else {
+			url = baseurl_v43 + url;
+		}
+		let storeCode = null;
+		if(!app){
+			app = getApp();
+		}
+		if(app.globalData){
+			storeCode = app.globalData.storeInfo.extraStoreId;
+		}
+		if (storeCode && url != 'v4_3/weixin/recharge') {
+			header.storeCode = storeCode;
+		}
+		if (data && data.storeCode) { //门店列表时，查询门店等待时间
+			header.storeCode = data.storeCode
+		}
+		let md5Params = Object.assign({}, header);
+		header.key = key;
+		Object.assign(md5Params, data);
+		md5Params = handleSingn(md5Params);
+		header.sign = md5Params;
+		return nrequest(method, header, url, data, isloading)
+	}catch(e){
+		uni.showToast({
+			title: '请反馈工作人员修复',
+			icon: 'none',
+			duration: 2000,
+		})
+	}
+}
+//处理   md5 sign参数
+function handleSingn(data) {
+	let newData = {};
+	Object.keys(data).sort().map(key => {
+		if (typeof(data[key]) == 'object') {
+			data[key] = JSON.stringify(data[key])
+		}
+		newData[key] = data[key]
+	})
+	newData.key = key;
+	newData = jsonToUrlForm(newData);
+	newData = md5(newData.substr(1));
+	return newData.toUpperCase();
+}
+
+/**
+ * json拼接成url 请求那样
+ */
+function jsonToUrlForm(paramJson) {
+	var formString = "";
+	for (var key in paramJson) {
+		var value = paramJson[key];
+		formString += "&" + key + "=" + value;
+	}
+	return formString;
+}
 
 
-function nrequest(header, url, data, isloading) {
+function nrequest(method,header, url, data, isloading) {
 	if (isloading) uni.showLoading({
 		mask: true
 	});
@@ -71,16 +138,15 @@ function nrequest(header, url, data, isloading) {
 			header: header,
 			url: url,
 			data: data,
-			method: 'POST',
+			method: method,
 			dataType: 'json',
 			async success(e) {
 				if (isloading) uni.hideLoading();
-				if (e.statusCode === 200) {
-					// if (!JSESSIONID) {
-					// 	JSESSIONID = e.header["Set-Cookie"].match(/JSESSIONID=(.*)?;/)[1];
-					// 	store.commit('jessionid', JSESSIONID);
-					// }
+				if (e.statusCode === 200) {	
 					resolve(e.data);
+					if(e.data.code && e.data.code !=200){
+						showToast(e.data.message || '错误请联系客服人员')
+					}
 				}
 			},
 			fail(e) {

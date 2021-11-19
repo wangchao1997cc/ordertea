@@ -164,6 +164,7 @@ import { jumpAdvertise, appshare } from '../../utils/utils.js';
 import { getLocation } from '../../utils/author.js';
 import { mapGetters, mapMutations } from 'vuex';
 import { goUserAddress } from '../../utils/goToPage.js';
+import { getMemberInfo, getRecharge } from '../../utils/publicApi.js';
 import api from '../../WXapi/api.js';
 export default {
 	data() {
@@ -183,7 +184,6 @@ export default {
 			newsImag: [],
 			// "https://fnb-merchants.oss-cn-shanghai.aliyuncs.com/7622/product/6aaae7ad6a9a47d0db03372bbe972f70.jpg",
 			// "https://fnb-merchants.oss-cn-shanghai.aliyuncs.com/7622/banner20201118151452.png"
-			memberinfo: null, //用户信息
 			bannerData: {}, //轮播图数据
 			shareCoupons: null, //分享的优惠券
 			// config: {
@@ -245,24 +245,16 @@ export default {
 		// }
 	},
 	async onLoad(options) {
-		// this.$refs.authorM.showPop();
-		uni.hideTabBar({})
+		uni.hideTabBar({});
 		this.member = app.globalData.member;
 		await this.$onLaunched;
 		this.init();
-		uni.showTabBar({})
-		let params = {
-			WXOpenID: this.openidinfo.openid,
-			interFaces : 'MemberInfoGet',
-		};
-		let memberinfo = await api.getMemberInfo(params);
-		this.SET_MEMBERINFO(memberinfo.Message[0]);
 	},
 	onShareAppMessage(res) {
 		return appshare();
 	},
 	computed: {
-		...mapGetters(['openidinfo']),
+		...mapGetters(['openidinfo', 'memberinfo']),
 		pointNum() {
 			let pointActive = this.pointActive;
 			let num = 0;
@@ -284,9 +276,28 @@ export default {
 		}
 	},
 	methods: {
-		...mapMutations('user', ['SET_MEMBERINFO']),
+		...mapMutations('user', ['SET_PLUSINFO']),
 		async init() {
-			this.getBannerList()
+			this.getNewsList(); //新鲜事
+			this.judgeLogin(); //判断是否登录
+			this.getBannerList(); //轮播图
+		},
+		async judgeLogin() {
+			let params = {
+				WXOpenID: this.openidinfo.openid,
+				interFaces: 'MemberInfoGet'
+			};
+			try {
+				let res = await api.getUserInfo(params); //plus 用户信息
+				if (res.Message.length) {
+					this.SET_PLUSINFO(res.Message[0]);
+					await getMemberInfo(res.Message[0].strMobilePhone); //vka 会员用户信息
+				} else {
+					this.$refs.authorM.showPop();
+				}
+			} catch (err) { }
+			this.juideUserInfo();  //首页活动等等
+			uni.showTabBar({});
 		},
 		//获取用户信息
 		// async getMemberInfo() {
@@ -305,9 +316,20 @@ export default {
 		// },
 		//获取新鲜事列表
 		async getNewsList() {
-			let res = await api.getNewsList();
+			let newsImag = [],
+				groupImgList = [],
+				res = await api.getNewsList();
+
 			if (res.code == 200) {
-				this.newsImag = res.data;
+				res.data.forEach(item => {
+					if (item.type == 1) {
+						newsImag.push(item);
+					} else {
+						groupImgList.push(item);
+					}
+				});
+				app.globalData.groupImg = groupImgList;
+				this.newsImag = newsImag;
 			}
 		},
 		//打开集点卡介绍幕布
@@ -382,7 +404,7 @@ export default {
 			if (res.code == 200) {
 				that.redRewardInfo = null;
 				that.$msg.showToast('恭喜您领取成功～');
-				this.memberinfo = await getMemberInfo(true);
+				// this.memberinfo = await getMemberInfo(true);
 			} else {
 				that.$msg.showToast(res.message);
 			}
@@ -411,15 +433,15 @@ export default {
 			this.notAuth = false;
 			if (res.code == 200) {
 				this.$msg.showToast('领取成功～');
-				this.memberinfo = await getMemberInfo(true);
+				// this.memberinfo = await getMemberInfo(true);
 			} else {
 				this.$msg.showToast(res.message);
 			}
 		},
 		async juideUserInfo() {
-			let that = this;
-			let userinfo = await refreshUserInfo(true);
-			if (!userinfo || !userinfo.phone) {
+			let that = this,
+			    memberinfo = that.memberinfo;
+			if (!memberinfo) {
 				//是否注册 ，没有注册的情况下
 				let redReaward = await that.redReaward(); //查询红包奖励（天将红包）
 				if (that.homeParams.giveCardId || redReaward) {
@@ -431,18 +453,15 @@ export default {
 					that.$refs.authorM.showPop();
 				}
 			} else {
-				let memberinfo = await getMemberInfo(true);
 				try {
 					that.integralarr[0].value = memberinfo.point;
 					that.integralarr[3].value = memberinfo.coupons.length + '张';
-					that.memberinfo = memberinfo;
 					if (that.homeParams && that.homeParams.giveCardId) {
 						that.receiveCoupons(); //查询好友赠送的优惠券优惠券
 					}
 					that.pointActivity(); //查询积点活动
 					that.redReaward(memberinfo.id);
-				} catch (err) {
-				}
+				} catch (err) {}
 			}
 			uni.hideLoading();
 		},
@@ -466,7 +485,7 @@ export default {
 		//查询好友赠送的优惠券
 		async receiveCoupons() {
 			let that = this,
-			    homeParams = that.homeParams;
+				homeParams = that.homeParams;
 			if (that.memberinfo && that.memberinfo.id == homeParams.giveCardId) {
 				return;
 			}
@@ -485,8 +504,8 @@ export default {
 		async loginSuccess(val) {
 			let that = this;
 			that.$refs.authorM.hidePop();
-			let memberinfo = await getMemberInfo(true);
-			that.memberinfo = memberinfo;
+			// let memberinfo = await getMemberInfo(true);
+			// that.memberinfo = memberinfo;
 			that.pointActivity(); //查询积点活动
 			if (that.redRewardInfo) {
 				return that.receiveReward(); //注册成功领取天降红包
@@ -511,7 +530,7 @@ export default {
 			let data = {
 				Type: 'indexSwiper',
 				PlatForm: 'XCX',
-				interFaces: 'getSwiperImage',
+				interFaces: 'getSwiperImage'
 			};
 			let res = await api.getRotation(data);
 			if (res) {

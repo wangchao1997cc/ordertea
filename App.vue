@@ -15,11 +15,13 @@ export default {
 		orderSuccess: false, //下单成功清除购物车
 		orderRefresh: false, //下单后订单列表刷新
 		exchangeSuccess: false, //兑换成功
-		member: false ,//是否启用会员部分
+		member: true ,//是否启用会员部分
 		shopCode: null,  //当前店铺code 
 		tablecode: '',  //扫码获取的餐台码
-		orderDetail: null,
-		payMethod: null,
+		orderDetail: null, 
+		payMethod: null, 
+		groupImg:null,   //团餐图片列表
+		activeParams: null, //推荐人参数
 	},
 	onLaunch: async function() {
 		updateApp();

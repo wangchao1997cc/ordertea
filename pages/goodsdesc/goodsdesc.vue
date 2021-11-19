@@ -89,6 +89,7 @@
 	import {
 		checkMobile
 	} from '../../utils/utils.js'
+	import { mapGetters } from 'vuex';
 	export default {
 		data() {
 			return {
@@ -99,7 +100,6 @@
 				},
 				wxPay: false, //微信支付
 				balancePay: false, //余额支付
-				memberinfo: {}, //会员信息
 				params: {
 					mobile: '',
 					name: '',
@@ -110,7 +110,7 @@
 		onLoad(options) {
 			let id = options.id ? options.id : 418;
 			this.getGoodsDesc(id);
-			this.memberinfo = uni.getStorageSync('memberinfo');
+			// this.memberinfo = uni.getStorageSync('memberinfo');
 		},
 		onShow() {
 			if (app.globalData.businessinfo) {
@@ -119,6 +119,7 @@
 			}
 		},
 		computed: {
+			...mapGetters(['memberinfo','openidinfo']),
 			needfreight() {
 				let goodsdesc = this.goodsdesc;
 				let freight = 0;
@@ -159,7 +160,7 @@
 			//获取商品详情
 			async getGoodsDesc(id) {
 				let data = {
-					cardNo: this.$store.state.cardNo,
+					cardNo: this.memberinfo.mobile,
 					productId: id,
 				}
 				let res = await api.goodsDetail(data);
@@ -281,7 +282,7 @@
 				let data = {
 					amount: params.amount*100,
 					body: this.goodsdesc.productName,
-					openId: this.$store.state.openid,
+					openId: this.openidinfo.openid,
 					curUrl: 'pages/goodsdesc/goodsdesc',
 					orderId: params.id
 				}

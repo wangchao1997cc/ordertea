@@ -1,5 +1,6 @@
 import api from '../WXapi/api.js'
 import config from '../config/index.js'
+import store from '../store/index.js'
 
 //刷新用户信息
 // export const refreshUserInfo = async callback => {
@@ -52,27 +53,38 @@ export const getUserOpenInfo = async Summit => {
 }
 
 //获取会员用户信息
-export const getMemberInfo = async Summit => {
-	let wxCode = await wxLogin();
+export const getMemberInfo = async (phone,callback) => {
 	let data = {
-		APPID: config.appid,
-		CODE: wxCode,
-		Summit: Summit
+		mobile: phone,
 	}
-	return api.getMemberInfo(data);
+	let res = await api.getMemberInfo(data);
+	if (res && res.code == 200) {
+		store.commit('user/SET_MEMBERINFO',res.data[0])  //存储用户信息
+	}
 }
+
+// //获取会员用户信息
+// export const getMemberInfo = async Summit => {
+// 	let wxCode = await wxLogin();
+// 	let data = {
+// 		APPID: config.appid,
+// 		CODE: wxCode,
+// 		Summit: Summit
+// 	}
+// 	return api.getMemberInfo(data);
+// }
 
 
 //用户注册
 export const userRegister = async data => {
-	let activeParams = app.globalData.activeParams;
+	let activeParams = getApp().globalData.activeParams;
 	if (activeParams && !data.activityId) {
 		data.recommendedId = activeParams.recommendedId;
 		data.activityId = activeParams.activityId;
 	}
 	let res = await api.vUserLogin(data);
 	if (res && res.code == 200) {
-		return res.data[0];
+		store.commit('user/SET_MEMBERINFO',res.data[0])  //存储用户信息
 	}
 }
 

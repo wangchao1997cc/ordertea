@@ -1,22 +1,26 @@
 import {
 	getUserOpenInfo
 } from '../../utils/publicApi.js'
+import Vue from 'vue'
 
 const state = {
-	memberinfo: {   //会员信息
-	},
+	memberinfo: null,
 	openidinfo: {  //openid seekey 登录信息
 	},
 	configure: {  //小程序配置信息
 	},
+	plusinfo: null,
 };
 
 const mutations = {
+	SET_PLUSINFO : (state, plusinfo) => {
+		state.plusinfo = plusinfo;
+	},
 	SET_OPENIDINFO: (state, openidinfo) => {
 		state.openidinfo = openidinfo;
 	},
 	SET_MEMBERINFO: (state, memberinfo) => {
-		state.memberinfo = memberinfo;
+		Vue.set(state, 'memberinfo', memberinfo)
 	},
 	SET_CONFIGURE: (state, configure) => {
 		state.configure = configure;

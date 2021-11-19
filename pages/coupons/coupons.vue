@@ -40,6 +40,7 @@
 	import couponlist from '../../components/couponlist.vue'
 	import api from '../../WXapi/api.js';
 	import nodata from '../../components/nodata.vue';
+	import { mapGetters } from 'vuex';
 	export default {
 		data() {
 			return {
@@ -50,7 +51,6 @@
 				couponsObj: [],
 				animationData: {}, //动画控件
 				maskShow: false, //幕布显示隐藏
-				memberinfo: {}, //用户信息
 			}
 		},
 		components: {
@@ -59,6 +59,7 @@
 			nodata,
 		},
 		computed: {
+			...mapGetters(['memberinfo']),
 			config() {
 				let nodatashow = true;
 				if (this.couponsObj.length && !this.couponsObj[this.currtab].list.length) {
@@ -101,8 +102,7 @@
 			uni.setNavigationBarTitle({
 				title: title
 			})
-			let memberinfo = uni.getStorageSync('memberinfo');
-			this.memberinfo = memberinfo;
+			
 			this.renderAnimation();
 		},
 		onShow() {
@@ -139,7 +139,7 @@
 			//获取我的优惠券
 			async getCoupons() {
 				let res = await api.getCoupons({
-					cardNo: this.$store.state.cardNo,
+					cardNo: this.memberinfo.cardNo,
 					type: this.currtab
 				})
 				this.handerCoupons(res.data);

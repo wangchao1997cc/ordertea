@@ -220,10 +220,10 @@ export default {
 		if (that.member) {
 			uni.showLoading({});
 			that.memberInterest(orderparams); //会员权益计算
-		} else {
+		}else{
 			that.handleShowData(orderparams); //不使用会员部分
-			that.getTakeTime();
 		}
+		that.getTakeTime();
 		that.type = that.$store.state.businessType; //当前的模式
 		that.renderAnimation(); //定义动画
 		if (that.type == 3) {
@@ -248,7 +248,7 @@ export default {
 		}
 	},
 	onUnload() {
-		app.globalData.remark = '';
+		app.globalData.remark = ' ';
 	},
 	computed: {
 		...mapGetters(['memberinfo', 'businessType', 'paymentMode']),
@@ -301,6 +301,9 @@ export default {
 		switchUseBalance() {
 			if (!this.interest.card.balance) {
 				return this.$msg.showToast('没有可用余额～');
+			}
+			if(this.interest.card.balance < this.interest.afterDiscountTotal){
+				return this.$msg.showToast('余额不足，请先充值～');
 			}
 			if (this.useBalance == 1) {
 				this.useBalance = 0;
@@ -525,28 +528,28 @@ export default {
 			let timestamp = Date.now();
 			let rand = Math.floor(Math.random() * 100000000);
 			rand = rand.toString().substring(0, 4);
-			let saleOrderNum = appConfig.hqcode + app.globalData.shopCode + timestamp + rand;
+			let saleOrderNum = appConfig.hqcode + app.globalData.shopCode + timestamp + rand;  //订单号
 			if (reso == 1) {
 				that.jumpUseCoupons(); //去选择优惠券
 				return;
 			}
-			let currtab = 0;
-			let orderparams = that.orderparams;
-			let interest = that.interest;
-			let storeInfo = that.storeInfo;
-			let type = that.type;
-			if (interest.balancePay) {
+			let currtab = 0,
+			    orderparams = that.orderparams,
+			    interest = that.interest,
+			    storeInfo = that.storeInfo,
+			    type = that.type;
+			if (interest.balancePay) {   //使用会员余额
 				currtab = 1;
 			}
 			let params = {
 				HQCode: appConfig.hqcode,
 				ShopCode: app.globalData.shopCode,
 				// total_fee: that.interest.afterDiscountTotal * 100,
-				total_fee:1,
-				MemberCode: that.memberinfo.strMemberCode,
-				sub_openid: that.memberinfo.strWXOpenID,
-				WXOpenID: that.memberinfo.strWXOpenID,
-				timestamp: timestamp,
+				total_fee:1,   //实际付款
+				MemberCode: that.memberinfo.strMemberCode,   //会员code
+				sub_openid: that.memberinfo.strWXOpenID,  
+				WXOpenID: that.memberinfo.strWXOpenID, //openid
+				timestamp: timestamp, //时间戳
 				SaleOrderNum: saleOrderNum, //订单号
 				noncestr: wxuuid().replace(/-/g, ''), //随机字符串
 				Mobile: that.memberinfo.strMobilePhone, //手机号
@@ -554,16 +557,28 @@ export default {
 				SaleMode: that.businessType, //售卖模式
 				PayMentMode: that.paymentMode[currtab].intPaymentMode, //支付方式
 				PayMentModeName: that.paymentMode[currtab].strPaymentMode, //支付名
-				TakeMode: that.businessType,
+				TakeMode: that.businessType,   //堂食 或 自取
 				TakeTime: that.serviceTime.value,  //预约时间
 				OrderType: 'online', //支付订单的类型online普通订单 groupbuy拼团订单
-				PayTotal: that.interest.afterDiscountTotal,
-				interFaces: 'Prepay',
+				PayTotal: that.interest.afterDiscountTotal,  //paytotal
+				interFaces: 'Prepay',   
 				OrderCreate:true,
+				
 			};
+			let VkaJson = {
+				amount: interest.orderTotal,
+				total: interest.afterDiscountTotal,
+				boxFree: interest.boxFee,
+				products: interest.products,
+				coupons: interest.couponInfoResponseList,
+				promotions: interest.promotions,
+				payments: 'weixinpay',
+			};
+			VkaJson = JSON.stringify(VkaJson);
 			let data = {
 				...params,
-				PaymentContent: params
+				PaymentContent: params,
+				VkaJson:VkaJson
 			};
 			let tit = `是否前往【${storeInfo.strShopName}】自提`;	
 			if (type == 1) {
@@ -579,7 +594,6 @@ export default {
 						if(that.templateIds.length){
 							await that.requestSubscribeMessage();
 						}
-						
 						try {
 							let res = await api.getPayMentParams(data);
 							uni.hideLoading();
@@ -604,7 +618,7 @@ export default {
 						// if (res.Result == ) {
 						// 	// this.getOrderDetail(res.data); //获取订单详情
 						// } else {
-						// 	this.$msg.showToast(res.msg);
+						    // this.$msg.showToast(res.msg);
 						// }
 					}
 					uni.hideLoading();

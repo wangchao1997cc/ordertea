@@ -38,6 +38,8 @@
 <script>
 	import MxDatePicker from "@/components/mx-datepicker/mx-datepicker.vue";
 	import api from '../../WXapi/api.js';
+	import { mapGetters } from 'vuex';
+	import { getMemberInfo } from '../../utils/publicApi.js';
 	export default {
 		data() {
 			return {
@@ -50,12 +52,16 @@
 				valuedate: '2000/01/01',
 			}
 		},
+		computed:{
+			...mapGetters(['memberinfo']),
+		},
 		onLoad() {
-			let memberinfo = uni.getStorageSync('memberinfo');
+			let memberinfo = this.memberinfo;
 			this.userinfo = memberinfo;
 			this.value = memberinfo.sex;
 			this.birthday = memberinfo.birthday;
 		},
+		
 		components: {
 			MxDatePicker
 		},
@@ -81,31 +87,35 @@
 			},
 			//保存用户信息
 			saveUserInfo() {
-				let userinfo = this.userinfo;
+				let that = this;
+				let userinfo = that.userinfo;
+				if(!userinfo.name){
+					return this.$msg.showToast('请填写用户名');
+				}
 				let data = {
 					name: userinfo.name,
-					sex: this.value,
+					sex: that.value,
 					cardId: userinfo.id,
 				}
-				if (!userinfo.birthday && this.birthday) {
-					this.$msg.showModal(json => {
+				if (!userinfo.birthday && that.birthday) {
+					that.$msg.showModal(json => {
 						if (json == 1) {
-							this.userInfoApi(data);
+							that.userInfoApi(data);
 						}
 					}, '生日只能修改一次哦～')
-					data.birthday = this.birthday
+					data.birthday = that.birthday
 				} else {
-					this.userInfoApi(data);
+					that.userInfoApi(data);
 				}
 			},
 			async userInfoApi(data) {
 				let res = await api.updateMember(data, true);
-				console.log(res)
 				if (res.code == 200) {
 					this.$msg.showToast('保存成功');
 					setTimeout(() => {
 						uni.navigateBack({})
 					},200)
+					await getMemberInfo(this.memberinfo.mobile); //vka 会员用户信息
 				}else{
 					this.$msg.showToast(res.message);
 				}

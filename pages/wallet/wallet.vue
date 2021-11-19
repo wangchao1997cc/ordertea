@@ -39,6 +39,7 @@
 import api from '../../WXapi/api.js';
 import mswiper from '../../components/m-swiper/m-swiper.vue';
 import { getMemberInfo, wxPayment, getRecharge } from '../../utils/publicApi.js';
+import { mapGetters } from 'vuex';
 const app = getApp();
 export default {
 	data() {
@@ -55,22 +56,19 @@ export default {
 	components: {
 		mswiper
 	},
+	computed:{
+		...mapGetters(['memberinfo']),
+	},
 	onLoad() {
 		this.init();
 	},
 	methods: {
 		init() {
-			this.getMemberInfo();  //获取会员信息
 			this.getPackage();   //获取充值套餐
 		},
 		//swiper  切换数据
 		changeData(val) {
 			this.currtabData = val;
-		},
-		//获取会员信息
-		getMemberInfo() {
-			let memberinfo = uni.getStorageSync('memberinfo');
-			this.memberinfo = memberinfo;
 		},
 		//打开选择门店
 		openChoseStore(){
@@ -82,7 +80,6 @@ export default {
 			let res =  await api.getStores({
 				storeId: app.globalData.brandId
 			},true);
-			console.log(6666,res)
 			if(res.code == 200){
 				this.storeList = res.data;
 				this.ischoseStore = !this.ischoseStore;
@@ -130,14 +127,13 @@ export default {
 				openId: that.$store.state.openid,
 				storeId: that.choseStore.id || app.globalData.brandId,
 			};
-			console.log(111,data)
 			let res = await api.rechargeApi(data);
 			if (res.code == 200) {
 				res.payData.package = res.payData.prepay_id;
 				wxPayment(res.payData)
 					.then(async res => {
 						this.$msg.showToast('充值成功');
-						this.memberinfo = await getMemberInfo(true);
+						this.memberinfo = await getMemberInfo(this.memberinfo.mobile,true);
 					})
 					.catch(ret => {
 						console.log(ret);

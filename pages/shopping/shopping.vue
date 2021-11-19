@@ -37,7 +37,7 @@
 						</view>
 					</view>
 					<view class="buy_btn" :class="{nogrady: memberinfo.point < item.point && item.point != memberinfo.point}" >
-						{{item.payType==1?'立即购买':(memberinfo.point>item.point || item.point== memberinfo.point?'立即兑换':'积分不足')}}
+						{{item.payType==1?'立即购买':(memberinfo.point > item.point || item.point== memberinfo.point?'立即兑换':'积分不足')}}
 					</view>
 				</view>
 
@@ -48,22 +48,25 @@
 
 <script>
 	import api from '../../WXapi/api.js'
+	import { mapGetters } from 'vuex';
 	export default {
 		data() {
 			return {
 				page:0,   //当前页索引
 				productList:[],   //商品列表
 				totalPageindex:null,  //总页数
-				memberinfo:{},  
-				
 			}
+		},
+		computed:{
+			...mapGetters(['memberinfo']),
 		},
 		onLoad() {
 			this.getGoodsList();
 		},
-		onShow() {
-			this.memberinfo = uni.getStorageSync('memberinfo');
-		},
+		// onShow() {
+			// this.memberinfo = uni.getStorageSync('memberinfo');
+			
+		// },
 		//页面触底加载分页
 		onReachBottom: function() {
 			let that = this;
