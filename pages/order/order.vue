@@ -30,7 +30,6 @@
 					{{!item.blnPayed?'待支付':(item.strSelfCode?'取餐号：'+item.strSelfCode:item.strTakeMode)}}
 				</view>
 			</view>
-			
 		</view>
 		<nodata :conf="config"></nodata>
 	</view>
@@ -61,7 +60,7 @@
 			}
 		},
 		computed:{
-			...mapGetters(['memberinfo', 'businessType', 'paymentMode']),
+			...mapGetters(['memberinfo', 'businessType', 'paymentMode','plusinfo']),
 			config() {
 				let nodatashow = true;
 				if (this.orderList && !this.orderList.length) {
@@ -91,9 +90,9 @@
 				let that = this;
 				let data = {
 					HQCode: appConfig.hqcode,
-					MemberCode: that.memberinfo.strMemberCode,
-					Mobile: that.memberinfo.strMobilePhone,
-					WXOpenID: that.memberinfo.strWXOpenID,
+					MemberCode: that.plusinfo.strMemberCode,
+					Mobile: that.memberinfo.mobile,
+					WXOpenID: that.plusinfo.strWXOpenID,
 					GetDetail: false,
 					interFaces: 'OrderRecord'
 				}

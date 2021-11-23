@@ -251,7 +251,7 @@ export default {
 		app.globalData.remark = ' ';
 	},
 	computed: {
-		...mapGetters(['memberinfo', 'businessType', 'paymentMode']),
+		...mapGetters(['memberinfo', 'businessType', 'paymentMode','openidinfo','plusinfo']),
 		couponJuide() {
 			let tit = '优惠券';
 			let cont = '';
@@ -446,6 +446,7 @@ export default {
 			});
 		},
 		async memberInterest(params) {
+			console.log(params)
 			//会员权益计算
 			let that = this;
 			!params ? (params = this.orderparams) : '';
@@ -541,18 +542,19 @@ export default {
 			if (interest.balancePay) {   //使用会员余额
 				currtab = 1;
 			}
+			// console.log(that.memberinfo,that.openidinfo)
 			let params = {
 				HQCode: appConfig.hqcode,
 				ShopCode: app.globalData.shopCode,
 				// total_fee: that.interest.afterDiscountTotal * 100,
 				total_fee:1,   //实际付款
-				MemberCode: that.memberinfo.strMemberCode,   //会员code
-				sub_openid: that.memberinfo.strWXOpenID,  
-				WXOpenID: that.memberinfo.strWXOpenID, //openid
+				MemberCode: that.plusinfo.strMemberCode,   //会员code
+				sub_openid: that.openidinfo.openid,  
+				WXOpenID: that.openidinfo.openid, //openid
 				timestamp: timestamp, //时间戳
 				SaleOrderNum: saleOrderNum, //订单号
 				noncestr: wxuuid().replace(/-/g, ''), //随机字符串
-				Mobile: that.memberinfo.strMobilePhone, //手机号
+				Mobile: that.memberinfo.mobile, //手机号
 				Memo: that.remark || '', //备注
 				SaleMode: that.businessType, //售卖模式
 				PayMentMode: that.paymentMode[currtab].intPaymentMode, //支付方式
@@ -565,21 +567,27 @@ export default {
 				OrderCreate:true,
 				
 			};
-			let VkaJson = {
-				amount: interest.orderTotal,
-				total: interest.afterDiscountTotal,
-				boxFree: interest.boxFee,
-				products: interest.products,
-				coupons: interest.couponInfoResponseList,
-				promotions: interest.promotions,
-				payments: 'weixinpay',
-			};
-			VkaJson = JSON.stringify(VkaJson);
+			
 			let data = {
 				...params,
 				PaymentContent: params,
-				VkaJson:VkaJson
 			};
+			if(that.member){
+				let VkaJson = {
+					amount: interest.orderTotal,
+					total: interest.afterDiscountTotal,
+					boxFree: interest.boxFee,
+					products: interest.products,
+					coupons: interest.couponInfoResponseList,
+					promotions: interest.promotions,
+					payments: 'weixinpay',
+				};
+				VkaJson.promotions.forEach(item => {
+					delete item.remark
+				})
+				data.VkaJson = VkaJson;
+			}
+			
 			let tit = `是否前往【${storeInfo.strShopName}】自提`;	
 			if (type == 1) {
 				tit = '是否确认配送地址';
@@ -615,11 +623,6 @@ export default {
 							}
 						} catch (err) {
 						}
-						// if (res.Result == ) {
-						// 	// this.getOrderDetail(res.data); //获取订单详情
-						// } else {
-						    // this.$msg.showToast(res.msg);
-						// }
 					}
 					uni.hideLoading();
 				},

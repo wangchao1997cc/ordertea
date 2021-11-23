@@ -741,7 +741,6 @@ export default {
 		},
 		init() {
 			let that = this;
-			// that.jstrItemBarCodeeUserInfo(); //判断用户是否登录
 			that.computReftHe(); //计算右边商品列表的高度
 			that.getLocation(); //获取地理位置
 		},
@@ -778,7 +777,7 @@ export default {
 							HQCode: appConfig.hqcode,
 							ShopCode: app.globalData.shopCode,
 							TableCode: app.globalData.tablecode,
-							Mobile: that.memberinfo.strMobilePhone,
+							Mobile: that.memberinfo.mobile,
 							MemberCode: that.plusinfo.strMemberCode,
 							WXOpenID: that.openidinfo.openid,
 							interFaces: 'OrderClear'
@@ -948,7 +947,7 @@ export default {
 				HQCode: appConfig.hqcode,
 				ShopCode: app.globalData.shopCode,
 				TableCode: app.globalData.tablecode,
-				Mobile: that.memberinfo.strMobilePhone,
+				Mobile: that.memberinfo.mobile,
 				MemberCode: that.plusinfo.strMemberCode,
 				WXOpenID: that.openidinfo.openid,
 				Product: [product],
@@ -977,7 +976,7 @@ export default {
 				HQCode: appConfig.hqcode,
 				ShopCode: app.globalData.shopCode,
 				TableCode: app.globalData.tablecode,
-				Mobile: that.memberinfo.strMobilePhone,
+				Mobile: that.memberinfo.mobile,
 				MemberCode: that.plusinfo.strMemberCode,
 				WXOpenID: that.openidinfo.openid,
 				promotionID: -1,
@@ -1223,6 +1222,7 @@ export default {
 				interFaces: 'getMenuPublish'
 			};
 			let res = await api.getProductMenu(data);
+		
 			that.handleShopData(res.Message);
 			if (that.storeInfo.blnBusinessState == 'True') {
 				return that.noBussinessTime();
@@ -1372,7 +1372,7 @@ export default {
 					qty: item.floQuantity,
 					product_no: item.strProductBarCode,
 					name: item.strProductName,
-					price: item.floPricePay,
+					price:  accAdd(item.floPricePay, item.floFlavor),
 					// price: accAdd(item.floPrice, item.floFlavor),
 					condiments: [],
 					discounted: item.VFlag == 'True' ? 1 : 0
@@ -1435,7 +1435,6 @@ export default {
 		//处理获取到的商铺菜单
 		async handleShopData(data) {
 			let that = this;
-
 			let products = [],
 				goodsList = [];
 			for (let i in data) {
@@ -1469,9 +1468,6 @@ export default {
 			that.$nextTick(async () => {
 				//解决DOM更新异步问题
 				await that.calcSize();
-				// if (that.productPrimaryTypeName) {
-				// 	that.jumpProduct();
-				// }
 			});
 		},
 		//跳转到某一个一级分类
@@ -1499,7 +1495,7 @@ export default {
 				this.handleShopData(res.data.bigs);
 			}
 		},
-		// //获取默认广告banner
+		// //获取 默认 广告banner
 		// async getAdvertList(data) {
 		// 	let res = await api.getMenuBanner(data);
 		// 	if (res.status && res.data) {
@@ -1508,34 +1504,31 @@ export default {
 		// },
 		//一级分类点击
 		tabtap(item) {
-			clearTimeout(this.timer);
-			this.currentId = item.strItemBarCode;
-			let index = this.products.findIndex(
-				sitem => sitem.strItemBarCode === item.strItemBarCode
-			);
-			this.tabScrollTop = this.products[index].top;
+			this.tabScrollTop = item.top + 1;
 		},
 		//右侧栏滚动
 		asideScroll: throttle(function(e) {
 			let that = this;
 			let scrollTop = e[0].detail.scrollTop;
-			let tabs = that.products.filter(item => item.top <= scrollTop).reverse();
-			if (tabs.length > 0) {
+			let tabs = that.products.filter(item => item.top <= scrollTop ).reverse();
+			if (tabs.length) {
 				if (tabs.length == 1) {
-					this.leftScrollTop = this.leftScrollTop + 0.01;
+					that.leftScrollTop = this.leftScrollTop + 0.01;
 				}
 				if (that.currentId != tabs[0].strItemBarCode) {
-					that.currentId = tabs[0].strItemBarCode;
-					that.leftCurrtab = 'left' + tabs[0].strItemBarCode;
+					that.$nextTick(function(){
+						that.currentId = tabs[0].strItemBarCode;
+						that.leftCurrtab = 'left' + tabs[0].strItemBarCode;
+					})
 				}
 			} else {
-				this.leftScrollTop = 0;
+				that.leftScrollTop = 0;
 			}
 		}, 50),
 		// 计算右侧栏每个tab的高度等信息
 		calcSize() {
 			return new Promise((res, ret) => {
-				let h = 0;
+				let h = 123;
 				this.products.forEach((item, i) => {
 					let view = uni.createSelectorQuery().select('#main-' + item.strItemBarCode);
 					view.fields(
@@ -1544,8 +1537,8 @@ export default {
 						},
 						data => {
 							if (!data) return;
-							item.top = h + 124;
-							h += data.height;
+							item.top = h;
+							h += parseInt(data.height);
 							if (i == this.products.length - 1) {
 								res();
 							}
@@ -1759,16 +1752,16 @@ export default {
 
 /* 加减控件 */
 .goods-single {
-	height: 44upx;
-	line-height: 44upx;
+	height: 22px;
+	line-height: 22px;
 	display: flex;
 
 	image {
-		@include rect(44upx, 44upx);
+		@include rect(22px, 22px);
 	}
 
 	.num {
-		width: 50upx;
+		width: 25px;
 		text-align: center;
 	}
 }
@@ -2205,22 +2198,22 @@ export default {
 .right-aside {
 	flex: 1;
 	overflow: hidden;
-	padding: 0 36upx 0 20upx;
+	padding: 0 18px 0 10px;
 	box-sizing: border-box;
 	background-color: $bg-white;
 
 	.blank {
 		width: 100%;
-		height: 200upx;
+		height: 100px;
 	}
 
 	.header_banner {
 		width: 100%;
-		height: 246upx;
+		height: 123px;
 		box-sizing: border-box;
 		border-radius: $radius-md;
 		overflow: hidden;
-		margin-bottom: 58upx;
+		margin-bottom: 29px;
 
 		swiper-item {
 			@include rect(100%, 100%);
@@ -2233,8 +2226,8 @@ export default {
 }
 
 .class_tit {
-	margin-bottom: 58upx;
-	font-size: 24upx;
+	margin-bottom: 29px;
+	font-size: 12px;
 	color: $uni-text-color-grey;
 }
 
@@ -2248,16 +2241,16 @@ export default {
 .t-item {
 	/* border: 1upx red solid; */
 	width: 100%;
-	height: 140upx;
+	height: 70px;
 	box-sizing: border-box;
 	display: flex;
-	font-size: 26upx;
-	margin-bottom: 73upx;
+	font-size: 13px;
+	margin-bottom: 36px;
 
 	.good-pic {
-		@include rect(140upx, 140upx);
+		@include rect(70px, 70px);
 		/* 			border: 1upx $main-color solid; */
-		border-radius: 8upx;
+		border-radius: 4px;
 		overflow: hidden;
 
 		image {
@@ -2267,21 +2260,21 @@ export default {
 
 	.goods-info {
 		height: 100%;
-		margin-left: 28upx;
-		width: 306upx;
+		margin-left: 14px;
+		width: 153px;
 
 		.goods-name {
 			width: 100%;
-			font-size: 32upx;
+			font-size: 16px;
 			@include lineOnly();
 		}
 
 		.goods-desc {
 			width: 100%;
-			height: 34upx;
-			margin: 8upx 0;
+			height: 17px;
+			margin: 4upx 0;
 			@include lineOnly();
-			font-size: 22upx;
+			font-size: 11px;
 			color: #a1a1a1;
 		}
 
@@ -2289,12 +2282,12 @@ export default {
 			width: 100%;
 			@extend %flex-alcent;
 			justify-content: space-between;
-			height: 44upx;
-			line-height: 44upx;
+			height: 22px;
+			line-height: 22px;
 
 			.goods-price {
-				width: 180upx;
-				font-size: 32upx;
+				width: 90px;
+				font-size: 16px;
 				font-weight: 700;
 				color: $color-red;
 				display: flex;
@@ -2307,11 +2300,11 @@ export default {
 			}
 
 			.oldprice {
-				font-size: 24upx;
+				font-size: 12px;
 				color: #a5a5a5;
 				text-decoration: line-through;
 				font-weight: 400;
-				margin-left: 20upx;
+				margin-left: 10px;
 			}
 
 			.btn-r {
@@ -2321,12 +2314,12 @@ export default {
 				}
 
 				.meal {
-					height: 44upx;
+					height: 22px;
 					background-color: $main-color;
 					color: $bg-white;
-					border-radius: 22upx;
+					border-radius: 11px;
 					font-size: $font-sm;
-					@include box-padding(20upx);
+					@include box-padding(10px);
 				}
 			}
 		}

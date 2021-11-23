@@ -169,15 +169,16 @@ export default {
 		return {
 			orderdetails: {}, //订单详情数据
 			orderPreferentials: [],
-			subview: false
+			subview: false,
+			member:false
 		};
 	},
 	onLoad(options) {
+		this.member = app.globalData.member;
 		this.orderNo = options.orderId;
 		let orderDetail = app.globalData.orderDetail;
 		if (orderDetail) {
 			this.orderdetails = orderDetail;
-			console.log(11111,this.orderdetails)
 			app.globalData.orderDetail = null;
 			return;
 		}
@@ -185,16 +186,16 @@ export default {
 	},
 	onShow() {},
 	computed: {
-		...mapGetters(['memberinfo', 'businessType', 'paymentMode'])
+		...mapGetters(['memberinfo', 'businessType', 'paymentMode','openidinfo','plusinfo'])
 	},
 	methods: {
 		async getOrderDetail() {
 			let that = this;
 			let data = {
 				HQCode: appConfig.hqcode,
-				MemberCode: that.memberinfo.strMemberCode,
-				Mobile: that.memberinfo.strMobilePhone,
-				WXOpenID: that.memberinfo.strWXOpenID,
+				MemberCode: that.plusinfo.strMemberCode,
+				Mobile: that.memberinfo.mobile,
+				WXOpenID: that.openidinfo.openid,
 				GetDetail: true,
 				interFaces: 'OrderRecord'
 			};
@@ -246,19 +247,17 @@ export default {
 				HQCode: appConfig.hqcode,
 				ShopCode: that.orderdetails.strShopCode,
 				total_fee:1,
-				MemberCode: that.memberinfo.strMemberCode,
-				sub_openid: that.memberinfo.strWXOpenID,
-				WXOpenID: that.memberinfo.strWXOpenID,
+				MemberCode: that.plusinfo.strMemberCode,
+				// MemberCode: that.plusinfo.strMemberCode,
+				sub_openid: that.openidinfo.openid,
+				WXOpenID: that.openidinfo.openid,
 				timestamp: timestamp,
 				SaleOrderNum: this.orderNo, //订单号
 				noncestr: wxuuid().replace(/-/g, ''), //随机字符串
-				Mobile: that.memberinfo.strMobilePhone, //手机号
+				Mobile: that.memberinfo.mobile, //手机号
 				Memo: '', //备注
 				SaleMode: that.businessType, //售卖模式
 				PayMentMode: that.orderdetails.intPayType,
-				// SaleOrderNum:saleOrderNum,
-				// PayMentMode: that.paymentMode[0].intPaymentMode, //支付方式
-				// PayMentModeName: that.paymentMode[0].strPaymentMode, //支付名
 				TakeMode: that.businessType,
 				TakeTime: that.orderdetails.takeTime,
 				OrderType: 'online', //支付订单的类型online普通订单 groupbuy拼团订单
@@ -266,10 +265,26 @@ export default {
 				interFaces: 'Prepay',
 				OrderCreate: true,
 			};
+			
 			let data = {
 				...params,
 				PaymentContent: params
 			};
+			if(that.member){
+				let VkaJson = {
+					amount: interest.orderTotal,
+					total: interest.afterDiscountTotal,
+					boxFree: interest.boxFee,
+					products: interest.products,
+					coupons: interest.couponInfoResponseList,
+					promotions: interest.promotions,
+					payments: 'weixinpay',
+				};
+				VkaJson.promotions.forEach(item => {
+					delete item.remark
+				})
+				data.VkaJson = VkaJson;
+			}
 			try {
 				let res = await api.getPayMentParams(data);
 				uni.hideLoading();

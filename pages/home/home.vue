@@ -461,7 +461,7 @@ export default {
 					}
 					that.pointActivity(); //查询积点活动
 					that.redReaward(memberinfo.id);
-				} catch (err) {}
+				} catch (err) { }
 			}
 			uni.hideLoading();
 		},
