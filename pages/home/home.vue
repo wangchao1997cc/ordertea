@@ -269,20 +269,21 @@ export default {
 		}
 	},
 	async onLoad(options) {
+		let that = this;
 		uni.showLoading({
 			mask: 'true'
 		});
-		this.member = app.globalData.member;
-		if (!this.JSESSIONID) {
+		that.member = app.globalData.member;
+		if (!that.JSESSIONID) {
 			uni.hideTabBar({});
 			await ajaxUserLogin(); //先进行登录
 		}
 		if (options.giveCardId) {
-			this.homeParams = options;
+			that.homeParams = options;
 		}
 		uni.showTabBar({});
 		uni.hideLoading();
-		this.init();
+		that.init();
 	},
 
 	onShareAppMessage(res) {
@@ -312,14 +313,15 @@ export default {
 	},
 	methods: {
 		async init() {
-			if (this.member) {
-				this.juideUserInfo(); //判断用户是否登录
-				this.renderAnimation(); //定义动画
+			let that = this;
+			if (that.member) {
+				that.juideUserInfo(); //判断用户是否登录
+				that.renderAnimation(); //定义动画
 			} else {
 				uni.hideLoading();
 			}
-			this.getNewsList(); //获取团餐/新鲜事列表
-			this.getBannerList(); //获取轮播图
+			that.getNewsList(); //获取团餐/新鲜事列表
+			that.getBannerList(); //获取轮播图
 		},
 		//获取新鲜事列表
 		async getNewsList() {
@@ -340,12 +342,13 @@ export default {
 		},
 		//打开集点卡介绍幕布
 		checkPonitDesc() {
-			this.maskShow = true;
-			let animation = this.animation;
-			this.$nextTick(() => {
+			let that = this;
+			that.maskShow = true;
+			let animation = that.animation;
+			that.$nextTick(() => {
 				//解决DOM更新异步问题
 				animation.translateY(0).step();
-				this.animationData = animation.export();
+				that.animationData = animation.export();
 			});
 		},
 		//关闭集点卡活动
@@ -372,8 +375,9 @@ export default {
 		},
 		//查看积点活动
 		async pointActivity() {
-			let data = {
-				cardId: this.memberinfo.id
+			let that = this,
+			    data = {
+				cardId: that.memberinfo.id
 			};
 			let res = await api.pointActivity(data);
 			if (res.code == 200) {
@@ -382,9 +386,9 @@ export default {
 					if (!res.data[0].description) {
 						res.data[0].description = '<div>暂无内容</div>';
 					}
-					this.pointActive = res.data[0];
+					that.pointActive = res.data[0];
 					if (res.data[0].endTime.slice(0, 4) > 2099) {
-						this.timelimit = false;
+						that.timelimit = false;
 					}
 				}
 			}
@@ -403,13 +407,13 @@ export default {
 				cardId: that.memberinfo.id,
 				activityId: that.redRewardInfo.id
 			};
-			this.redRewardInfo = null;
+			that.redRewardInfo = null;
 			let res = await api.receiveReward(data);
 			uni.hideLoading();
 			if (res.code == 200) {
 				that.redRewardInfo = null;
 				that.$msg.showToast('恭喜您领取成功～');
-				this.memberinfo = await getMemberInfo(true);
+				that.memberinfo = await getMemberInfo(true);
 			} else {
 				that.$msg.showToast(res.message);
 			}
@@ -425,22 +429,23 @@ export default {
 		},
 		//领取好友赠送的优惠券
 		async receiveCouponsBtn() {
-			let memberinfo = this.memberinfo;
+			let that = this,
+			    memberinfo = that.memberinfo;
 			if (!memberinfo) {
 				return that.$refs.authorM.showPop();
 			}
 			let data = {
-				giveCardId: this.homeParams.giveCardId,
-				obtainCardId: this.memberinfo.id,
-				ticketId: this.homeParams.ticketId
+				giveCardId: that.homeParams.giveCardId,
+				obtainCardId: that.memberinfo.id,
+				ticketId: that.homeParams.ticketId
 			};
 			let res = await api.receiveCoupons(data, true);
-			this.notAuth = false;
+			that.notAuth = false;
 			if (res.code == 200) {
-				this.$msg.showToast('领取成功～');
-				this.memberinfo = await getMemberInfo(true);
+				that.$msg.showToast('领取成功～');
+				that.memberinfo = await getMemberInfo(true);
 			} else {
-				this.$msg.showToast(res.message);
+				that.$msg.showToast(res.message);
 			}
 		},
 		async juideUserInfo() {
@@ -469,23 +474,23 @@ export default {
 					that.pointActivity(); //查询积点活动
 					that.redReaward(memberinfo.id);
 				} catch (err) {
-					console.log(err);
 				}
 			}
 			uni.hideLoading();
 		},
 		//查询红包奖励
 		async redReaward(id) {
-			let data = {};
+		    let that = this,
+			    data = {};
 			if (id) {
 				data.cardId = id;
 			}
 			let res = await api.redRewardActive(data);
 			if (res.code == 200) {
 				if (res.data[0]) {
-					this.redRewardInfo = res.data[0];
+					that.redRewardInfo = res.data[0];
 					let rewardarr = res.data[0].ticketName.split(',');
-					this.rewardarr = rewardarr;
+					that.rewardarr = rewardarr;
 					return rewardarr;
 				}
 			}
@@ -493,8 +498,9 @@ export default {
 
 		//查询好友赠送的优惠券
 		async receiveCoupons() {
-			let homeParams = this.homeParams;
-			if (this.memberinfo && this.memberinfo.id == homeParams.giveCardId) {
+			let that = this,
+			    homeParams = that.homeParams;
+			if (that.memberinfo && that.memberinfo.id == homeParams.giveCardId) {
 				return;
 			}
 			let data = {
@@ -503,22 +509,23 @@ export default {
 			};
 			let res = await api.confirmStutas(data);
 			if (res.code == 200) {
-				this.shareCoupons = res.data;
-				this.notAuth = true;
+				that.shareCoupons = res.data;
+				that.notAuth = true;
 			} else {
-				this.$msg.showToast(res.message);
+				that.$msg.showToast(res.message);
 			}
 		},
 		async loginSuccess(val) {
-			this.$refs.authorM.hidePop();
+			let that = this;
+			that.$refs.authorM.hidePop();
 			let memberinfo = await getMemberInfo(true);
-			this.memberinfo = memberinfo;
-			this.pointActivity(); //查询积点活动
-			if (this.redRewardInfo) {
-				return this.receiveReward(); //注册成功领取天降红包
+			that.memberinfo = memberinfo;
+			that.pointActivity(); //查询积点活动
+			if (that.redRewardInfo) {
+				return that.receiveReward(); //注册成功领取天降红包
 			}
-			if (this.homeParams && this.homeParams.giveCardId) {
-				this.receiveCouponsBtn(); //注册成功领取好友赠送的优惠券
+			if (that.homeParams && that.homeParams.giveCardId) {
+				that.receiveCouponsBtn(); //注册成功领取好友赠送的优惠券
 			}
 		},
 		//跳转点单页，判断自取或外卖
@@ -570,16 +577,17 @@ export default {
 		},
 		//跳转充值
 		async jumpWallet() {
+			let that = this;
 			let walletShow = await getRecharge();
 			if (!walletShow) {
-				return this.$msg.showToast('非常抱歉，现在没有开启充值活动');
+				return that.$msg.showToast('非常抱歉，现在没有开启充值活动');
 			}
-			if (this.memberinfo) {
+			if (that.memberinfo) {
 				uni.navigateTo({
 					url: '../wallet/wallet'
 				});
 			} else {
-				return this.noLoginHander();
+				return that.noLoginHander();
 			}
 		},
 		noLoginHander() {

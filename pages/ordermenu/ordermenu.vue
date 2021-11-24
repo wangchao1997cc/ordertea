@@ -26,7 +26,9 @@
 						>
 							{{ item.type == 5 ? '特' : '减' }}
 						</view>
-						<view class="rich_text"><rich-text :nodes="item.description"></rich-text></view>
+						<view class="rich_text">
+							<rich-text :nodes="item.description"></rich-text>
+						</view>
 					</view>
 				</view>
 			</scroll-view>
@@ -117,7 +119,12 @@
 					</swiper-item>
 				</swiper>
 				<!-- 对应产品列表 -->
-				<view v-for="(item, index) in products" :key="index" class="s-list" :id="'main-' + item.uid">
+				<view
+					v-for="(item, index) in products"
+					:key="index"
+					class="s-list"
+					:id="'main-' + item.uid"
+				>
 					<view class="class_tit">{{ item.name }}</view>
 					<view class="t-list">
 						<view
@@ -127,7 +134,9 @@
 							@click="openOrderMask(titem, index, idx)"
 						>
 							<view class="good-pic">
-								<image :src="titem.logo ? titem.logo : '../../static/menu/logo.png'"></image>
+								<image
+									:src="titem.logo ? titem.logo : '../../static/menu/logo.png'"
+								></image>
 							</view>
 							<view class="goods-info">
 								<view class="goods-name">{{ titem.name }}</view>
@@ -135,7 +144,9 @@
 								<view class="goods-footer">
 									<view class="goods-price">
 										<text>
-											¥{{ titem.activePrice ? titem.activePrice : titem.price }}
+											¥{{
+												titem.activePrice ? titem.activePrice : titem.price
+											}}
 										</text>
 										<text class="oldprice" v-if="titem.activePrice">
 											¥{{ titem.price }}
@@ -175,7 +186,9 @@
 												</view>
 											</view>
 											<view v-else class="meal">
-												<text>{{ titem.type == 2 ? '选套餐' : '选规格' }}</text>
+												<text>
+													{{ titem.type == 2 ? '选套餐' : '选规格' }}
+												</text>
 											</view>
 										</view>
 									</view>
@@ -187,13 +200,20 @@
 				<view class="blank"></view>
 			</scroll-view>
 		</view>
-		<view class="order-masker" v-if="allmask" catchtouchmove="prentEvents" @click="closeAllMask">
+		<view
+			class="order-masker"
+			v-if="allmask"
+			catchtouchmove="prentEvents"
+			@click="closeAllMask"
+		>
 			<view class="order-info" :animation="animationData" @click.stop="prentEvents">
 				<!-- 商品介绍规格参数等 -->
 				<view class="order_info_box" :hidden="maskarr.orderDescMask">
 					<view class="goods-pic">
 						<image
-							:src="chooseGoods.logo ? chooseGoods.logo : '../../static/menu/logo.png'"
+							:src="
+								chooseGoods.logo ? chooseGoods.logo : '../../static/menu/logo.png'
+							"
 						></image>
 						<view class="close-mask" @click="closeAllMask">
 							<image src="../../static/cha.png"></image>
@@ -210,7 +230,9 @@
 								<view class="arrt_Iitem-cont">
 									<view
 										class="arrt_Iitem"
-										:class="{ choose_item: aitem.selected || currtabarr[index] == idx }"
+										:class="{
+											choose_item: aitem.selected || currtabarr[index] == idx
+										}"
 										v-for="(aitem, idx) in item.items"
 										:key="idx"
 										@click="chooseAttr(index, idx)"
@@ -224,7 +246,11 @@
 					<view class="order-footer">
 						<view class="num-control">
 							<view class="price">
-								¥{{ chooseGoods.activePrice ? chooseGoods.activePrice : chooseGoods.price }}
+								¥{{
+									chooseGoods.activePrice
+										? chooseGoods.activePrice
+										: chooseGoods.price
+								}}
 							</view>
 							<view class="goods-single">
 								<image src="../../static/sub.png" @click="reduceTap(2)"></image>
@@ -281,9 +307,15 @@
 										<text>¥ {{ item.price }}</text>
 									</view>
 									<view class="goods-single">
-										<image src="../../static/sub.png" @click="reduceTap(3, item)"></image>
+										<image
+											src="../../static/sub.png"
+											@click="reduceTap(3, item)"
+										></image>
 										<view class="num">{{ item.nums }}</view>
-										<image src="../../static/add.png" @click="addTap(3, item)"></image>
+										<image
+											src="../../static/add.png"
+											@click="addTap(3, item)"
+										></image>
 									</view>
 								</view>
 							</view>
@@ -454,13 +486,21 @@ export default {
 		return appshare();
 	},
 	computed: {
-		...mapState(['openid', 'businessType', 'storeId', 'JSESSIONID', 'isLogin', 'productPrimaryTypeName']),
+		...mapState([
+			'openid',
+			'businessType',
+			'storeId',
+			'JSESSIONID',
+			'isLogin',
+			'productPrimaryTypeName'
+		]),
 		headerInfo() {
+			let that = this;
 			let name = '请选择下单门店 >';
-			if (this.model == 2) {
-				this.storeInfo.storeName ? (name = this.storeInfo.storeName) : '';
-			} else if (this.useraddress) {
-				name = this.useraddress.receiverAddress + this.useraddress.appendReceiverAddress;
+			if (that.model == 2) {
+				that.storeInfo.storeName ? (name = that.storeInfo.storeName) : '';
+			} else if (that.useraddress) {
+				name = that.useraddress.receiverAddress + that.useraddress.appendReceiverAddress;
 			}
 			return name;
 		},
@@ -476,13 +516,14 @@ export default {
 			return height;
 		},
 		headerinfo_t() {
-			let name = '正在选择店铺中...';
-			let storeInfo = this.storeInfo;
-			if (this.model == 2) {
-				let location = this.location;
-				if (this.$children.length) {
-					if (this.$children[0].currtab != 0) {
-						this.$children[0].currtab = 0;
+			let that = this,
+				name = '正在选择店铺中...',
+				storeInfo = that.storeInfo;
+			if (that.model == 2) {
+				let location = that.location;
+				if (that.$children.length) {
+					if (that.$children[0].currtab != 0) {
+						that.$children[0].currtab = 0;
 					}
 				}
 				if (storeInfo.coordinate) {
@@ -496,8 +537,8 @@ export default {
 						);
 				}
 			} else {
-				if (this.$children.length) {
-					this.$children[0].currtab = 1;
+				if (that.$children.length) {
+					that.$children[0].currtab = 1;
 					name = `由${storeInfo.storeName}店配送`;
 				}
 			}
@@ -528,10 +569,11 @@ export default {
 		},
 		//商品总价格
 		priceArr() {
-			let totalPrice = 0; //总价格
-			let lunchboxfee = 0; //餐盒费
-			let shopcar = this.shopcar;
-			let specoffer = []; //特价商品变量
+			let that = this,
+				totalPrice = 0, //总价格
+				lunchboxfee = 0, //餐盒费
+				shopcar = that.shopcar,
+				specoffer = []; //特价商品变量
 			if (shopcar.length) {
 				shopcar.forEach(item => {
 					let singleprice = accMul(item.price, item.nums);
@@ -546,8 +588,8 @@ export default {
 				});
 				totalPrice = accAdd(totalPrice, lunchboxfee);
 			}
-			let activelist = this.activelist;
-			let isfullprice = null;
+			let activelist = that.activelist,
+				isfullprice = null;
 			if (activelist) {
 				let fullarr = [];
 				activelist.forEach(item => {
@@ -571,7 +613,7 @@ export default {
 					}
 				});
 			}
-			this.isfullprice = isfullprice;
+			that.isfullprice = isfullprice;
 			return {
 				totalPrice: totalPrice,
 				lunchboxfee: lunchboxfee
@@ -587,19 +629,20 @@ export default {
 		}
 	},
 	async onLoad(options) {
-		if (!this.JSESSIONID) {
+		let that = this;
+		if (!that.JSESSIONID) {
 			uni.hideTabBar({});
 			await ajaxUserLogin(); //先进行登录
 		}
 		if (options && options.deskId) {
-			this.forhere = options;
+			that.forhere = options;
 			app.globalData.forhere = options;
-			this.$store.commit('changebussiness', [3]);
+			that.$store.commit('changebussiness', [3]);
 		}
 		// this.juideOptions(options); //判断路径参数
 		uni.showTabBar({});
-		this.member = app.globalData.member;
-		this.init();
+		that.member = app.globalData.member;
+		that.init();
 	},
 
 	onShow: function onShow() {
@@ -607,14 +650,14 @@ export default {
 		if (that.storeId) {
 			//如果有storeId 并且不是同一家店铺则刷新点餐
 			if (that.storeInfo && that.storeInfo.storeId == that.storeId) {
-				this.getStore(this.storeInfo.storeId);
+				that.getStore(that.storeInfo.storeId);
 			} else {
 				if (that.shopcar.length) {
-					this.reductionData();
+					that.reductionData();
 				}
-				if (this.$children[2].hiddenChoseStore) {
+				if (that.$children[2].hiddenChoseStore) {
 					//选择其他门店   关闭附近门店选择弹窗
-					this.$children[2].hiddenChoseStore = false;
+					that.$children[2].hiddenChoseStore = false;
 				}
 				// that.shopcar = []; //清空购物车
 				that.storeInfo = app.globalData.storeInfo;
@@ -625,13 +668,13 @@ export default {
 			if (!that.nearList.length) {
 				that.goToChoseCity();
 			}
-		} else if (this.storeInfo) {
+		} else if (that.storeInfo) {
 			//页面刷新  店铺
-			this.getStore(this.storeInfo.storeId);
+			that.getStore(that.storeInfo.storeId);
 		}
 		if (app.globalData.orderSuccess) {
 			//下单成功
-			this.reductionData();
+			that.reductionData();
 			// that.shopcar = []; //清空购物车
 			app.globalData.orderSuccess = false;
 		}
@@ -661,12 +704,13 @@ export default {
 			this.busyOpen = !this.busyOpen;
 		},
 		noBussinessTime() {
-			let storeInfo = this.storeInfo;
-			this.$msg.showModal(
+			let that = this,
+				storeInfo = that.storeInfo;
+			that.$msg.showModal(
 				res => {
 					if (res == 1) {
-						if (this.model == 1) {
-							return this.switchStoreOwn();
+						if (that.model == 1) {
+							return that.switchStoreOwn();
 						}
 						goChoseStore({
 							cityId: storeInfo.cityId,
@@ -714,12 +758,13 @@ export default {
 		},
 		//还原数据
 		reductionData() {
-			let shopcar = this.shopcar;
+			let that = this,
+			    shopcar = that.shopcar;
 			for (let i in shopcar) {
-				this.products[shopcar[i].indexarr.index].products[shopcar[i].indexarr.idx].nums = 0; //同步餐单上的商品数据
+				that.products[shopcar[i].indexarr.index].products[shopcar[i].indexarr.idx].nums = 0; //同步餐单上的商品数据
 			}
-			this.shopcar = [];
-			this.closeAllMask();
+			that.shopcar = [];
+			that.closeAllMask();
 		},
 		//获取当前门店信息
 		async getStore(storeId) {
@@ -785,7 +830,9 @@ export default {
 											case 0:
 												citem.activePrice =
 													Math.round(
-														parseFloat(accMul(citem.price, aitem.value)) * 100
+														parseFloat(
+															accMul(citem.price, aitem.value)
+														) * 100
 													) / 100;
 												break;
 											case 1:
@@ -826,6 +873,7 @@ export default {
 		},
 		//添加按钮
 		addTap(type, goods, index, idx) {
+			let that = this;
 			switch (type) {
 				case 1:
 					goods.indexarr = {
@@ -833,47 +881,50 @@ export default {
 						index: index
 					};
 					if (!goods.nums) {
-						this.$set(goods, 'nums', 1);
+						that.$set(goods, 'nums', 1);
 					} else {
 						goods.nums++;
 					}
-					this.addShopCar(goods);
+					that.addShopCar(goods);
 					break;
 				case 2:
-					this.nums++;
+					that.nums++;
 					break;
 				case 3:
 					goods.nums++;
-					this.products[goods.indexarr.index].products[goods.indexarr.idx].nums = goods.nums; //同步餐单上的商品数据
+					that.products[goods.indexarr.index].products[goods.indexarr.idx].nums =
+						goods.nums; //同步餐单上的商品数据
 					break;
 			}
 		},
 		//减按钮
 		reduceTap(type, goods) {
+			let that = this;
 			switch (type) {
 				case 1:
 					if (goods.nums == 1) {
-						this.deleteShopCar(goods);
+						that.deleteShopCar(goods);
 					}
 					goods.nums--;
-					for (let i in this.shopcar) {
-						if (this.shopcar[i].uid == goods.uid) {
-							this.shopcar[i].nums--;
+					for (let i in that.shopcar) {
+						if (that.shopcar[i].uid == goods.uid) {
+							that.shopcar[i].nums--;
 						}
 					}
 					break;
 				case 2:
-					if (this.nums == 1) {
+					if (that.nums == 1) {
 						return;
 					}
-					this.nums--;
+					that.nums--;
 					break;
 				case 3:
 					if (goods.nums == 1) {
-						this.deleteShopCar(goods);
+						that.deleteShopCar(goods);
 					}
 					goods.nums--;
-					this.products[goods.indexarr.index].products[goods.indexarr.idx].nums = goods.nums; //同步餐单上的商品数据
+					that.products[goods.indexarr.index].products[goods.indexarr.idx].nums =
+						goods.nums; //同步餐单上的商品数据
 			}
 		},
 
@@ -891,15 +942,16 @@ export default {
 		},
 		//添加购物车商品
 		addShopCar(goods) {
-			if (!this.storeInfo.isServiceTime) {
-				return this.$msg.showToast('门店休息中');
-			}
 			let that = this;
+			if (!that.storeInfo.isServiceTime) {
+				return that.$msg.showToast('门店休息中');
+			}
 			if (!goods) {
 				that.$set(that.chooseGoods, 'nums', that.nums);
 				goods = that.chooseGoods;
 				if (goods.indexarr) {
-					that.products[goods.indexarr.index].products[goods.indexarr.idx].nums = that.nums;
+					that.products[goods.indexarr.index].products[goods.indexarr.idx].nums =
+						that.nums;
 				}
 			}
 
@@ -956,14 +1008,17 @@ export default {
 					if (item.uid == shopitem.uid) {
 						//购物车内相同的商品数量直接++
 						if (item.property) {
-							if (JSON.stringify(item.property) == JSON.stringify(shopitem.property)) {
+							if (
+								JSON.stringify(item.property) == JSON.stringify(shopitem.property)
+							) {
 								ishave = true;
 								item.nums++;
 							}
 						} else {
 							ishave = true;
 							item.nums++;
-							that.products[goods.indexarr.index].products[goods.indexarr.idx].nums = item.nums;
+							that.products[goods.indexarr.index].products[goods.indexarr.idx].nums =
+								item.nums;
 						}
 					}
 				});
@@ -989,8 +1044,8 @@ export default {
 		//点击商品打开幕布
 		openOrderMask(goods, index, idx) {
 			let that = this;
-			if (this.storeInfo.isBusy) {
-				return this.$msg.showToast('茶饮制作繁忙中');
+			if (that.storeInfo.isBusy) {
+				return that.$msg.showToast('茶饮制作繁忙中');
 			}
 			if (!goods.isInServiceTime || goods.isSoldOut) {
 				//售罄和不在售时间内
@@ -1003,7 +1058,7 @@ export default {
 				index: index
 			};
 			that.nums = 1;
-			this.chooseGoods = chooseGoods;
+			that.chooseGoods = chooseGoods;
 			if (goods.type == 1 && goods.isRequirement) {
 				that.handleData(goods.property);
 			}
@@ -1016,8 +1071,10 @@ export default {
 			let attr = that.specarr[index].items[idx];
 			let price = null;
 			if (that.specarr[index].items[idx].isSoldOut) {
-				return this.$msg.showToast(
-					'很抱歉！' + that.specarr[index].items[idx].name + '已经售罄了哦，正在加紧补货中～'
+				return that.$msg.showToast(
+					'很抱歉！' +
+						that.specarr[index].items[idx].name +
+						'已经售罄了哦，正在加紧补货中～'
 				);
 			}
 			if (index == that.specarr.length - 1 && attr.hasOwnProperty('selected')) {
@@ -1037,19 +1094,21 @@ export default {
 		},
 		//计算商品的规格价格
 		computeSpecPrice(price, attrPrice) {
-			let chooseGoods = this.chooseGoods;
+			let that = this,
+			    chooseGoods = this.chooseGoods;
 			if (chooseGoods.activePrice) {
 				let activePrice = subtr(chooseGoods.activePrice, price);
-				this.chooseGoods.activePrice = accAdd(activePrice, attrPrice);
+				that.chooseGoods.activePrice = accAdd(activePrice, attrPrice);
 			} else {
 				let nochangePrice = subtr(chooseGoods.price, price);
-				this.chooseGoods.price = accAdd(nochangePrice, attrPrice);
+				that.chooseGoods.price = accAdd(nochangePrice, attrPrice);
 			}
 		},
 		//处理规格属性
 		handleData(data) {
-			let specarr = [];
-			let currtabarr = [];
+			let that =this,
+			    specarr = [],
+			    currtabarr = [];
 			if (data.standard) {
 				specarr.push(data.standard);
 			}
@@ -1057,17 +1116,17 @@ export default {
 				specarr.push(data.propertys[i]);
 			}
 			for (let i = 0; i < specarr.length; i++) {
-				this.computeSpecPrice(0, specarr[i].items[0].price);
+				that.computeSpecPrice(0, specarr[i].items[0].price);
 				currtabarr.push(0);
 			}
-			this.currtabarr = currtabarr;
+			that.currtabarr = currtabarr;
 			if (data.choices) {
 				data.choices.items.forEach(item => {
-					this.$set(item, 'selected', false);
+					that.$set(item, 'selected', false);
 				});
 				specarr.push(data.choices);
 			}
-			this.specarr = specarr;
+			that.specarr = specarr;
 		},
 		//展现动画
 		openAnimation(type) {
@@ -1080,7 +1139,7 @@ export default {
 				if (that.maskarr.shopCarCont) {
 					that.maskarr.shopCarCont = false;
 				} else {
-					return this.closeAllMask();
+					return that.closeAllMask();
 				}
 			}
 			let animation = that.animation;
@@ -1103,43 +1162,45 @@ export default {
 				that.maskarr.shopCarShow = true;
 				that.maskarr.activeDesc = true;
 				uni.showTabBar({});
-			})
+			});
 		},
 		async getStoreMenu(storeId) {
-			waitLineUp().then(res => {
-				this.busyData = res;
-			});
-			this.loadingState = false;
 			let that = this;
+			waitLineUp().then(res => {
+				that.busyData = res;
+			});
+			that.loadingState = false;
+			
 			let data = {
 				storeId: storeId,
 				sendType: that.model
 			};
 			let res = await api.getProductMenu(data);
 			if (res && res.status == 1) {
-				this.getAdvertList({
+				that.getAdvertList({
 					//获取餐单广告
 					menuId: res.data.menuId,
 					storeId: storeId
 				}); //获取店铺广告
-				this.menuId = res.data.menuId;
-				this.defaultS = false;
-				this.handleShopData(res.data.bigs);
-				if (!this.storeInfo.isServiceTime) {
-					return this.noBussinessTime();
+				that.menuId = res.data.menuId;
+				that.defaultS = false;
+				that.handleShopData(res.data.bigs);
+				if (!that.storeInfo.isServiceTime) {
+					return that.noBussinessTime();
 				}
-				if (this.model == 1 && this.storeInfo.businessStatus[0].busy) {
-					this.noTakeOut();
+				if (that.model == 1 && that.storeInfo.businessStatus[0].busy) {
+					that.noTakeOut();
 				}
 			}
 		},
 		//不支持外卖提示
 		noTakeOut() {
-			let storeInfo = this.storeInfo;
-			this.$msg.showModal(
+			let that = this,
+			    storeInfo = that.storeInfo;
+			that.$msg.showModal(
 				res => {
 					if (res == 1) {
-						this.switchStoreOwn();
+						that.switchStoreOwn();
 						// goChoseStore({
 						// 	cityId: storeInfo.cityId,
 						// 	cityName: storeInfo.cityName,
@@ -1157,21 +1218,21 @@ export default {
 		},
 		//计算左边商品分类的高度
 		computReftHe() {
+			let that = this;
 			const sysinfo = uni.getSystemInfoSync();
 			let windowHeight = sysinfo.windowHeight;
-			this.popHeightInfo = {
+			that.popHeightInfo = {
 				hei: windowHeight * 1,
 				low: windowHeight * 0.5
 			};
-			this.computedHeight = windowHeight * (750 / sysinfo.windowWidth); //系统高度rpx
-			console.log(this.computedHeight);
+			that.computedHeight = windowHeight * (750 / sysinfo.windowWidth); //系统高度rpx
 			let animation = uni.createAnimation({
 				//定义动画
 				duration: 300,
 				timingFunction: 'linear',
 				delay: 0
 			});
-			this.animation = animation;
+			that.animation = animation;
 		},
 		//获取地理位置
 		async getLocation() {
@@ -1184,7 +1245,7 @@ export default {
 				that.location = location;
 				if (that.forhere) {
 					// console.log('几号桌')
-					return this.getStore(that.forhere.storeId);
+					return that.getStore(that.forhere.storeId);
 				}
 				if (!app.globalData.storeInfo.storeId) {
 					that.getNearShopList(); //获取距离最近的门店
@@ -1265,17 +1326,18 @@ export default {
 		},
 		//跳转订单页面
 		jumpOrder() {
-			if (this.model == 1 && this.storeInfo.businessStatus[0].busy) {
-				this.noTakeOut();
+			let that = this;
+			if (that.model == 1 && that.storeInfo.businessStatus[0].busy) {
+				that.noTakeOut();
 				return;
 			}
-			this.closeAllMask();
+			that.closeAllMask();
 			let storeInfo = app.globalData.storeInfo;
 			let memberinfo = uni.getStorageSync('memberinfo');
-			if (!memberinfo && this.member) {
-				return this.$refs.authorM.showPop();
+			if (!memberinfo && that.member) {
+				return that.$refs.authorM.showPop();
 			}
-			let shopcar = this.shopcar;
+			let shopcar = that.shopcar;
 			let order = [];
 			shopcar.forEach((item, index) => {
 				let products = {
@@ -1328,14 +1390,14 @@ export default {
 				order.push(products);
 			});
 			let orderinfo = {
-				menuId: this.menuId,
-				boxFee: this.priceArr.lunchboxfee,
+				menuId: that.menuId,
+				boxFee: that.priceArr.lunchboxfee,
 				fee: storeInfo.fee,
 				order: {
 					products: []
 				}
 			};
-			if (this.member) {
+			if (that.member) {
 				orderinfo.member = {
 					cardId: memberinfo.id,
 					usePoint: 0,
@@ -1344,7 +1406,7 @@ export default {
 					cardNo: memberinfo.cardNo
 				};
 			} else {
-				orderinfo.priceArr = this.priceArr; //餐饮总价
+				orderinfo.priceArr = that.priceArr; //餐饮总价
 				// .totalPrice;
 				// orderinfo.lunchboxfee = this.priceArr.lunchboxfee
 			}
@@ -1353,7 +1415,7 @@ export default {
 			uni.setStorageSync('orderinfo', orderinfo);
 			uni.navigateTo({
 				//前往下单页
-				url: '../settle/settle?storeId=' + this.storeInfo.storeId
+				url: '../settle/settle?storeId=' + that.storeInfo.storeId
 			});
 		},
 		//处理获取到的商铺菜单
@@ -1412,10 +1474,11 @@ export default {
 		},
 		//一级分类点击
 		tabtap(item) {
-			clearTimeout(this.timer);
-			this.currentId = item.uid;
-			let index = this.products.findIndex(sitem => sitem.uid === item.uid);
-			this.tabScrollTop = this.products[index].top;
+			let that = this;
+			clearTimeout(that.timer);
+			that.currentId = item.uid;
+			let index = that.products.findIndex(sitem => sitem.uid === item.uid);
+			that.tabScrollTop = that.products[index].top;
 		},
 
 		//右侧栏滚动
@@ -1425,14 +1488,14 @@ export default {
 			let tabs = that.products.filter(item => item.top <= scrollTop).reverse();
 			if (tabs.length > 0) {
 				if (tabs.length == 1) {
-					this.leftScrollTop = this.leftScrollTop + 0.01;
+					that.leftScrollTop = that.leftScrollTop + 0.01;
 				}
 				if (that.currentId != tabs[0].uid) {
 					that.currentId = tabs[0].uid;
 					that.leftCurrtab = 'left' + tabs[0].uid;
 				}
 			} else {
-				this.leftScrollTop = 0;
+				that.leftScrollTop = 0;
 			}
 		},
 		// 计算右侧栏每个tab的高度等信息
@@ -1459,13 +1522,14 @@ export default {
 		},
 		//查看店铺详细信息
 		checkDetail() {
-			if (this.defaultS) {
-				return this.$msg.showToast('请先选择下单店铺哦～');
+			let that = this;
+			if (that.defaultS) {
+				return that.$msg.showToast('请先选择下单店铺哦～');
 			}
-			if (this.activeHeight) {
-				this.activeHeight = 0;
+			if (that.activeHeight) {
+				that.activeHeight = 0;
 			}
-			this.showdetail = !this.showdetail;
+			that.showdetail = !that.showdetail;
 		},
 		switchStoreOwn() {
 			if (this.model == 1) {
