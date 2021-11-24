@@ -46,15 +46,16 @@
 		methods: {
 			//获取开放城市    处理数据 获取省份
 			async getProvince() {
-				let params = {
+				let that = this,
+				    params = {
 					HQCode:config.hqcode,
 					OpenBusiness:true,
 					interFaces: 'GetOpenBusiness'
-				}
+				};
 				try{
 					let res = await api.getNearStoreList(params,true);
-					this.alldata = res.Message;
-					this.addressData.push(res.Message);
+					that.alldata = res.Message;
+					that.addressData.push(res.Message);
 				}catch(err){
 					
 				}
@@ -74,11 +75,11 @@
 				if (that.currtab != 2) {
 					res = item.children;
 					if(that.currtab==0){
-						this.citydata.Region = item.value;
-						this.citydata.regionName = item.label;
+						that.citydata.Region = item.value;
+						that.citydata.regionName = item.label;
 					}else{
-						this.citydata.City = item.value;
-						this.citydata.cityName = item.label;
+						that.citydata.City = item.value;
+						that.citydata.cityName = item.label;
 					}
 					that.navarr[that.currtab] = item.label; //导航栏视图更新
 					that.currtab += 1;
@@ -87,23 +88,22 @@
 							label: '全部区域',
 						});
 					}
-					if (that.addressData[this.currtab]) { //如果存在则覆盖
-						that.addressData[this.currtab] = res;
+					if (that.addressData[that.currtab]) { //如果存在则覆盖
+						that.addressData[that.currtab] = res;
 					} else { //不存在则添加
 						that.addressData.push(res);
 					}
 					
 				} else {
 					that.navarr.splice(2, 1, item.label); //导航栏视图更新
-					this.citydata.areaName = item.label;
+					that.citydata.areaName = item.label;
 					if(!item.value){
-						delete this.citydata.Area
+						delete that.citydata.Area
 					}else{
-						this.citydata.Area = item.value
+						that.citydata.Area = item.value
 					}
-					
 					goChoseStore({
-						...this.citydata,
+						...that.citydata,
 					})
 				}
 			},

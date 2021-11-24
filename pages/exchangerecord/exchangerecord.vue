@@ -87,7 +87,7 @@
 						that.records = that.records.concat(res.data);
 					}
 					if(!that.records.length){
-						this.nodataShow = true;
+						that.nodataShow = true;
 					}
 				}
 			}

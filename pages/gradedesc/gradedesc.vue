@@ -55,14 +55,15 @@
 		methods: {
 			//获取会员等级信息
 			async getMemberGrade() {
+				let that = this;
 				let res = await api.getLevel({},true);
 				if (res.code == 200) {
 					res.data.forEach(item => {
-						if(item.id == this.memberinfo.levelId){
-							this.interest = item;
+						if(item.id == that.memberinfo.levelId){
+							that.interest = item;
 						}
 					})
-					this.gradeinfo = res.data;
+					that.gradeinfo = res.data;
 				}
 			},
 			//前往等级说明

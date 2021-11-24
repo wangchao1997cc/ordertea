@@ -119,17 +119,18 @@ export default {
 		}
 	},
 	async onShareAppMessage(res) {
-		let data = {
+		let that = this,
+		    data = {
 			path: '/pages/active/active'
-		}
-		if (!this.activityId) {
-			this.activityId = await this.getActiveInfo();
+		};
+		if (!that.activityId) {
+			that.activityId = await that.getActiveInfo();
 		}
 		if (res.from === 'button') { // 来自页面内分享按钮
-			data.path = '/pages/active/active?recommendedId=' + this.memberinfo.id + '&activityId=' + this.activityId;
+			data.path = '/pages/active/active?recommendedId=' + that.memberinfo.id + '&activityId=' + that.activityId;
 			data.title = '快来和我一起领取超多福利吧～';
-			data.imageUrl = this.activeDesc.imageUrl;
-			data.bgImgUrl = this.activeDesc.shareImageUrl;
+			data.imageUrl = that.activeDesc.imageUrl;
+			data.bgImgUrl = that.activeDesc.shareImageUrl;
 		}
 		return data
 	},
@@ -153,18 +154,18 @@ export default {
 		jyfParser,
 	},
 	async onLoad(options) {
+		let that = this;
 		uni.showLoading({
 			mask: 'true'
 		})
-		await this.$onLaunched;
-		let that = this;
+		await that.$onLaunched;
 		let memberinfo = that.memberinfo;
 		if (options) {
 			app.globalData.activeParams = options; //保存推荐人id
 			that.userdata = options;
 		}
 		if (!memberinfo) {
-			await this.juideUserInfo(); //判断用户是否登录
+			await that.juideUserInfo(); //判断用户是否登录
 		}
 		uni.hideLoading();
 		let activityId = await that.getActiveInfo();
@@ -197,21 +198,23 @@ export default {
 		},
 		//查询活动详情信息
 		async activeDescInfo() {
-			let data = {
-				cardId: this.memberinfo.id,
-				activityId: this.activityId
+			let that = this,
+			    data = {
+				cardId: that.memberinfo.id,
+				activityId: that.activityId
 			};
 			let res = await api.activityDesc(data, true);
 			if (res.code == 200) {
-				this.activeDesc = res.data;
+				that.activeDesc = res.data;
 			}
 		},
 		//用户授权信息
 		async getUserInfo(e) {
+			let that = this;
 			if (e.detail.errMsg == 'getUserInfo:ok') {
 				let userInfo = e.detail.userInfo;
 				userInfo.gender = subtr(userInfo.gender, 1);
-				let memberinfo = this.memberinfo;
+				let memberinfo = that.memberinfo;
 				let data = {
 					name: userInfo.nickName,
 					headUrl: userInfo.avatarUrl,
@@ -219,36 +222,38 @@ export default {
 					cardId: memberinfo.id,
 				}
 				let res = await api.updateMember(data, true);
-				this.notAuth = false;
+				that.notAuth = false;
 				if (res.code == 200) {} else {
-					this.$msg.showToast(res.message)
+					that.$msg.showToast(res.message)
 				}
 			} else {
-				this.$msg.showToast('取消授权');
-				this.notAuth = false;
+				that.$msg.showToast('取消授权');
+				that.notAuth = false;
 			}
 
 		},
 		async getActiveInfo(bol) {
-			let data = {};
-			if (this.memberinfo) {
-				data.cardId = this.memberinfo.id;
+			let that = this,
+			    data = {};
+			if (that.memberinfo) {
+				data.cardId = that.memberinfo.id;
 			}
 			let res = await api.fissionActive(data, true);
 			if (res.code == 200) {
-				this.activeinfo = res.data;
+				that.activeinfo = res.data;
 				return res.data.id;
 			}
 		},
 		//查看自己的收益
 		async cheackProfit() {
-			let data = {
-				cardId: this.memberinfo.id,
-				activityId: this.activityId,
+			let that = this,
+			    data = {
+				cardId: that.memberinfo.id,
+				activityId: that.activityId,
 			}
 			let res = await api.restulActivity(data);
 			if (res.code == 200) {
-				this.profitinfo = res.data
+				that.profitinfo = res.data
 			}
 		},
 		//新用户注册
@@ -274,7 +279,7 @@ export default {
 						interFaces: 'MemberInfoRegister'
 					};
 					await api.getUserInfo(params); //plus 注册会员
-					if (this.member) {
+					if (that.member) {
 						let userdata = {
 							mobile: phone,
 							openId: that.openidinfo.openid

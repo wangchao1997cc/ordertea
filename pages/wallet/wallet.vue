@@ -103,7 +103,6 @@ export default {
 					}
 					item.lvarr = lvarr;
 				});
-
 				this.currtabData = res[0];
 				this.imgList = res;
 			}
@@ -132,14 +131,13 @@ export default {
 				res.payData.package = res.payData.prepay_id;
 				wxPayment(res.payData)
 					.then(async res => {
-						this.$msg.showToast('充值成功');
-						this.memberinfo = await getMemberInfo(this.memberinfo.mobile,true);
+						that.$msg.showToast('充值成功');
+						that.memberinfo = await getMemberInfo(that.memberinfo.mobile,true);
 					})
 					.catch(ret => {
-						console.log(ret);
 					});
 			} else {
-				this.$msg.showToast(res.message);
+				that.$msg.showToast(res.message);
 			}
 		},
 		//跳转充值记录

@@ -62,8 +62,8 @@
 		methods: {
 			//获取附近门店的列表
 			async getStoreList(location){
-				location?'':location = this.location;
 				let that = this;
+				location?'':location = that.location;
 				let data = {
 					distance:'100',
 					longitude:location.longitude,

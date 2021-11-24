@@ -278,25 +278,27 @@ export default {
 	methods: {
 		...mapMutations('user', ['SET_PLUSINFO']),
 		async init() {
-			this.getNewsList(); //新鲜事
-			this.judgeLogin(); //判断是否登录
-			this.getBannerList(); //轮播图
+			let that = this;
+			that.getNewsList(); //新鲜事
+			that.judgeLogin(); //判断是否登录
+			that.getBannerList(); //轮播图
 		},
 		async judgeLogin() {
-			let params = {
-				WXOpenID: this.openidinfo.openid,
+			let that = this,
+			    params = {
+				WXOpenID: that.openidinfo.openid,
 				interFaces: 'MemberInfoGet'
 			};
 			try {
 				let res = await api.getUserInfo(params); //plus 用户信息
 				if (res.Message.length) {
-					this.SET_PLUSINFO(res.Message[0]);
+					that.SET_PLUSINFO(res.Message[0]);
 					await getMemberInfo(res.Message[0].strMobilePhone); //vka 会员用户信息
 				} else {
-					this.$refs.authorM.showPop();
+					that.$refs.authorM.showPop();
 				}
 			} catch (err) { }
-			this.juideUserInfo();  //首页活动等等
+			that.juideUserInfo();  //首页活动等等
 			uni.showTabBar({});
 		},
 		//获取用户信息
@@ -334,12 +336,13 @@ export default {
 		},
 		//打开集点卡介绍幕布
 		checkPonitDesc() {
-			this.maskShow = true;
-			let animation = this.animation;
-			this.$nextTick(() => {
+			let that = this;
+			that.maskShow = true;
+			let animation = that.animation;
+			that.$nextTick(() => {
 				//解决DOM更新异步问题
 				animation.translateY(0).step();
-				this.animationData = animation.export();
+				that.animationData = animation.export();
 			});
 		},
 		//关闭集点卡活动
@@ -420,22 +423,23 @@ export default {
 		},
 		//领取好友赠送的优惠券
 		async receiveCouponsBtn() {
-			let memberinfo = this.memberinfo;
+			let that = this,
+			    memberinfo = that.memberinfo;
 			if (!memberinfo) {
 				return that.$refs.authorM.showPop();
 			}
 			let data = {
-				giveCardId: this.homeParams.giveCardId,
-				obtainCardId: this.memberinfo.id,
-				ticketId: this.homeParams.ticketId
+				giveCardId: that.homeParams.giveCardId,
+				obtainCardId: that.memberinfo.id,
+				ticketId: that.homeParams.ticketId
 			};
 			let res = await api.receiveCoupons(data, true);
-			this.notAuth = false;
+			that.notAuth = false;
 			if (res.code == 200) {
-				this.$msg.showToast('领取成功～');
+				that.$msg.showToast('领取成功～');
 				// this.memberinfo = await getMemberInfo(true);
 			} else {
-				this.$msg.showToast(res.message);
+				that.$msg.showToast(res.message);
 			}
 		},
 		async juideUserInfo() {

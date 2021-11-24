@@ -510,11 +510,12 @@ export default {
 			'plusinfo'
 		]),
 		headerInfo() {
-			let name = '请选择下单门店 >';
-			if (this.model == 2) {
-				this.storeInfo.strShopName ? (name = this.storeInfo.strShopName) : '';
-			} else if (this.useraddress) {
-				name = this.useraddress.receiverAddress + this.useraddress.appendReceiverAddress;
+			let that = this,
+			    name = '请选择下单门店 >';
+			if (that.model == 2) {
+				that.storeInfo.strShopName ? (name = that.storeInfo.strShopName) : '';
+			} else if (that.useraddress) {
+				name = that.useraddress.receiverAddress + that.useraddress.appendReceiverAddress;
 			}
 			return name;
 		},
@@ -527,21 +528,22 @@ export default {
 			return height;
 		},
 		headerinfo_t() {
-			let name = '正在选择店铺中...';
-			let storeInfo = this.storeInfo;
-			if (this.model == 2) {
-				let location = this.location;
-				if (this.$children.length) {
-					if (this.$children[0].currtab != 0) {
-						this.$children[0].currtab = 0;
+			let that = this,
+			    name = '正在选择店铺中...',
+			    storeInfo = that.storeInfo;
+			if (that.model == 2) {
+				let location = that.location;
+				if (that.$children.length) {
+					if (that.$children[0].currtab != 0) {
+						that.$children[0].currtab = 0;
 					}
 				}
 				if (storeInfo.strDistance) {
 					name = '距您' + storeInfo.strDistance;
 				}
 			} else if (model == 3) {
-				if (this.$children.length) {
-					this.$children[0].currtab = 1;
+				if (that.$children.length) {
+					that.$children[0].currtab = 1;
 					name = `由${storeInfo.storeName}店配送`;
 				}
 			}
@@ -553,14 +555,15 @@ export default {
 		},
 		//商品总价格
 		priceArr() {
-			let totalPrice = 0; //总价格
-			let lunchboxfee = 0; //餐盒费
-			let shopcar = this.shopcar;
+			let that = this,
+			    totalPrice = 0, //总价格
+			    lunchboxfee = 0, //餐盒费
+			    shopcar = that.shopcar;
 			let activePriceTotal = 0; //特价商品变量
 			if (shopcar && shopcar.Detail) {
 				totalPrice = shopcar.floPay;
-				this.takeModeArr.forEach(item => {
-					if (this.businessType == item.intTakeMode) {
+				that.takeModeArr.forEach(item => {
+					if (that.businessType == item.intTakeMode) {
 						lunchboxfee = item.floPackageFee;
 					}
 				});
@@ -576,7 +579,7 @@ export default {
 
 				// totalPrice = accAdd(totalPrice, lunchboxfee);
 			}
-			let activelist = this.activelist;
+			let activelist = that.activelist;
 			let isfullprice = null;
 			if (activelist.length) {
 				let fullarr = [];
@@ -595,15 +598,16 @@ export default {
 					}
 				});
 			}
-			this.isfullprice = isfullprice;
+			that.isfullprice = isfullprice;
 			return {
 				totalPrice: totalPrice,
 				lunchboxfee: lunchboxfee
 			};
 		},
 		productPrice() {
-			let specarr = this.specarr,
-				chooseGoods = this.chooseGoods,
+			let that = this,
+			    specarr = that.specarr,
+				chooseGoods = that.chooseGoods,
 				productPrice = 0;
 			if (chooseGoods.activePrice) {
 				productPrice = chooseGoods.activePrice;
@@ -631,7 +635,6 @@ export default {
 		}
 	},
 	async onLoad(options) {
-		console.log('plus 会员内容', this.plusinfo);
 		this.member = app.globalData.member;
 		await this.$onLaunched;
 		// console.log(this.openidinfo);
@@ -651,14 +654,15 @@ export default {
 	},
 
 	onShow: function onShow() {
-		let storeInfo = app.globalData.storeInfo;
-		if (storeInfo && this.storeInfo.strShopCode != storeInfo.strShopCode) {
-			this.storeInfo = storeInfo;
-			this.getShopControlInfo();
+		let  that = this,
+		     storeInfo = app.globalData.storeInfo;
+		if (storeInfo && that.storeInfo.strShopCode != storeInfo.strShopCode) {
+			that.storeInfo = storeInfo;
+			that.getShopControlInfo();
 		}
 		if (app.globalData.orderSuccess) {
 			//下单成功
-			this.toUpdateShopCar();
+			that.toUpdateShopCar();
 			app.globalData.orderSuccess = false;
 		}
 		// let that = this;
@@ -715,12 +719,13 @@ export default {
 			this.busyOpen = !this.busyOpen;
 		},
 		noBussinessTime() {
-			let storeInfo = this.storeInfo;
-			this.$msg.showModal(
+			let that = this,
+			    storeInfo = that.storeInfo;
+			that.$msg.showModal(
 				res => {
 					if (res == 1) {
-						if (this.model == 3) {
-							return this.switchStoreOwn();
+						if (that.model == 3) {
+							return that.switchStoreOwn();
 						}
 						goChoseStore({
 							Region: storeInfo.strRegion,
@@ -853,21 +858,18 @@ export default {
 									if (citem.strProductBarCode == aitem.productPosId) {
 										switch (aitem.discountType) {
 											case 0:
-												console.log('特价', aitem, citem.floPrice);
 												citem.activePrice =  accMul(
 													citem.floPrice,
 													aitem.value / 10
 												).toFixed(2);
 												break;
 											case 1:
-											    console.log('1特价', aitem, citem.floPrice);
 												citem.activePrice = subtr(
 													citem.floPrice,
 													aitem.value
 												);
 												break;
 											case 2:
-											    console.log('2特价', aitem, citem.floPrice);
 												citem.activePrice = aitem.value;
 												break;
 										}
@@ -907,15 +909,16 @@ export default {
 		},
 		//添加按钮
 		addTap(type, goods) {
+			let that = this;
 			switch (type) {
 				case 1:
-					this.addShopCar(goods);
+					that.addShopCar(goods);
 					break;
 				case 2:
-					this.nums++;
+					that.nums++;
 					break;
 				case 3:
-					this.updateShopNums(goods, 1);
+					that.updateShopNums(goods, 1);
 					break;
 			}
 		},
@@ -954,19 +957,20 @@ export default {
 				interFaces: 'OrderAdd'
 			};
 			api.shopCarControl(message).then(res => {
-				this.shopcar = res.Message[0];
-				this.toUpdateShopCar(); //更新购物车
+				that.shopcar = res.Message[0];
+				that.toUpdateShopCar(); //更新购物车
 			});
 		},
 		//减按钮
 		reduceTap(type, goods) {
+			let that = this;
 			if (type == 1 || type == 3) {
-				this.updateShopNums(goods, -1);
+				that.updateShopNums(goods, -1);
 			} else {
-				if (this.nums == 1) {
+				if (that.nums == 1) {
 					return;
 				}
-				this.nums--;
+				that.nums--;
 			}
 		},
 		//获取购物车内容
@@ -995,13 +999,14 @@ export default {
 				that.shopcar = res.Message[0];
 				that.hadleShopCarData(res.Message[0].MergeDetail);
 				if (res.Message[0].Detail.length == 0) {
-					this.closeAllMask();
+					that.closeAllMask();
 				}
 			});
 		},
 		//同步购物车以及菜单
 		hadleShopCarData(data, type) {
-			this.products.forEach(item => {
+			let that = this;
+			that.products.forEach(item => {
 				//更新右侧菜单栏数量
 				item.detail.forEach(aitem => {
 					delete aitem.nums; //先清空
@@ -1016,10 +1021,10 @@ export default {
 				});
 			});
 			if (type) return;
-			this.products.forEach(item => {
+			that.products.forEach(item => {
 				//存储数量更新所需参数
 				item.detail.forEach(aitem => {
-					this.shopcar.Detail.forEach(jitem => {
+					that.shopcar.Detail.forEach(jitem => {
 						if (aitem.strProductName == jitem.strProductName) {
 							aitem.strType = jitem.strType;
 							aitem.intID = jitem.intID;
@@ -1033,7 +1038,7 @@ export default {
 		addShopCar(goods) {
 			let that = this;
 			if (that.storeInfo.blnBusinessState == 'True') {
-				return this.$msg.showToast('门店休息中');
+				return that.$msg.showToast('门店休息中');
 			}
 			goods = goods || that.chooseGoods;
 			let Standard = goods.Standard[0];
@@ -1117,7 +1122,6 @@ export default {
 					that.maskarr.shopCarShow = false;
 					that.openAnimation(1);
 				} catch (err) {
-					console.log(err);
 				}
 
 				// chooseGoods.indexarr = {
@@ -1185,7 +1189,7 @@ export default {
 				if (that.maskarr.shopCarCont) {
 					that.maskarr.shopCarCont = false;
 				} else {
-					return this.closeAllMask();
+					return that.closeAllMask();
 				}
 			}
 			let animation = that.animation;
@@ -1217,7 +1221,7 @@ export default {
 			let that = this;
 			that.loadingState = false;
 			let data = {
-				ShopCode: this.storeInfo.strShopCode,
+				ShopCode: that.storeInfo.strShopCode,
 				From: 'XCX',
 				interFaces: 'getMenuPublish'
 			};
@@ -1230,11 +1234,12 @@ export default {
 		},
 		//不支持外卖提示
 		noTakeOut() {
-			let storeInfo = this.storeInfo;
-			this.$msg.showModal(
+			let that = this,
+			    storeInfo = that.storeInfo;
+			that.$msg.showModal(
 				res => {
 					if (res == 1) {
-						this.switchStoreOwn();
+						that.switchStoreOwn();
 					}
 				},
 				'目前因门店现状问题，我们暂时关闭了小程序外卖，非常抱歉，敬请谅解！',
@@ -1246,31 +1251,32 @@ export default {
 		},
 		//计算左边商品分类的高度
 		computReftHe() {
+			let that = this;
 			const sysinfo = uni.getSystemInfoSync();
 			let windowHeight = sysinfo.windowHeight;
-			this.popHeightInfo = {
+			that.popHeightInfo = {
 				hei: windowHeight * 1,
 				low: windowHeight * 0.5
 			};
-			this.computedHeight = windowHeight * (750 / sysinfo.windowWidth); //系统高度rpx
+			that.computedHeight = windowHeight * (750 / sysinfo.windowWidth); //系统高度rpx
 			let animation = uni.createAnimation({
 				//定义动画
 				duration: 300,
 				timingFunction: 'linear',
 				delay: 0
 			});
-			this.animation = animation;
+			that.animation = animation;
 		},
 		//获取地理位置
 		async getLocation() {
-			let that = this;
-			let location = await getLocation();
-			let lat = location.latitude;
-			let log = location.longitude;
+			let that = this,
+			    location = await getLocation(),
+			    lat = location.latitude,
+			    log = location.longitude;
 			if (location) {
 				that.location = location;
 				if (that.forhere) {
-					return this.getStore(that.forhere.storeId);
+					return that.getStore(that.forhere.storeId);
 				}
 				if (!app.globalData.storeInfo.storeId) {
 					that.getNearShopList(); //获取距离最近的门店
@@ -1281,9 +1287,9 @@ export default {
 		},
 		// 获取当前附近的门店
 		async getNearShopList(cityid) {
-			let that = this;
-			let location = that.location;
-			let data = {
+			let that = this,
+			    location = that.location,
+			    data = {
 				interFaces: 'getShopList',
 				latitude: location.longitude,
 				longitude: location.latitude,
@@ -1313,17 +1319,19 @@ export default {
 		},
 		//更新门店 菜单 banner 购物车等信息
 		getShopControlInfo() {
-			this.getBannerList(); //获取轮播图广告
-			this.getStoreMenu(); //获取菜单
-			this.toUpdateShopCar(); // 更新购物车内容
+			let that = this;
+			that.getBannerList(); //获取轮播图广告
+			that.getStoreMenu(); //获取菜单
+			that.toUpdateShopCar(); // 更新购物车内容
 		},
 		goToChoseCity() {
-			this.$msg.showModal(
+			let that = this;
+			that.$msg.showModal(
 				res => {
 					if (res == 1) {
 						goChoseCity(); //前往选择省份
 					} else {
-						this.getCategoryList(); //获取默认的商品列表
+						that.getCategoryList(); //获取默认的商品列表
 					}
 				},
 				'您的附近没有迷客夏噢～，去其他地方看看吧',
@@ -1333,11 +1341,12 @@ export default {
 		},
 		//位置选择
 		jumpaddress() {
-			if (this.headerInfo == '请选择下单门店 >') {
+			let that = this;
+			if (that.headerInfo == '请选择下单门店 >') {
 				return goChoseCity(); //前往选择省份
 			}
-			let model = this.model;
-			let storeInfo = this.storeInfo;
+			let model = that.model;
+			let storeInfo = that.storeInfo;
 			if (model == 2) {
 				//自取的情况下
 				goChoseStore({
@@ -1434,8 +1443,8 @@ export default {
 		},
 		//处理获取到的商铺菜单
 		async handleShopData(data) {
-			let that = this;
-			let products = [],
+			let that = this,
+			    products = [],
 				goodsList = [];
 			for (let i in data) {
 				if (data[i].MenuType == 'Item') {
@@ -1513,7 +1522,7 @@ export default {
 			let tabs = that.products.filter(item => item.top <= scrollTop ).reverse();
 			if (tabs.length) {
 				if (tabs.length == 1) {
-					that.leftScrollTop = this.leftScrollTop + 0.01;
+					that.leftScrollTop = that.leftScrollTop + 0.01;
 				}
 				if (that.currentId != tabs[0].strItemBarCode) {
 					that.$nextTick(function(){
@@ -1527,9 +1536,10 @@ export default {
 		}, 50),
 		// 计算右侧栏每个tab的高度等信息
 		calcSize() {
+			let that = this;
 			return new Promise((res, ret) => {
 				let h = 123;
-				this.products.forEach((item, i) => {
+				that.products.forEach((item, i) => {
 					let view = uni.createSelectorQuery().select('#main-' + item.strItemBarCode);
 					view.fields(
 						{
@@ -1539,7 +1549,7 @@ export default {
 							if (!data) return;
 							item.top = h;
 							h += parseInt(data.height);
-							if (i == this.products.length - 1) {
+							if (i == that.products.length - 1) {
 								res();
 							}
 						}
@@ -1549,13 +1559,14 @@ export default {
 		},
 		//查看店铺详细信息
 		checkDetail() {
-			if (this.defaultS) {
-				return this.$msg.showToast('请先选择下单店铺哦～');
+			let that = this;
+			if (that.defaultS) {
+				return that.$msg.showToast('请先选择下单店铺哦～');
 			}
-			if (this.activeHeight) {
-				this.activeHeight = 0;
+			if (that.activeHeight) {
+				that.activeHeight = 0;
 			}
-			this.showdetail = !this.showdetail;
+			that.showdetail = !that.showdetail;
 		},
 		switchStoreOwn() {
 			if (this.model == 3) {

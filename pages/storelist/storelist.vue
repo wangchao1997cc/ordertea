@@ -95,7 +95,7 @@
 					that.storeList = storeList;
 					that.handleMarkers(storeList); //处理地图标记点
 				}catch(err){
-					this.$msg.showToast('当前无营业门店')
+					that.$msg.showToast('当前无营业门店')
 				}
 			},
 			handleMarkers(storeList) {

@@ -41,7 +41,6 @@
 				let res = await api.getLevel({},true);
 				if (res.code == 200) {
 					this.gradeinfo = res.data;
-					console.log(this.gradeinfo)
 				}
 			},
 			//改变导航栏

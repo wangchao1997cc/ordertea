@@ -227,24 +227,25 @@ export default {
 		that.type = that.$store.state.businessType; //当前的模式
 		that.renderAnimation(); //定义动画
 		if (that.type == 3) {
-			this.forhere = app.globalData.forhere;
+			that.forhere = app.globalData.forhere;
 		} else {
 			// that.getStore(options.storeId); //获取门店信息
 			if (that.type == 1 || that.type == 4) {
-				this.address = uni.getStorageSync('selectAddress');
+				that.address = uni.getStorageSync('selectAddress');
 			}
 		}
 	},
 	onShow() {
-		let remark = app.globalData.remark;
-		let orderparams = app.globalData.orderinfo;
+		let that = this,
+		    remark = app.globalData.remark,
+		    orderparams = app.globalData.orderinfo;
 		if (orderparams.ticketId) {
 			//如果有优惠券
-			this.orderparams = orderparams;
-			this.memberInterest(orderparams); //会员权益计算
+			that.orderparams = orderparams;
+			that.memberInterest(orderparams); //会员权益计算
 		}
 		if (remark) {
-			this.remark = remark;
+			that.remark = remark;
 		}
 	},
 	onUnload() {
@@ -253,13 +254,14 @@ export default {
 	computed: {
 		...mapGetters(['memberinfo', 'businessType', 'paymentMode','openidinfo','plusinfo']),
 		couponJuide() {
+			let that = this;
 			let tit = '优惠券';
 			let cont = '';
-			if (this.coupons) {
-				tit = this.coupons.name;
-				cont = '-¥' + this.coupons.amount;
+			if (that.coupons) {
+				tit = that.coupons.name;
+				cont = '-¥' + that.coupons.amount;
 			} else {
-				cont = (this.interest.canUseTotal ? this.interest.canUseTotal : 0) + '张可用';
+				cont = (that.interest.canUseTotal ? that.interest.canUseTotal : 0) + '张可用';
 			}
 			return {
 				tit: tit,
@@ -299,19 +301,20 @@ export default {
 		// },
 		//切换是否使用余额
 		switchUseBalance() {
-			if (!this.interest.card.balance) {
-				return this.$msg.showToast('没有可用余额～');
+			let that = this;
+			if (!that.interest.card.balance) {
+				return that.$msg.showToast('没有可用余额～');
 			}
-			if(this.interest.card.balance < this.interest.afterDiscountTotal){
-				return this.$msg.showToast('余额不足，请先充值～');
+			if(that.interest.card.balance < that.interest.afterDiscountTotal){
+				return that.$msg.showToast('余额不足，请先充值～');
 			}
-			if (this.useBalance == 1) {
-				this.useBalance = 0;
+			if (that.useBalance == 1) {
+				that.useBalance = 0;
 			} else {
-				this.useBalance = 1;
+				that.useBalance = 1;
 			}
-			this.orderparams.member.useBalance = this.useBalance;
-			this.memberInterest(); //会员权益计算
+			that.orderparams.member.useBalance = that.useBalance;
+			that.memberInterest(); //会员权益计算
 		},
 		async getWxaSubscribeTemplates() {
 			let params = {
@@ -328,9 +331,10 @@ export default {
 		},
 		//切换餐具数量
 		switchWrae(index, item) {
-			this.wareCurrtab = index;
-			this.peopleNum = item;
-			this.closeMask();
+			let that = this;
+			that.wareCurrtab = index;
+			that.peopleNum = item;
+			that.closeMask();
 		},
 		//打开选择时间幕布
 		openChooseTime() {
@@ -351,10 +355,11 @@ export default {
 		},
 		//关闭幕布
 		closeMask() {
+			let that = this;
 			setTimeout(() => {
-				this.maskShow = false; //总幕布
-				this.chooseTimeShow = false; //预约时间幕布
-				this.chooseWareShow = false; //预约餐具幕布
+				that.maskShow = false; //总幕布
+				that.chooseTimeShow = false; //预约时间幕布
+				that.chooseWareShow = false; //预约餐具幕布
 			}, 300);
 		},
 		//定义动画
@@ -410,16 +415,16 @@ export default {
 		// },
 		//前往使用优惠券页面
 		jumpUseCoupons() {
-			if (!this.interest.canUseTotal) {
+			let that = this;
+			if (!that.interest.canUseTotal) {
 				return;
 			}
-
 			//商品已经参与活动了
-			if (this.haveActive) {
-				this.$msg.showModal(
+			if (that.haveActive) {
+				that.$msg.showModal(
 					res => {
 						if (res == 1) {
-							this.jumpCoupons();
+							that.jumpCoupons();
 						}
 					},
 					'营销活动暂时不与优惠券同享，是否继续使用优惠券',
@@ -429,7 +434,7 @@ export default {
 					'去使用'
 				);
 			} else {
-				this.jumpCoupons();
+				that.jumpCoupons();
 			}
 		},
 		//跳转优惠券页面
@@ -446,10 +451,9 @@ export default {
 			});
 		},
 		async memberInterest(params) {
-			console.log(params)
 			//会员权益计算
 			let that = this;
-			!params ? (params = this.orderparams) : '';
+			!params ? (params = that.orderparams) : '';
 			let res = await api.memberInterest(params, true);
 			uni.hideLoading();
 			if (res.code == 200 || res.code == 1901) {
@@ -457,17 +461,16 @@ export default {
 				orderinfo.promotions.forEach((item, index) => {
 					if (item.type == 8) {
 						orderinfo.promotions.splice(index, 1);
-						this.coupons = item;
+						that.coupons = item;
 					}
 					if (item.type < 6) {
-						// console.log('参加的活动'+item.type)
-						this.haveActive = true;
+						that.haveActive = true;
 					}
 				});
 				that.interest = orderinfo;
 
 				if (res.code == 1901) {
-					this.$msg.showModal(result => {
+					that.$msg.showModal(result => {
 						if (result == 1) {
 							uni.navigateTo({
 								url: '../wallet/wallet'
@@ -483,7 +486,7 @@ export default {
 			return new Promise((reso, ret) => {
 				let that = this;
 				if (that.interest.canUseTotal && !that.coupons && !that.haveActive) {
-					this.$msg.showModal(
+					that.$msg.showModal(
 						res => {
 							if (res == 1) {
 								reso(1);
@@ -519,7 +522,7 @@ export default {
 				if (res.Message.length) {
 					that.timeData = res.Message;
 				}
-				this.serviceTime = that.timeData[0];
+				that.serviceTime = that.timeData[0];
 			} catch (err) {}
 		},
 		//创建订单
@@ -609,12 +612,12 @@ export default {
 							app.globalData.orderRefresh = true;
 							params.interFaces = 'OrderPayMent';
 							if(res.Message.Payed == true){
-								this.checkOutPay(params);  //结账动作
+								that.checkOutPay(params);  //结账动作
 							}else{
 								wxPayment(res.Message)
 									.then(res => {
-										this.$msg.showToast('支付成功');
-										this.checkOutPay(params);  //结账动作
+										that.$msg.showToast('支付成功');
+										that.checkOutPay(params);  //结账动作
 										//生成订单记录
 									})
 									.catch(ret => {

@@ -174,15 +174,16 @@ export default {
 		};
 	},
 	onLoad(options) {
-		this.member = app.globalData.member;
-		this.orderNo = options.orderId;
+		let that = this;
+		that.member = app.globalData.member;
+		that.orderNo = options.orderId;
 		let orderDetail = app.globalData.orderDetail;
 		if (orderDetail) {
-			this.orderdetails = orderDetail;
+			that.orderdetails = orderDetail;
 			app.globalData.orderDetail = null;
 			return;
 		}
-		this.getOrderDetail(); //获取订单详情
+		that.getOrderDetail(); //获取订单详情
 	},
 	onShow() {},
 	computed: {
@@ -201,10 +202,8 @@ export default {
 			};
 			try {
 				let res = await api.shopCarControl(data, true);
-				let orderdetails = res.Message.filter(item => item.strSaleOrderNum == this.orderNo);
-				this.orderdetails = orderdetails[0];
-				console.log(orderdetails[0])
-				// res.Message.forEach();
+				let orderdetails = res.Message.filter(item => item.strSaleOrderNum == that.orderNo);
+				that.orderdetails = orderdetails[0];
 			} catch (err) {}
 		},
 		timeOut(date) {
@@ -226,15 +225,16 @@ export default {
 		},
 		//取消订单
 		cancelOrder() {
-			this.$msg.showModal(async json => {
+			let that = this;
+			that.$msg.showModal(async json => {
 				if (json == 1) {
 					let data = {
-						orderNo: this.orderNo
+						orderNo: that.orderNo
 					};
 					let res = await api.cancelOrder(data);
 					if (res.status == 1) {
-						this.$msg.showToast('取消成功');
-						this.getOrderDetail();
+						that.$msg.showToast('取消成功');
+						that.getOrderDetail();
 					}
 				}
 			}, '是否取消该订单');
@@ -252,7 +252,7 @@ export default {
 				sub_openid: that.openidinfo.openid,
 				WXOpenID: that.openidinfo.openid,
 				timestamp: timestamp,
-				SaleOrderNum: this.orderNo, //订单号
+				SaleOrderNum: that.orderNo, //订单号
 				noncestr: wxuuid().replace(/-/g, ''), //随机字符串
 				Mobile: that.memberinfo.mobile, //手机号
 				Memo: '', //备注
@@ -271,18 +271,8 @@ export default {
 				PaymentContent: params
 			};
 			if(that.member){
-				let VkaJson = {
-					amount: interest.orderTotal,
-					total: interest.afterDiscountTotal,
-					boxFree: interest.boxFee,
-					products: interest.products,
-					coupons: interest.couponInfoResponseList,
-					promotions: interest.promotions,
-					payments: 'weixinpay',
-				};
-				VkaJson.promotions.forEach(item => {
-					delete item.remark
-				})
+				let VkaJson = that.orderdetails.VkaJson;
+				VkaJson = JSON.parse(VkaJson);
 				data.VkaJson = VkaJson;
 			}
 			try {
@@ -292,19 +282,18 @@ export default {
 				app.globalData.orderRefresh = true;
 				params.interFaces = 'OrderPayMent';
 				if(res.Message.Payed == true){
-					this.checkOutPay(params);  //结账动作
+					that.checkOutPay(params);  //结账动作
 				}else{
 					wxPayment(res.Message)
 						.then(res => {
-							this.$msg.showToast('支付成功');
-							this.checkOutPay(params);  //结账动作
+							that.$msg.showToast('支付成功');
+							that.checkOutPay(params);  //结账动作
 							//生成订单记录
 						})
 						.catch(ret => {
 						});
 				}
 			} catch (err) {
-				console.log(err)
 			}
 		},
 		//发起结账动作

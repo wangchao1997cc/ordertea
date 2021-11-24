@@ -31,13 +31,14 @@
 		methods: {
 			//开始兑换
 			async begainExchange(){
+				let that = this;
 				let data = {
-					ticketCode:this.ticketCode,
-					cardId: this.memberinfo.id,
+					ticketCode:that.ticketCode,
+					cardId: that.memberinfo.id,
 				}
 				let res = await api.codeByTicket(data,true);
 				if(res.code==200){
-					this.$msg.showToast('恭喜您，兑换成功！');
+					that.$msg.showToast('恭喜您，兑换成功！');
 					app.globalData.exchangeSuccess = true;
 					uni.navigateBack({})
 				}

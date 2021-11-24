@@ -164,26 +164,27 @@
 					productId: id,
 				}
 				let res = await api.goodsDetail(data);
-				console.log(res)
 				if (res.code == 200) {
 					this.goodsdesc = res.data;
 				}
 			},
 			//点击使用余额支付
 			switchUseBalance() {
-				if(!this.memberinfo.balance){
-					return this.$msg.showToast('暂无可用余额～')
+				let that = this;
+				if(!that.memberinfo.balance){
+					return that.$msg.showToast('暂无可用余额～')
 				}
-				this.balancePay = !this.balancePay;
-				if (this.balancePay) {
-					this.wxPay = false;
+				that.balancePay = !that.balancePay;
+				if (that.balancePay) {
+					that.wxPay = false;
 				}
 			},
 			//点击使用微信支付
 			switchUseWxPay() {
-				this.wxPay = !this.wxPay;
-				if (this.wxPay) {
-					this.balancePay = false;
+				let that = this;
+				that.wxPay = !that.wxPay;
+				if (that.wxPay) {
+					that.balancePay = false;
 				}
 			},
 			//点击购买按钮
@@ -191,7 +192,7 @@
 				let that = this;
 				let goodsdesc = that.goodsdesc;
 				if (!goodsdesc.canBuy) {
-					this.$msg.showToast('您当前的等级不满')
+					that.$msg.showToast('您当前的等级不满')
 				}
 				let data = {
 					getWay: goodsdesc.getWay,
@@ -202,7 +203,7 @@
 					data.freight = that.needfreight;
 				}
 				if (goodsdesc.getWay == 1) {
-					let businessinfo = this.businessinfo;
+					let businessinfo = that.businessinfo;
 					if (!businessinfo) {
 						return that.$msg.showToast('请先选择商家');
 					}
@@ -216,7 +217,7 @@
 						}
 					}
 					if(!checkMobile(that.params.mobile)){
-						return this.$msg.showToast('请填写正确的手机号码～')
+						return that.$msg.showToast('请填写正确的手机号码～')
 					}
 					Object.assign(data,that.params);
 				}
@@ -261,11 +262,12 @@
 						that.completeOrder(res.pointExchangeGifts.id)
 					}
 				}else{
-					this.$msg.showToast('res.message')
+					that.$msg.showToast('res.message')
 				}
 			},
 			//完成订单支付
 			async completeOrder(id) {
+				
 				let data = {
 					id: id,
 					cardNo: this.memberinfo.cardNo,
@@ -279,21 +281,22 @@
 			},
 			//获取微信支付参数
 			async begainWxPay(params) {
-				let data = {
+				let that = this,
+				    data = {
 					amount: params.amount*100,
-					body: this.goodsdesc.productName,
-					openId: this.openidinfo.openid,
+					body: that.goodsdesc.productName,
+					openId: that.openidinfo.openid,
 					curUrl: 'pages/goodsdesc/goodsdesc',
 					orderId: params.id
-				}
+				};
 				let res = await api.shopOrderPayParams(data);
 				if(res.code==200){
 					res.payData.package = res.payData.prepay_id;
 					wxPayment(res.payData).then(res => {
-						this.$msg.showToast('支付成功');
+						that.$msg.showToast('支付成功');
 						uni.navigateBack({});
 					}).catch(ret => {
-						this.$msg.showToast('支付失败');
+						that.$msg.showToast('支付失败');
 					})
 				}
 			},

@@ -53,26 +53,28 @@
 		},
 		methods:{
 			async getTransRecord(){
-				let type = 2;
-				if(this.currtab==1){
+				let that = this,
+				    type = 2;
+				if(that.currtab==1){
 					type = 1
 				}
 				let data = {
-					cardNo:this.$store.state.cardNo,
-					type:type,
+					cardNo: that.$store.state.cardNo,
+					type: type,
 				}
 				let res = await api.checkRecord(data)
 				if(res.code==200){
-					this.recordData = res.data
+					that.recordData = res.data
 				}
 			},
 			//导航栏切换
 			changeNav(index){
-				if(this.currtab==index){
+				let that = this;
+				if(that.currtab==index){
 					return
 				}
-				this.currtab = index;
-				this.getTransRecord();
+				that.currtab = index;
+				that.getTransRecord();
 			}
 		}
 	}

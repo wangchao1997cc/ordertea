@@ -61,8 +61,9 @@
 		computed: {
 			...mapGetters(['memberinfo']),
 			config() {
+				let that = this;
 				let nodatashow = true;
-				if (this.couponsObj.length && !this.couponsObj[this.currtab].list.length) {
+				if (that.couponsObj.length && !that.couponsObj[that.currtab].list.length) {
 					nodatashow = false;
 				}
 				return {
@@ -87,23 +88,23 @@
 		},
 		
 		onLoad(options) {
-			let type = options.type;
+			let that = this,
+			    type = options.type;
 			let title = '我的优惠券';
 			// let navarr = ['未使用','已使用','已过期'];
 			if (type == 'choose') {
-				this.type = 1;
+				that.type = 1;
 				let couponsList = uni.getStorageSync('canusecoupons');
-				this.handerCoupons(couponsList); //处理优惠券数据
+				that.handerCoupons(couponsList); //处理优惠券数据
 				title = '选择优惠券'
 				uni.removeStorageSync('canusecoupons');
 			} else {
-				this.getCoupons();
+				that.getCoupons();
 			}
 			uni.setNavigationBarTitle({
 				title: title
 			})
-			
-			this.renderAnimation();
+			that.renderAnimation();
 		},
 		onShow() {
 			if (app.globalData.exchangeSuccess) {
@@ -113,19 +114,19 @@
 		},
 		methods: {
 			async lockingCoupons() { //锁定优惠券
-				let data = {
-					ticketId: this.choiceCoupons.id,
-					giveCardId: this.memberinfo.id
-				}
+			    let that = this,
+				    data = {
+					ticketId: that.choiceCoupons.id,
+					giveCardId: that.memberinfo.id
+				};
 				let res = await api.lockingCoupons(data);
 				if (res.code == 200) {
-					this.closeMask();
-					this.getCoupons();
+					that.closeMask();
+					that.getCoupons();
 				} else {
-					this.$msg.showToast(res.message)
+					that.$msg.showToast(res.message)
 				}
 			},
-
 			//定义动画
 			renderAnimation() {
 				let that = this;
@@ -138,11 +139,12 @@
 			},
 			//获取我的优惠券
 			async getCoupons() {
+				let that = this;
 				let res = await api.getCoupons({
-					cardNo: this.memberinfo.cardNo,
-					type: this.currtab
+					cardNo: that.memberinfo.cardNo,
+					type: that.currtab
 				})
-				this.handerCoupons(res.data);
+				that.handerCoupons(res.data);
 			},
 			checkCouponsDesc(val) {
 				let that = this;
@@ -162,8 +164,9 @@
 			},
 			//处理优惠券数据
 			handerCoupons(couponsList) {
-				let couponsObj = [];
-				switch (this.type) {
+				let that = this,
+				    couponsObj = [];
+				switch (that.type) {
 					case 1:
 						couponsObj = [{
 							tit: '可使用',
@@ -197,18 +200,19 @@
 							tit: '已过期',
 							list: [],
 						}];
-						couponsObj[this.currtab].list = couponsList;
+						couponsObj[that.currtab].list = couponsList;
 				}
-				this.couponsObj = couponsObj;
+				that.couponsObj = couponsObj;
 			},
 
 			tabNav(index) {
-				if (index == this.currtab) {
+				let that = this;
+				if (index == that.currtab) {
 					return;
 				}
-				this.currtab = index;
-				if (this.type == 0) {
-					this.getCoupons();
+				that.currtab = index;
+				if (that.type == 0) {
+					that.getCoupons();
 				}
 			},
 			//跳转兑换优惠券页面

@@ -72,10 +72,11 @@
 			},
 			//打开日期选择组件
 			chooseData() {
-				if (!this.userinfo.birthday) {
-					this.showPicker = true;
+				let that = this;
+				if (!that.userinfo.birthday) {
+					that.showPicker = true;
 				} else {
-					this.$msg.showToast('生日只能修改一次哦～')
+					that.$msg.showToast('生日只能修改一次哦～')
 				}
 			},
 			//日期组件 确定或者取消
@@ -90,7 +91,7 @@
 				let that = this;
 				let userinfo = that.userinfo;
 				if(!userinfo.name){
-					return this.$msg.showToast('请填写用户名');
+					return that.$msg.showToast('请填写用户名');
 				}
 				let data = {
 					name: userinfo.name,
@@ -109,15 +110,16 @@
 				}
 			},
 			async userInfoApi(data) {
-				let res = await api.updateMember(data, true);
+				let that = this,
+				    res = await api.updateMember(data, true);
 				if (res.code == 200) {
-					this.$msg.showToast('保存成功');
+					that.$msg.showToast('保存成功');
 					setTimeout(() => {
 						uni.navigateBack({})
 					},200)
-					await getMemberInfo(this.memberinfo.mobile); //vka 会员用户信息
+					await getMemberInfo(that.memberinfo.mobile); //vka 会员用户信息
 				}else{
-					this.$msg.showToast(res.message);
+					that.$msg.showToast(res.message);
 				}
 			}
 		}

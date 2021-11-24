@@ -79,7 +79,8 @@
 		methods: {
 			//跳转商品详情
 			jumpGoodsDesc(item){
-				if(this.memberinfo.point < item.point && item.point != this.memberinfo.point){
+				let that = this;
+				if(that.memberinfo.point < item.point && item.point != that.memberinfo.point){
 					return
 				}
 				uni.navigateTo({

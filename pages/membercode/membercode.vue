@@ -35,9 +35,10 @@ export default {
 		};
 	},
 	onLoad() {
-		this.computeCanW(); //计算页面canvas 宽高
-		this.getCodeParams(); //获取会员码
-		this.interTime(); //创建定时器
+		let that = this;
+		that.computeCanW(); //计算页面canvas 宽高
+		that.getCodeParams(); //获取会员码
+		that.interTime(); //创建定时器
 	},
 	computed: {
 		...mapGetters(['memberinfo'])
@@ -48,14 +49,14 @@ export default {
 	methods: {
 		//获取会员码
 		async getCodeParams() {
-			let memberinfo = this.memberinfo;
+			let that = this;
+			let memberinfo = that.memberinfo;
 			let data = {
 				cardNo: memberinfo.cardNo
 			};
 			let res = await api.getCodeParams(data);
-			console.log(res);
 			if (res.code == 200) {
-				let widthInfo = this.widthInfo;
+				let widthInfo = that.widthInfo;
 				toQrcode('qrcode', res.data.code, widthInfo.qrcodew, widthInfo.qrcodew);
 				toBarcode('barcode', res.data.code, widthInfo.barcodew, widthInfo.barcodeh);
 			}
