@@ -60,7 +60,7 @@
 					pageSize: 10
 				}
 				let res = await api.getNearStoreList(data);
-				if(res && res.status== 1){
+				if(res && res.status == 1){
 					let nearList = res.data.rows;
 					nearList.forEach(item => {
 						item.newdistance = conversion(item.distance) //换算距离

@@ -44,8 +44,8 @@
 				}
 			},
 			//改变导航栏
-			changeNav(index){
-				if(this.currtab==index){
+			changeNav(index) {
+				if(this.currtab == index){
 					return;
 				}
 				this.currtab = index;

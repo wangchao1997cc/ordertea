@@ -68,16 +68,16 @@ export default {
 						interFaces: 'MemberInfoRegister'
 					};
 					let plusInfo =  await api.getUserInfo(params); //plus 注册会员
-					this.SET_PLUSINFO(plusInfo.Message);  //存储会员code
-					if (this.member) {
+					that.SET_PLUSINFO(plusInfo.Message);  //存储会员code
+					if (that.member) {
 						let userdata = {
 							mobile: phone,
 							openId: that.openidinfo.openid
 						};
 						await userRegister(userdata);  //vka 注册会员
+						that.$emit('loginSuccess',true);
 					}
 				} catch (err) {
-					console.log(err);
 				}
 			}
 		}

@@ -132,11 +132,12 @@
 			// ...mapMutations('control', ['SET_STOREID']),
 			//点击选择店铺
 			choseStore(index, item) {
-				if (this.currtab == index) {
+				let that = this;
+				if (that.currtab == index) {
 					return
 				}
-				this.currtab = index;
-				this.$emit('choseStore', item)
+				that.currtab = index;
+				that.$emit('choseStore', item)
 			},
 			//拨打电话
 			callPhone(tel) {

@@ -414,7 +414,7 @@ import appConfig from '../../config/index.js';
 // import sildermine from '../../components/minesilder.vue' //进度条
 import {
 	ajaxUserLogin,
-	// getBannerList,
+	getMemberInfo,
 	refreshUserInfo,
 	waitLineUp
 } from '../../utils/publicApi.js';
@@ -511,7 +511,7 @@ export default {
 		]),
 		headerInfo() {
 			let that = this,
-			    name = '请选择下单门店 >';
+				name = '请选择下单门店 >';
 			if (that.model == 2) {
 				that.storeInfo.strShopName ? (name = that.storeInfo.strShopName) : '';
 			} else if (that.useraddress) {
@@ -529,8 +529,8 @@ export default {
 		},
 		headerinfo_t() {
 			let that = this,
-			    name = '正在选择店铺中...',
-			    storeInfo = that.storeInfo;
+				name = '正在选择店铺中...',
+				storeInfo = that.storeInfo;
 			if (that.model == 2) {
 				let location = that.location;
 				if (that.$children.length) {
@@ -541,7 +541,7 @@ export default {
 				if (storeInfo.strDistance) {
 					name = '距您' + storeInfo.strDistance;
 				}
-			} else if (model == 3) {
+			} else if (that.model == 3) {
 				if (that.$children.length) {
 					that.$children[0].currtab = 1;
 					name = `由${storeInfo.storeName}店配送`;
@@ -556,10 +556,10 @@ export default {
 		//商品总价格
 		priceArr() {
 			let that = this,
-			    totalPrice = 0, //总价格
-			    lunchboxfee = 0, //餐盒费
-			    shopcar = that.shopcar;
-			let activePriceTotal = 0; //特价商品变量
+				totalPrice = 0, //总价格
+				lunchboxfee = 0, //餐盒费
+				shopcar = that.shopcar,
+				activePriceTotal = 0; //特价商品变量
 			if (shopcar && shopcar.Detail) {
 				totalPrice = shopcar.floPay;
 				that.takeModeArr.forEach(item => {
@@ -576,7 +576,6 @@ export default {
 					// 	lunchboxfee = accAdd(lunchboxfee, mealFee);
 					// }
 				});
-
 				// totalPrice = accAdd(totalPrice, lunchboxfee);
 			}
 			let activelist = that.activelist;
@@ -606,7 +605,7 @@ export default {
 		},
 		productPrice() {
 			let that = this,
-			    specarr = that.specarr,
+				specarr = that.specarr,
 				chooseGoods = that.chooseGoods,
 				productPrice = 0;
 			if (chooseGoods.activePrice) {
@@ -637,16 +636,16 @@ export default {
 	async onLoad(options) {
 		this.member = app.globalData.member;
 		await this.$onLaunched;
-		// console.log(this.openidinfo);
 		// if (!this.JSESSIONID) {
 		// 	uni.hideTabBar({});
 		// 	await ajaxUserLogin(); //先进行登录
 		// }
-		// if (options && options.deskId) {
-		// 	this.forhere = options;
-		// 	app.globalData.forhere = options;
-		// 	this.$store.commit('changebussiness', [3]);
-		// }
+		if (options && options.deskId) {
+			this.forhere = options;
+			app.globalData.forhere = options;
+			this.SET_BUSINESSTYPE('1'); //堂食模式
+			// this.$store.commit('changebussiness', [3]);
+		}
 		// this.jstrItemBarCodeeOptions(options); //判断路径参数
 		// uni.showTabBar({});
 		// this.member = app.globalData.member;
@@ -654,8 +653,8 @@ export default {
 	},
 
 	onShow: function onShow() {
-		let  that = this,
-		     storeInfo = app.globalData.storeInfo;
+		let that = this,
+			storeInfo = app.globalData.storeInfo;
 		if (storeInfo && that.storeInfo.strShopCode != storeInfo.strShopCode) {
 			that.storeInfo = storeInfo;
 			that.getShopControlInfo();
@@ -691,7 +690,6 @@ export default {
 		// 	//页面刷新  店铺
 		// 	this.getStore(this.storeInfo.storeId);
 		// }
-
 		// let chooseAddress = uni.getStorageSync('selectAddress');
 		// if (chooseAddress) {
 		// 	//有地址
@@ -708,7 +706,8 @@ export default {
 		// }
 	},
 	methods: {
-		...mapMutations('control', ['SET_PAYMENTMODE']),
+		...mapMutations('control', ['SET_PAYMENTMODE', 'SET_BUSINESSTYPE']),
+		...mapMutations('user', ['SET_PLUSINFO']),
 		// jstrItemBarCodeeOptions(options) { //判断路径参数
 		// 	if (app.globalData.productPrimaryTypeName) {
 		// 		this.productPrimaryTypeName = app.globalData.productPrimaryTypeName;
@@ -720,7 +719,7 @@ export default {
 		},
 		noBussinessTime() {
 			let that = this,
-			    storeInfo = that.storeInfo;
+				storeInfo = that.storeInfo;
 			that.$msg.showModal(
 				res => {
 					if (res == 1) {
@@ -747,7 +746,29 @@ export default {
 		init() {
 			let that = this;
 			that.computReftHe(); //计算右边商品列表的高度
+			that.judgeLogin(); //判断是否登录
 			that.getLocation(); //获取地理位置
+		},
+		//判断是否登录
+		async judgeLogin() {
+			let that = this,
+			    params = {
+				WXOpenID: that.openidinfo.openid,
+				interFaces: 'MemberInfoGet'
+			};
+			try {
+				let res = await api.getUserInfo(params); //plus 用户信息
+				if (res.Message.length) {
+					that.SET_PLUSINFO(res.Message[0]);
+					await getMemberInfo(res.Message[0].strMobilePhone); //vka 会员用户信息
+				} else {
+					that.$refs.authorM.showPop();
+				}
+			} catch (err) { 
+				console.log(err)
+			}
+			
+			uni.showTabBar({});
 		},
 		//授权成功关闭弹窗
 		async loginSuccess() {
@@ -797,26 +818,25 @@ export default {
 			});
 		},
 		//获取当前门店信息
-		// async getStore(storeId) {
-		// 	let that = this;
-		// 	location = that.location;
-		// 	let data = {
-		// 		storeId: storeId,
-		// 		businessType: that.$store.state.businessType,
-		// 		coordinate: [location.longitude, location.latitude]
-		// 	};
-		// 	let res = await api.getStore(data);
-		// 	if (res.status == 1) {
-		// 		let storeInfo = res.data;
-		// 		storeInfo.newdistance = conversion(storeInfo.distance); //换算距离
-		// 		that.storeInfo = storeInfo;
-		// 		if (app.globalData.storeInfo.storeId != storeId) {
-		// 			// 当onshow刷新店铺
-		// 			that.getStoreMenu(storeInfo.storeId); //获取餐单
-		// 		}
-		// 		app.globalData.storeInfo = storeInfo;
-		// 	}
-		// },
+		async getStore(storeId) {
+			let that = this,
+				location = that.location,
+				data = {
+					ShopCode: storeId,
+					interFaces: 'getShopInfo',
+				};
+			try {
+				let res = await api.getNearStoreList(data);
+				newload = true; //第二次从onshow刷新地理位置
+				app.globalData.storeInfo = res.Message[0];
+				app.globalData.shopCode = res.Message[0].strShopCode;
+				that.storeInfo = res.Message[0];
+				that.getStoreMenu();
+				
+			}catch(err){
+				
+			}
+		},
 		// switchTab() {
 		// 	this.showdetail = true;
 		// },
@@ -858,7 +878,7 @@ export default {
 									if (citem.strProductBarCode == aitem.productPosId) {
 										switch (aitem.discountType) {
 											case 0:
-												citem.activePrice =  accMul(
+												citem.activePrice = accMul(
 													citem.floPrice,
 													aitem.value / 10
 												).toFixed(2);
@@ -1121,8 +1141,7 @@ export default {
 					that.chooseGoods = chooseGoods;
 					that.maskarr.shopCarShow = false;
 					that.openAnimation(1);
-				} catch (err) {
-				}
+				} catch (err) {}
 
 				// chooseGoods.indexarr = {
 				// 	idx: idx,
@@ -1226,7 +1245,7 @@ export default {
 				interFaces: 'getMenuPublish'
 			};
 			let res = await api.getProductMenu(data);
-		
+
 			that.handleShopData(res.Message);
 			if (that.storeInfo.blnBusinessState == 'True') {
 				return that.noBussinessTime();
@@ -1235,7 +1254,7 @@ export default {
 		//不支持外卖提示
 		noTakeOut() {
 			let that = this,
-			    storeInfo = that.storeInfo;
+				storeInfo = that.storeInfo;
 			that.$msg.showModal(
 				res => {
 					if (res == 1) {
@@ -1270,12 +1289,13 @@ export default {
 		//获取地理位置
 		async getLocation() {
 			let that = this,
-			    location = await getLocation(),
-			    lat = location.latitude,
-			    log = location.longitude;
+				location = await getLocation(),
+				lat = location.latitude,
+				log = location.longitude;
 			if (location) {
 				that.location = location;
 				if (that.forhere) {
+					// console.log()
 					return that.getStore(that.forhere.storeId);
 				}
 				if (!app.globalData.storeInfo.storeId) {
@@ -1288,14 +1308,14 @@ export default {
 		// 获取当前附近的门店
 		async getNearShopList(cityid) {
 			let that = this,
-			    location = that.location,
-			    data = {
-				interFaces: 'getShopList',
-				latitude: location.longitude,
-				longitude: location.latitude,
-				GetType: 'onlyList',
-				Top: 10
-			};
+				location = that.location,
+				data = {
+					interFaces: 'getShopList',
+					latitude: location.longitude,
+					longitude: location.latitude,
+					GetType: 'onlyList',
+					Top: 10
+				};
 			try {
 				let res = await api.getNearStoreList(data);
 				newload = true; //第二次从onshow刷新地理位置
@@ -1381,7 +1401,7 @@ export default {
 					qty: item.floQuantity,
 					product_no: item.strProductBarCode,
 					name: item.strProductName,
-					price:  accAdd(item.floPricePay, item.floFlavor),
+					price: accAdd(item.floPricePay, item.floFlavor),
 					// price: accAdd(item.floPrice, item.floFlavor),
 					condiments: [],
 					discounted: item.VFlag == 'True' ? 1 : 0
@@ -1444,7 +1464,7 @@ export default {
 		//处理获取到的商铺菜单
 		async handleShopData(data) {
 			let that = this,
-			    products = [],
+				products = [],
 				goodsList = [];
 			for (let i in data) {
 				if (data[i].MenuType == 'Item') {
@@ -1519,16 +1539,16 @@ export default {
 		asideScroll: throttle(function(e) {
 			let that = this;
 			let scrollTop = e[0].detail.scrollTop;
-			let tabs = that.products.filter(item => item.top <= scrollTop ).reverse();
+			let tabs = that.products.filter(item => item.top <= scrollTop).reverse();
 			if (tabs.length) {
 				if (tabs.length == 1) {
 					that.leftScrollTop = that.leftScrollTop + 0.01;
 				}
 				if (that.currentId != tabs[0].strItemBarCode) {
-					that.$nextTick(function(){
+					that.$nextTick(function() {
 						that.currentId = tabs[0].strItemBarCode;
 						that.leftCurrtab = 'left' + tabs[0].strItemBarCode;
-					})
+					});
 				}
 			} else {
 				that.leftScrollTop = 0;

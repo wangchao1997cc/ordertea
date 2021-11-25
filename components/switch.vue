@@ -19,15 +19,15 @@
 		methods:{
 			...mapMutations('control', ['SET_BUSINESSTYPE']),
 			switchIcon(){
-				let currtab = this.currtab;
-				// this.$emit('switchTab',currtab);
+				let that = this,
+				    currtab = that.currtab;
 				if(currtab==0){
 					return goUserAddress('select');
 				}else{
-					this.SET_BUSINESSTYPE(2)
+					that.SET_BUSINESSTYPE(2)
 					currtab = 0;
 				}
-				this.currtab = currtab;
+				that.currtab = currtab;
 				// this.$emit('switchTab',currtab);
 			}
 		}

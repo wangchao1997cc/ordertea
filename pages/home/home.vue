@@ -22,7 +22,6 @@
 			<view class="app-model">
 				<view class="model-box">
 					<!-- <view class="red_line">
-						
 					</view> -->
 					<view class="" @click="jumpMenu(2)">
 						<image src="../../static/homepage/home_takeit_pic.png" mode=""></image>
@@ -233,7 +232,7 @@ export default {
 	components: {
 		sildermine,
 		author,
-		jyfParser
+		jyfParser,
 	},
 	onShow() {
 		// let memberinfo = this.memberinfo;
@@ -401,7 +400,7 @@ export default {
 				cardId: that.memberinfo.id,
 				activityId: that.redRewardInfo.id
 			};
-			this.redRewardInfo = null;
+			that.redRewardInfo = null;
 			let res = await api.receiveReward(data);
 			uni.hideLoading();
 			if (res.code == 200) {
@@ -471,16 +470,17 @@ export default {
 		},
 		//查询红包奖励
 		async redReaward(id) {
-			let data = {};
+			let that = this,
+			    data = {};
 			if (id) {
 				data.cardId = id;
 			}
 			let res = await api.redRewardActive(data);
 			if (res.code == 200) {
 				if (res.data[0]) {
-					this.redRewardInfo = res.data[0];
+					that.redRewardInfo = res.data[0];
 					let rewardarr = res.data[0].ticketName.split(',');
-					this.rewardarr = rewardarr;
+					that.rewardarr = rewardarr;
 					return rewardarr;
 				}
 			}
@@ -569,16 +569,17 @@ export default {
 		},
 		//跳转充值
 		async jumpWallet() {
+			let that = this;
 			let walletShow = await getRecharge();
 			if (!walletShow) {
-				return this.$msg.showToast('非常抱歉，现在没有开启充值活动');
+				return that.$msg.showToast('非常抱歉，现在没有开启充值活动');
 			}
-			if (this.memberinfo) {
+			if (that.memberinfo) {
 				uni.navigateTo({
 					url: '../wallet/wallet'
 				});
 			} else {
-				return this.noLoginHander();
+				return that.noLoginHander();
 			}
 		},
 		noLoginHander() {
@@ -588,8 +589,9 @@ export default {
 		},
 		//跳转各个分类页面
 		jumpClissIfy(index) {
-			if (!this.memberinfo) {
-				return this.noLoginHander();
+			let that = this;
+			if (!that.memberinfo) {
+				return that.noLoginHander();
 			}
 			switch (index) {
 				case 1:
@@ -603,7 +605,7 @@ export default {
 					});
 					break;
 				case 3:
-					this.checkPonitDesc();
+					that.checkPonitDesc();
 					break;
 			}
 		}

@@ -88,10 +88,11 @@
 			},
 			//关闭弹窗
 			closeChoseprop() {
+				let that = this;
 				uni.showTabBar({})
-				let animation = this.animation;
-				this.animationData = animation.export();
-				this.hiddenChoseStore = false;
+				let animation = that.animation;
+				that.animationData = animation.export();
+				that.hiddenChoseStore = false;
 			},
 			//前往选择城市
 			chosrOther() {
@@ -99,11 +100,12 @@
 			},
 			//确认选择所选店铺
 			async confirmStore() {
-				if(this.storeInfo.isBusy){
-					return this.$msg.showToast('门店忙碌中，请选择其他门店')
+				let that = this;
+				if(that.storeInfo.isBusy){
+					return that.$msg.showToast('门店忙碌中，请选择其他门店')
 				}
-				this.closeChoseprop();
-				this.$emit('switchStore', this.storeInfo);
+				that.closeChoseprop();
+				that.$emit('switchStore', that.storeInfo);
 			},
 		}
 	}
