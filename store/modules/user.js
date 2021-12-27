@@ -6,6 +6,7 @@ import Vue from 'vue'
 const state = {
 	memberinfo: null,
 	openidinfo: {  //openid seekey 登录信息
+		mobile: ''
 	},
 	configure: {  //小程序配置信息
 	},

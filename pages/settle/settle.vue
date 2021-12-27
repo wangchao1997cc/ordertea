@@ -220,7 +220,7 @@ export default {
 		if (that.member) {
 			uni.showLoading({});
 			that.memberInterest(orderparams); //会员权益计算
-		}else{
+		} else {
 			that.handleShowData(orderparams); //不使用会员部分
 		}
 		that.getTakeTime();
@@ -237,8 +237,8 @@ export default {
 	},
 	onShow() {
 		let that = this,
-		    remark = app.globalData.remark,
-		    orderparams = app.globalData.orderinfo;
+			remark = app.globalData.remark,
+			orderparams = app.globalData.orderinfo;
 		if (orderparams.ticketId) {
 			//如果有优惠券
 			that.orderparams = orderparams;
@@ -252,7 +252,7 @@ export default {
 		app.globalData.remark = ' ';
 	},
 	computed: {
-		...mapGetters(['memberinfo', 'businessType', 'paymentMode','openidinfo','plusinfo']),
+		...mapGetters(['memberinfo', 'businessType', 'paymentMode', 'openidinfo', 'plusinfo']),
 		couponJuide() {
 			let that = this;
 			let tit = '优惠券';
@@ -305,7 +305,7 @@ export default {
 			if (!that.interest.card.balance) {
 				return that.$msg.showToast('没有可用余额～');
 			}
-			if(that.interest.card.balance < that.interest.afterDiscountTotal){
+			if (that.interest.card.balance < that.interest.afterDiscountTotal) {
 				return that.$msg.showToast('余额不足，请先充值～');
 			}
 			if (that.useBalance == 1) {
@@ -532,66 +532,141 @@ export default {
 			let timestamp = Date.now();
 			let rand = Math.floor(Math.random() * 100000000);
 			rand = rand.toString().substring(0, 4);
-			let saleOrderNum = appConfig.hqcode + app.globalData.shopCode + timestamp + rand;  //订单号
+			let saleOrderNum = appConfig.hqcode + app.globalData.shopCode + timestamp + rand; //订单号
 			if (reso == 1) {
 				that.jumpUseCoupons(); //去选择优惠券
 				return;
 			}
 			let currtab = 0,
-			    orderparams = that.orderparams,
-			    interest = that.interest,
-			    storeInfo = that.storeInfo,
-			    type = that.type;
-			if (interest.balancePay) {   //使用会员余额
+				orderparams = that.orderparams,
+				interest = that.interest,
+				storeInfo = that.storeInfo,
+				type = that.type;
+			if (interest.balancePay) {
+				//使用会员余额
 				currtab = 1;
 			}
-			// console.log(that.memberinfo,that.openidinfo)
+			let free = 0;
+			if(interest.afterDiscountTotal != interest.orderTotal){
+				free = subtr(interest.orderTotal,interest.afterDiscountTotal);
+			}
+			console.log(that.memberinfo,that.openidinfo,that.plusinfo)
 			let params = {
+				Total : interest.orderTotal,
+				Free: free,
 				HQCode: appConfig.hqcode,
 				ShopCode: app.globalData.shopCode,
-				// total_fee: that.interest.afterDiscountTotal * 100,
-				total_fee:1,   //实际付款
-				MemberCode: that.plusinfo.strMemberCode,   //会员code
-				sub_openid: that.openidinfo.openid,  
+				total_fee: that.interest.afterDiscountTotal * 100,
+				// total_fee: 1, //实际付款
+				MemberCode: that.plusinfo.strMemberCode, //会员code
+				sub_openid: that.openidinfo.openid,
 				WXOpenID: that.openidinfo.openid, //openid
 				timestamp: timestamp, //时间戳
 				SaleOrderNum: saleOrderNum, //订单号
 				noncestr: wxuuid().replace(/-/g, ''), //随机字符串
-				Mobile: that.memberinfo.mobile, //手机号
+				Mobile: that.memberinfo ? that.memberinfo.mobile : '', //手机号
 				Memo: that.remark || '', //备注
 				SaleMode: that.businessType, //售卖模式
 				PayMentMode: that.paymentMode[currtab].intPaymentMode, //支付方式
 				PayMentModeName: that.paymentMode[currtab].strPaymentMode, //支付名
-				TakeMode: that.businessType,   //堂食 或 自取
-				TakeTime: that.serviceTime.value,  //预约时间
+				TakeMode: that.businessType, //堂食 或 自取
+				TakeTime: that.serviceTime.value, //预约时间
 				OrderType: 'online', //支付订单的类型online普通订单 groupbuy拼团订单
-				PayTotal: that.interest.afterDiscountTotal,  //paytotal
-				interFaces: 'Prepay',   
-				OrderCreate:true,
-				
+				PayTotal: interest.afterDiscountTotal, //paytotal
+				interFaces: 'Prepay',
+				OrderCreate: true
 			};
-			
+
 			let data = {
 				...params,
-				PaymentContent: params,
+				PaymentContent: params
 			};
-			if(that.member){
+			console.log('提交支付参数',data)
+			// let aaa = {
+			// 	amount: '50',
+			// 	total: '30',
+			// 	seq: '20170417007',
+			// 	cardNo: '0329',
+			// 	products: [
+			// 		{
+			// 			product_no: '3127',
+			// 			name: '乌龙玛奇朵 L',
+			// 			desc: '新品上市-乌龙玛奇朵XL',
+			// 			specTypeName: '特惠2杯装',
+			// 			price: 50,
+			// 			qty: 1,
+			// 			condiments: [{ name: '半塘', price: 0, qty: 1 }]
+			// 		}
+			// 	],
+			// 	coupons: [{ discount: 15, id: 2686635, name: '沉睡会员15元代金券' }],
+			// 	promotions: [{ discount: 15, promotionId: 2686635 }],
+			// 	payments: [
+			// 		{ amount: 30, type: 'card' },
+			// 		{ amount: 15, type: 'discount' },
+			// 		{ amount: 5, type: 'levelDiscount' }
+			// 	]
+			// };
+
+			if (that.member) {
+				let payments = [];
+				let promotions = [];
+				interest.promotions.forEach(item => {
+					promotions.push({
+						discount: item.amount,
+						promotionId: item.id
+					});
+					if(item.type == 8 ){
+						payments.push({
+							amount: item.amount,
+							type: 'discount'
+						})
+					}else if(item.type == 7){
+						payments.push({
+							amount: item.amount,
+							type: 'levelDiscount'
+						})
+					}
+				});
+				if(interest.balancePay){
+					payments.push({
+						amount: interest.balancePay,
+						type: 'card'
+					})
+					
+				}
+				if(interest.afterDiscountTotal > 0){
+					payments.push({
+						amount: interest.afterDiscountTotal,
+						type: 'weixinpay'
+					})
+				}
+				let coupons = [];
+				if (that.coupons) {
+					coupons.push({
+						discount: that.coupons.amount,
+						name: that.coupons.name,
+						id: that.coupons.id
+					});
+				}
 				let VkaJson = {
+					seq: saleOrderNum,
+					cardNo: that.memberinfo.cardNo,
 					amount: interest.orderTotal,
 					total: interest.afterDiscountTotal,
 					boxFree: interest.boxFee,
 					products: interest.products,
-					coupons: interest.couponInfoResponseList,
-					promotions: interest.promotions,
-					payments: 'weixinpay',
+					coupons: coupons,
+					promotions: promotions,
+					payments: payments,
 				};
+				console.log(VkaJson);
 				VkaJson.promotions.forEach(item => {
-					delete item.remark
-				})
+					delete item.remark;
+				});
 				data.VkaJson = VkaJson;
 			}
-			
-			let tit = `是否前往【${storeInfo.strShopName}】自提`;	
+
+			let tit = `是否前往【${storeInfo.strShopName}】自提`;
 			if (type == 1) {
 				tit = '是否确认配送地址';
 			}
@@ -602,7 +677,7 @@ export default {
 							mask: true
 						});
 						// params.products = products;
-						if(that.templateIds.length){
+						if (that.templateIds.length) {
 							await that.requestSubscribeMessage();
 						}
 						try {
@@ -611,20 +686,21 @@ export default {
 							app.globalData.orderSuccess = true;
 							app.globalData.orderRefresh = true;
 							params.interFaces = 'OrderPayMent';
-							if(res.Message.Payed == true){
-								that.checkOutPay(params);  //结账动作
-							}else{
+							if (res.Message.Payed == true) {
+								that.checkOutPay(params); //结账动作
+							} else {
 								wxPayment(res.Message)
 									.then(res => {
 										that.$msg.showToast('支付成功');
-										that.checkOutPay(params);  //结账动作
+										that.checkOutPay(params); //结账动作
 										//生成订单记录
 									})
 									.catch(ret => {
-										goOrderDeatails(params.SaleOrderNum,true) //跳转订单详情
+										goOrderDeatails(params.SaleOrderNum, true); //跳转订单详情
 									});
 							}
 						} catch (err) {
+							console.log(err)
 						}
 					}
 					uni.hideLoading();
@@ -635,23 +711,21 @@ export default {
 			);
 		},
 		//发起结账动作
-		async checkOutPay(params){
-			try{
-				let payRes = await api.shopCarControl(params,true);
-				if(payRes.Message[0].strSaleOrderNum){ 
-					goOrderDeatails(payRes.Message[0].strSaleOrderNum,true) //跳转订单详情
+		async checkOutPay(params) {
+			try {
+				let payRes = await api.shopCarControl(params, true);
+				if (payRes.Message[0].strSaleOrderNum) {
+					goOrderDeatails(payRes.Message[0].strSaleOrderNum, true); //跳转订单详情
 				}
-				uni.hideLoading()
-			}catch(err){
-			}
+				uni.hideLoading();
+			} catch (err) {}
 		},
 		//发起订阅消息
 		requestSubscribeMessage() {
 			return new Promise((result, ret) => {
 				uni.requestSubscribeMessage({
 					tmplIds: this.templateIds,
-					success(res) {
-					},
+					success(res) {},
 					complete(res) {
 						result();
 					}
@@ -693,10 +767,10 @@ export default {
 		//返回上一层页面
 		gobackPage() {
 			uni.navigateBack({});
-		},
+		}
 		//前往订单详情页面
 		// goToOrderDetail(orderid) {
-			
+
 		// }
 	}
 };
@@ -868,7 +942,7 @@ $line-color: rgba(0, 0, 0, 0.14);
 			@extend %flex-alcent;
 
 			.remark {
-				text-align: right;	
+				text-align: right;
 				width: 400upx;
 				@include lineOnly();
 			}

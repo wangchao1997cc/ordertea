@@ -23,7 +23,7 @@
 			</view>
 			<view class="time-price">
 				<text>{{item.datOrderTime}}</text>
-				<text>￥{{item.floTotal}}</text>
+				<text>实付：￥{{item.floPricePay}}</text>
 			</view>
 			<view class="order-num-box">
 				<view class="order-num">
@@ -86,12 +86,12 @@
 		},
 		methods: {
 			//获取订单数据
-		    async getOrderList(){
+			async getOrderList(){
 				let that = this;
 				let data = {
 					HQCode: appConfig.hqcode,
 					MemberCode: that.plusinfo.strMemberCode,
-					Mobile: that.memberinfo.mobile,
+					Mobile: that.memberinfo ? that.memberinfo.mobile : '',
 					WXOpenID: that.plusinfo.strWXOpenID,
 					GetDetail: false,
 					interFaces: 'OrderRecord'

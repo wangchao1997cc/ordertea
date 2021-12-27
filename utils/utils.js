@@ -59,7 +59,6 @@ function showMessage(message, msgType) {
 		duration: 2000,
 		// mask: 'true'
 	})
-
 }
 
 // /**
@@ -101,6 +100,7 @@ function formatDate(now) {
 }
 //加法函数  
 export const accAdd = (arg1, arg2) => {
+	console.log(arg1, arg2)
 	if (isNaN(arg1)) {
 		arg1 = 0;
 	}

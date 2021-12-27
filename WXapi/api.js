@@ -15,7 +15,6 @@ const getConfigure = (data, isloading) => {
 	return service("Parameters", "XCX", "post", data, isloading)
 }
 
-
 //获取用户openid key等
 const getUserOpenInfo = (data, isloading) => {
 	return normoal('WechatGetOpenIDXCX', data, isloading)
@@ -35,6 +34,12 @@ const decryptPhoneNumber = (data, isloading) => {
 
 //获取用户信息 
 const getUserInfo = (data, isloading) => {
+	let interFaces = data.interFaces;
+	return service("Member", interFaces, "post", data, isloading)
+}
+
+// 修改更新会员信息 
+const MemberInfoUpdate = (data, isloading) => {
 	let interFaces = data.interFaces;
 	return service("Member", interFaces, "post", data, isloading)
 }
@@ -169,7 +174,10 @@ const checkRecord = (data, isloading) => {
 	return service_v('v4_3/transList', 'post', data, isloading)
 }
 
-
+//修改会员支付密码
+const updatePassword = (data, isloading) => {
+	return service_v('v4_3/updatePassword', 'post', data, isloading)
+}
 
 
 //查询商品详情
@@ -276,7 +284,6 @@ const pointActivity = (data, isloading) => {
 	return service_v('v4_3/find/point/activity', 'post', data, isloading)
 }
 
-
 //排队 预计前面还有多少订单
 const waitLineup = (data, isloading) => {
 	return service_v('v4_3/findStore/queue', 'get', data, isloading)
@@ -284,7 +291,6 @@ const waitLineup = (data, isloading) => {
 
 //新鲜事列表
 const getNewsList = (data, isloading) => {
-
 	return service_v('v4_3/WxTweets/list', 'get', data, isloading)
 }
 
@@ -295,10 +301,9 @@ const getStores = (data, isloading) => {
 
 
 
-
-
 module.exports = {
 	getUserInfo,
+	MemberInfoUpdate,
 	getPayMentParams,
 	getWxaSubscribeTemplates,
 	getConfigure,
@@ -319,6 +324,7 @@ module.exports = {
 	getRecharge,
 	rechargeApi,
 	checkRecord,
+	updatePassword,
 	goodsDetail,
 	pointStore,
 	shopOrder,

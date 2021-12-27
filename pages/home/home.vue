@@ -163,7 +163,7 @@ import { jumpAdvertise, appshare } from '../../utils/utils.js';
 import { getLocation } from '../../utils/author.js';
 import { mapGetters, mapMutations } from 'vuex';
 import { goUserAddress } from '../../utils/goToPage.js';
-import { getMemberInfo, getRecharge } from '../../utils/publicApi.js';
+import { getMemberInfo, getRecharge, refreshUserInfo } from '../../utils/publicApi.js';
 import api from '../../WXapi/api.js';
 export default {
 	data() {
@@ -235,6 +235,7 @@ export default {
 		jyfParser,
 	},
 	onShow() {
+		this.member = app.globalData.member;
 		// let memberinfo = this.memberinfo;
 		// if (memberinfo) {
 		// 	getMemberInfo(true).then(res => {
@@ -283,18 +284,21 @@ export default {
 			that.getBannerList(); //轮播图
 		},
 		async judgeLogin() {
-			let that = this,
-			    params = {
-				WXOpenID: that.openidinfo.openid,
-				interFaces: 'MemberInfoGet'
-			};
+			let that = this
+			  //   params = {
+					// 	WXOpenID: that.openidinfo.openid,
+					// 	interFaces: 'MemberInfoGet'
+					// };
 			try {
-				let res = await api.getUserInfo(params); //plus 用户信息
+				let res = await refreshUserInfo(true)
+				// let res = await api.getUserInfo(params); //plus 用户信息
 				if (res.Message.length) {
 					that.SET_PLUSINFO(res.Message[0]);
-					await getMemberInfo(res.Message[0].strMobilePhone); //vka 会员用户信息
-				} else {
-					that.$refs.authorM.showPop();
+					if (res.Message[0].strMobilePhone) {
+						await getMemberInfo(res.Message[0].strMobilePhone); //vka 会员用户信息
+					} else {
+						// that.$refs.authorM.showPop();
+					}
 				}
 			} catch (err) { }
 			that.juideUserInfo();  //首页活动等等
@@ -318,8 +322,8 @@ export default {
 		//获取新鲜事列表
 		async getNewsList() {
 			let newsImag = [],
-				groupImgList = [],
-				res = await api.getNewsList();
+					groupImgList = [],
+					res = await api.getNewsList();
 
 			if (res.code == 200) {
 				res.data.forEach(item => {
@@ -453,7 +457,7 @@ export default {
 						that.receiveCoupons(); //查询好友赠送的优惠券
 					}
 				} else {
-					that.$refs.authorM.showPop();
+					// that.$refs.authorM.showPop();
 				}
 			} else {
 				try {

@@ -10,13 +10,16 @@
 		</view>
 		<view class="member-card">
 			<view class="member-head">
-				<view class="user-pic">
+				<view class="user-pic" @click="phoneLogin">
 					<view class="pic-box">
 						<open-data type="userAvatarUrl"></open-data>
 					</view>
 					<view class="user-label" v-if="member">
 						<image :src="currentLev.background" mode="aspectFill"></image>
 						{{currentLev.levelName || ''}}
+					</view>
+					<view class="user-label" v-else>
+						未登录会员
 					</view>
 				</view>
 				
@@ -72,6 +75,7 @@
 				</view>
 			</view>
 		</view>
+		<author ref="authorM" @loginSuccess="loginSuccess"></author>
 		<view class="mask" v-if="notAuth">
 			<view class="author-info">
 				<image class="pop-top" src="../../static/POP_top.png"></image>
@@ -100,6 +104,7 @@
 <script>
 	// import navbar from '../../components/nav.vue'
 	const app = getApp();
+	import author from '../../components/author.vue';
 	import api from '../../WXapi/api.js'
 	import sildermine from '../../components/minesilder.vue'
 	import {
@@ -140,6 +145,9 @@
 					img: '../../static/my/lv_icon.png',
 					text: '会员等级'
 				}, {
+					img: '../../static/my/change_password.png',
+					text: '修改密码'
+				}, {
 					img: '../../static/my/about_icon.png',
 					text: '关于我们'
 				}, ],
@@ -155,13 +163,13 @@
 		},
 		async onShow() {
 			let that = this,
-			    member = app.globalData.member;
+				member = app.globalData.member;
 			if(member){
 				let memberinfo = that.memberinfo;
 				console.log('会员信息',memberinfo)
 				that.getGradeInfo(); //获取当前等级信息
 				if (!memberinfo || !memberinfo.name) {
-					that.notAuth = true;
+					// that.notAuth = true;
 				}
 			}else{
 				that.servicearr = [{
@@ -173,8 +181,59 @@
 		},
 		components: {
 			sildermine,
+			author,
 		},
 		methods: {
+			// 手机号码登录
+			phoneLogin() {
+				if (!this.member) {
+					this.$refs.authorM.showPop();
+				}
+			},
+			async loginSuccess(val) {
+				let that = this;
+				that.$refs.authorM.hidePop();
+				let member = app.globalData.member;
+				if(member){
+					let memberinfo = that.memberinfo;
+					console.log('会员信息',memberinfo)
+					that.getGradeInfo(); //获取当前等级信息
+					that.servicearr = [{
+						img: '../../static/my/pay-record.png',
+						text: '消费记录'
+					}, {
+						img: '../../static/address_icon.png',
+						text: '地址管理'
+					}, {
+						img: '../../static/my/mine_detail_icon.png',
+						text: '个人资料'
+					}, {
+						img: '../../static/my/blance_icon.png',
+						text: '余额充值'
+					}, {
+						img: '../../static/my/shop_icon.png',
+						text: '积分商城'
+					}, {
+						img: '../../static/my/active_icon.png',
+						text: '裂变活动'
+					}, {
+						img: '../../static/my/lv_icon.png',
+						text: '会员等级'
+					}, {
+						img: '../../static/my/change_password.png',
+						text: '修改密码'
+					}, {
+						img: '../../static/my/about_icon.png',
+						text: '关于我们'
+					}, ]
+				}else{
+					that.servicearr = [{
+						img: '../../static/my/about_icon.png',
+						text: '关于我们'
+					},]
+				}
+				that.member = member;
+			},
 			//查询裂变活动
 			async getActiveInfo() {
 				let res = await api.fissionActive({}, true);
@@ -293,6 +352,9 @@
 						url = '../gradedesc/gradedesc';
 						break;
 					case 7:
+						url = '../changePassword/changePassword';
+						break;
+					case 8:
 						url = '../mine/aboutM/aboutM';
 						break;
 				}

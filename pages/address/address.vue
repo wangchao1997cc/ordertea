@@ -177,14 +177,14 @@
 			 * 获取用户地址
 			 */
 			async getUserAddress() {
-				let res = await api.getUserAddress({});
-				if (res.status == 1) {
-					if (res.data) {
-						this.addressList = res.data;
-					} else {
-						this.addressList = []
-					}
-				}
+				// let res = await api.getUserAddress({});
+				// if (res.status == 1) {
+				// 	if (res.data) {
+				// 		this.addressList = res.data;
+				// 	} else {
+				// 		this.addressList = []
+				// 	}
+				// }
 			},
 			//修改地址
 			addressEdit(item) {

@@ -7,9 +7,10 @@
 			</view>
 			<view class="userinfo-item">
 				<text>手机号</text>
-				<view class="user-r">
+				<view class="user-r" v-if="userinfo.mobile" open-type="getPhoneNumber" @getphonenumber="decryptPhoneNumber">
 					{{userinfo.mobile}}
 				</view>
+				<button class="phone-btn" v-else>获取手机号</button>
 			</view>
 			<view class="userinfo-item">
 				<text>性别</text>
@@ -36,10 +37,11 @@
 </template>
 
 <script>
+	const app = getApp();
 	import MxDatePicker from "@/components/mx-datepicker/mx-datepicker.vue";
 	import api from '../../WXapi/api.js';
 	import { mapGetters } from 'vuex';
-	import { getMemberInfo } from '../../utils/publicApi.js';
+	import { getMemberInfo, userRegister } from '../../utils/publicApi.js';
 	export default {
 		data() {
 			return {
@@ -53,7 +55,10 @@
 			}
 		},
 		computed:{
-			...mapGetters(['memberinfo']),
+			...mapGetters(['memberinfo', 'openidinfo']),
+		},
+		mounted() {
+			this.member = app.globalData.member;
 		},
 		onLoad() {
 			let memberinfo = this.memberinfo;
@@ -98,6 +103,7 @@
 					sex: that.value,
 					cardId: userinfo.id,
 				}
+				
 				if (!userinfo.birthday && that.birthday) {
 					that.$msg.showModal(json => {
 						if (json == 1) {
@@ -105,9 +111,10 @@
 						}
 					}, '生日只能修改一次哦～')
 					data.birthday = that.birthday
-				} else {
-					that.userInfoApi(data);
+				} else if(!userinfo.birthday && !that.birthday){
+					return this.$msg.showToast('请先选择您的生日哦～')
 				}
+				that.userInfoApi(data);
 			},
 			async userInfoApi(data) {
 				let that = this,
@@ -120,6 +127,37 @@
 					await getMemberInfo(that.memberinfo.mobile); //vka 会员用户信息
 				}else{
 					that.$msg.showToast(res.message);
+				}
+			},
+			async decryptPhoneNumber(res) {
+				let that = this;
+				if (res.detail.errMsg == 'getPhoneNumber:ok') {
+					let data = {
+						encryptedData: res.detail.encryptedData,
+						iv: res.detail.iv,
+						SessionKey: that.openidinfo.session_key
+					};
+					try {
+						let result = await api.decryptPhoneNumber(data, true); //获取手机号
+						let phone = result.Message.phoneNumber;
+						// let params = {
+						// 	HQCode: config.hqcode,
+						// 	WXOpenID: that.openidinfo.openid,
+						// 	Mobile: phone,
+						// 	interFaces: 'MemberInfoRegister'
+						// };
+						// let plusInfo =  await api.getUserInfo(params); //plus 注册会员
+						// that.SET_PLUSINFO(plusInfo.Message);  //存储会员code
+						if (that.member) {
+							let userdata = {
+								mobile: phone,
+								openId: that.openidinfo.openid
+							};
+							await userRegister(userdata);  //vka 注册会员
+							that.$emit('loginSuccess',true);
+						}
+					} catch (err) {
+					}
 				}
 			}
 		}
@@ -172,6 +210,17 @@
 		.user-r {
 			color: #A3A3A3;
 
+		}
+		
+		.phone-btn {
+			margin: auto 0;
+			height: 60upx;
+			line-height: 60upx;
+			font-size: 28upx;
+			border: 1upx solid #A8D732;
+			background-color: #fff;
+			color: #A8D732;
+			padding: 0 20upx;
 		}
 
 		.picker {

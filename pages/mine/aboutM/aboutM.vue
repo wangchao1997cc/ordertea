@@ -1,6 +1,6 @@
 <template>
 	<view class="content">
-		   <image :style="{height:imgHeight+'px'}" @load="imageLoad" src="https://fnb-merchants.oss-cn-shanghai.aliyuncs.com/123487/level/b263bf9cd649ba5e21a494d2dab99304.jpg"></image>
+		<image :style="{height:imgHeight+'px'}" @load="imageLoad" src="https://fnb-merchants.oss-cn-shanghai.aliyuncs.com/123487/level/b263bf9cd649ba5e21a494d2dab99304.jpg"></image>
 	</view>
 </template>
 

@@ -134,23 +134,14 @@
 							@click="openOrderMask(titem, index, idx)"
 						>
 							<view class="good-pic">
-								<image
-									:src="
-										titem.strPicUrl
-											? titem.strPicUrl
-											: '../../static/menu/logo.png'
-									"
-									mode="aspectFill"
-								></image>
+								<image :src="titem.strPicUrl ? titem.strPicUrl : '../../static/menu/logo.png'" mode="aspectFill"></image>
 							</view>
 							<view class="goods-info">
 								<view class="goods-name">{{ titem.strProductName }}</view>
 								<view class="goods-desc">{{ titem.desc }}</view>
 								<view class="goods-footer">
 									<view class="goods-price">
-										¥{{
-											titem.activePrice ? titem.activePrice : titem.floPrice
-										}}
+										¥{{ titem.activePrice ? titem.activePrice : titem.floPrice }}
 										<!-- <text>/{{titem.strUnitName}} {{titem.strStartRate || ''}}</text> -->
 										<text class="oldprice" v-if="titem.activePrice">
 											¥{{ titem.floPrice }}
@@ -166,10 +157,7 @@
 										<view v-else>
 											<view
 												@click.stop="prentEvents"
-												v-if="
-													titem.intMultiple == 1 &&
-														titem.blnSet == 'False'
-												"
+												v-if="titem.intMultiple == 1 && titem.blnSet == 'False'"
 											>
 												<view class="goods-single">
 													<image
@@ -213,13 +201,7 @@
 				<!-- 商品介绍规格参数等 -->
 				<view class="order_info_box" :hidden="maskarr.orderDescMask">
 					<view class="goods-pic">
-						<image
-							:src="
-								chooseGoods.strPicUrl
-									? chooseGoods.strPicUrl
-									: '../../static/menu/logo.png'
-							"
-						></image>
+						<image :src="chooseGoods.strPicUrl ? chooseGoods.strPicUrl : '../../static/menu/logo.png'"></image>
 						<view class="close-mask" @click="closeAllMask">
 							<image src="../../static/cha.png"></image>
 						</view>
@@ -416,7 +398,8 @@ import {
 	ajaxUserLogin,
 	getMemberInfo,
 	refreshUserInfo,
-	waitLineUp
+	waitLineUp,
+	getFirstRegister
 } from '../../utils/publicApi.js';
 import { mapGetters, mapMutations } from 'vuex';
 import { getLocation, getCityAddress, conversion, etdistance } from '../../utils/author.js';
@@ -654,7 +637,13 @@ export default {
 
 	onShow: function onShow() {
 		let that = this,
-			storeInfo = app.globalData.storeInfo;
+			storeInfo = app.globalData.storeInfo,
+			member = app.globalData.member;
+		console.log(member, that.member)
+		if (member !== that.member) {
+			that.getShopControlInfo();
+			that.member = member
+		}
 		if (storeInfo && that.storeInfo.strShopCode != storeInfo.strShopCode) {
 			that.storeInfo = storeInfo;
 			that.getShopControlInfo();
@@ -751,8 +740,8 @@ export default {
 		},
 		//判断是否登录
 		async judgeLogin() {
-			let that = this,
-			    params = {
+			let that = this;
+			let params = {
 				WXOpenID: that.openidinfo.openid,
 				interFaces: 'MemberInfoGet'
 			};
@@ -760,9 +749,11 @@ export default {
 				let res = await api.getUserInfo(params); //plus 用户信息
 				if (res.Message.length) {
 					that.SET_PLUSINFO(res.Message[0]);
-					await getMemberInfo(res.Message[0].strMobilePhone); //vka 会员用户信息
-				} else {
-					that.$refs.authorM.showPop();
+					if (res.Message[0].strMobilePhone) {
+						await getMemberInfo(res.Message[0].strMobilePhone); //vka 会员用户信息
+					} else {
+						// that.$refs.authorM.showPop();
+					}
 				}
 			} catch (err) { 
 				console.log(err)
@@ -773,8 +764,12 @@ export default {
 		//授权成功关闭弹窗
 		async loginSuccess() {
 			this.$refs.authorM.hidePop();
-			let memberinfo = await getMemberInfo(true);
-			this.memberinfo = memberinfo;
+			this.memberinfo = await getMemberInfo(true);
+			let member = app.globalData.member;
+			if (member !== this.member) {
+				this.getShopControlInfo();
+				this.member = member;
+			}
 		},
 		//查看当前活动
 		jumpActiveDesc(item) {
@@ -799,11 +794,15 @@ export default {
 				content: '是否清空购物车',
 				success(e) {
 					if (e.confirm) {
+						let mobile = ''
+						if (that.memberinfo && that.memberinfo.mobile) {
+							mobile = that.memberinfo.mobile
+						}
 						let message = {
 							HQCode: appConfig.hqcode,
 							ShopCode: app.globalData.shopCode,
 							TableCode: app.globalData.tablecode,
-							Mobile: that.memberinfo.mobile,
+							Mobile: mobile,
 							MemberCode: that.plusinfo.strMemberCode,
 							WXOpenID: that.openidinfo.openid,
 							interFaces: 'OrderClear'
@@ -842,6 +841,9 @@ export default {
 		// },
 		//跳转广告
 		jumpAdver(item, index) {
+			if (item.intJumpType == 2) {
+				this.openOrderMask(item.Product[0])
+			}
 			// if (index == 0) {
 			// 	uni.switchTab({
 			// 		url: '../mine/mine'
@@ -966,11 +968,15 @@ export default {
 				Flavor: [],
 				Combo: []
 			};
+			let mobile = ''
+			if (that.memberinfo && that.memberinfo.mobile) {
+				mobile = that.memberinfo.mobile
+			}
 			let message = {
 				HQCode: appConfig.hqcode,
 				ShopCode: app.globalData.shopCode,
 				TableCode: app.globalData.tablecode,
-				Mobile: that.memberinfo.mobile,
+				Mobile: mobile,
 				MemberCode: that.plusinfo.strMemberCode,
 				WXOpenID: that.openidinfo.openid,
 				Product: [product],
@@ -996,11 +1002,15 @@ export default {
 		//获取购物车内容
 		toUpdateShopCar() {
 			let that = this;
+			let mobile = ''
+			if (that.memberinfo && that.memberinfo.mobile) {
+				mobile = that.memberinfo.mobile
+			}
 			let message = {
 				HQCode: appConfig.hqcode,
 				ShopCode: app.globalData.shopCode,
 				TableCode: app.globalData.tablecode,
-				Mobile: that.memberinfo.mobile,
+				Mobile: mobile,
 				MemberCode: that.plusinfo.strMemberCode,
 				WXOpenID: that.openidinfo.openid,
 				promotionID: -1,
@@ -1063,6 +1073,10 @@ export default {
 			goods = goods || that.chooseGoods;
 			let Standard = goods.Standard[0];
 			let attsArr = {};
+			if (!that.member && app.globalData.isPopupShow) {
+				app.globalData.isPopupShow = false
+				return that.$refs.authorM.showPop();
+			}
 			that.specarr.forEach(item => {
 				let attrName = item.attrName
 					.toLowerCase()
@@ -1085,11 +1099,15 @@ export default {
 				...attsArr,
 				Combo: []
 			};
+			let mobile = ''
+			if (that.memberinfo && that.memberinfo.mobile) {
+				mobile = that.memberinfo.mobile
+			}
 			let message = {
 				HQCode: appConfig.hqcode,
 				ShopCode: app.globalData.shopCode,
 				TableCode: app.globalData.tablecode,
-				Mobile: that.memberinfo.mobile,
+				Mobile: mobile,
 				MemberCode: that.plusinfo.strMemberCode,
 				WXOpenID: that.openidinfo.openid,
 				Product: [product],
@@ -1124,7 +1142,7 @@ export default {
 				let data = {
 					HQCode: appConfig.hqcode,
 					ShopCode: app.globalData.shopCode,
-					ItemBarCode: that.products[index].strItemBarCode,
+					ItemBarCode: goods.strItemBarCode,
 					ProductBarCode: goods.strProductBarCode,
 					interFaces: 'getProductDetail',
 					ProductName: goods.strProductName
@@ -1382,7 +1400,7 @@ export default {
 			}
 		},
 		//跳转订单页面
-		jumpOrder() {
+		async jumpOrder() {
 			// if (this.model == 1 && this.storeInfo.businessStatus[0].busy) {
 			// 	this.noTakeOut();
 			// 	return;
@@ -1390,8 +1408,9 @@ export default {
 			// this.closeAllMask();
 			let that = this,
 				storeInfo = app.globalData.storeInfo,
-				memberinfo = that.memberinfo;
-			if (!memberinfo && that.member) {
+				memberinfo = that.memberinfo,
+				firstAuthorize = await getFirstRegister();
+			if (firstAuthorize && !memberinfo && that.member) {
 				return that.$refs.authorM.showPop();
 			}
 			let shopcar = that.shopcar;
@@ -1401,8 +1420,8 @@ export default {
 					qty: item.floQuantity,
 					product_no: item.strProductBarCode,
 					name: item.strProductName,
-					price: accAdd(item.floPricePay, item.floFlavor),
-					// price: accAdd(item.floPrice, item.floFlavor),
+					// price: accAdd(item.floPricePay, item.floFlavor),
+					price: accAdd(item.floPrice, item.floFlavor),
 					condiments: [],
 					discounted: item.VFlag == 'True' ? 1 : 0
 				};
@@ -1704,6 +1723,7 @@ export default {
 	padding-top: 20upx;
 	box-sizing: border-box;
 	font-size: 32upx;
+	z-index: 202;
 
 	.bussiness-time {
 		font-size: 28upx;
@@ -2406,6 +2426,7 @@ export default {
 
 		.shopcar-item-pic {
 			@include rect(150upx, 150upx);
+			border-radius: 4upx;
 
 			/* border: 1upx $main-color solid; */
 			image {

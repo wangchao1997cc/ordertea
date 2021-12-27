@@ -122,7 +122,12 @@
 			}
 		},
 		
-		
+		{
+			"path": "pages/changePassword/changePassword",
+			"style": {
+				"navigationBarTitleText": "修改密码"
+			}
+		},
 
 		{
 			"path": "pages/mine/mine",
@@ -133,10 +138,9 @@
 		{
 			"path": "pages/webview/webview",
 			"style": {
-				"navigationBarTitleText": "迷客夏"
+				"navigationBarTitleText": "vka点餐"
 			}
 		},
-
 		
 		{
 			"path": "pages/orderdetail/orderdetail",

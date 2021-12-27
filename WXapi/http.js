@@ -4,7 +4,6 @@ import appConfig from '../config/index.js';
 import {
 	showToast
 } from '../utils/utils.js';
-var app;
 //正式环境 key
 // const default_value_f = 'Action?' + 'key=6886173bf669d7bc'
 // const default_value_s = 'SecretAction?' + 'key=6886173bf669d7bc'
@@ -75,11 +74,9 @@ export async function service_v(url, method, data, isloading) {
 			url = baseurl_v43 + url;
 		}
 		let storeCode = null;
-		if(!app){
-			app = getApp();
-		}
+		let app = getApp();
 		if(app.globalData){
-			storeCode = app.globalData.storeInfo.extraStoreId;
+			storeCode = app.globalData.storeInfo.strVkaShopCode;
 		}
 		if (storeCode && url != 'v4_3/weixin/recharge') {
 			header.storeCode = storeCode;

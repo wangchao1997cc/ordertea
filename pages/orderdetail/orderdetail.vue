@@ -8,7 +8,7 @@
 				</view> -->
 			<view class="status-cont" @click="callTel">
 				<!-- {{ orderdetails.progress[0].clientTips || '请耐心等待' }} -->
-				{{!orderdetails.blnPayed?'请尽快支付哦～':'请耐心等待'}}
+				{{ !orderdetails.blnPayed ? '请尽快支付哦～' : '请耐心等待' }}
 			</view>
 			<view class="order-bt-box" v-if="!orderdetails.blnPayed">
 				<!-- <view class="order-btn" @click="cancelOrder">取消订单</view> -->
@@ -19,7 +19,7 @@
 				{{orderdetails.progress[0].clientTips}}
 			</view> -->
 		</view>
-		<view class="times-cont" >
+		<view class="times-cont">
 			<view class="takemeal-time" v-if="orderdetails.blnPayed && orderdetails.strSelfCode">
 				<text>取餐号</text>
 				<text>{{ orderdetails.strSelfCode }}</text>
@@ -32,7 +32,7 @@
 				<text>联系电话</text>
 				<text>{{ orderdetails.storePhone }}</text>
 			</view> -->
-			<view class="takemeal-time" v-if="orderdetails.intBook == 2" >
+			<view class="takemeal-time" v-if="orderdetails.intBook == 2">
 				<text>预定时间</text>
 				<text>{{ orderdetails.datTakeTime }}</text>
 			</view>
@@ -70,25 +70,21 @@
 			</view>
 		</view> -->
 		<view class="goods-info">
-			<view
-				class="goods-item"
-				v-for="(item, index) in orderdetails.Detail"
-				:key="index"
-			>
+			<view class="goods-item" v-for="(item, index) in orderdetails.Detail" :key="index">
 				<view class="goods-info-t">
 					<text>{{ item.strProductName }}</text>
 					<text>￥{{ item.floPricePay }}</text>
 				</view>
 				<view class="goods-info-t">
-					<text>
-						{{
-							item.FlavorName
-								? item.FlavorName
-								: '常规'
-						}}
-					</text>
+					<text>{{ item.FlavorName ? item.FlavorName : '常规' }}</text>
 					<text>x{{ item.intQuantity }}</text>
 				</view>
+			</view>
+		</view>
+		<view class="cost-price">
+			<view class="cost-item">
+				<text>总价</text>
+				<text>{{orderdetails.floTotal}}</text>
 			</view>
 		</view>
 		<view class="cost-price">
@@ -100,10 +96,11 @@
 				<text>餐盒费</text>
 				<text>¥{{ orderdetails.mealFee ? orderdetails.mealFee : 0 }}</text>
 			</view> -->
-			<block v-for="(item, index) in orderPreferentials" :key="index">
-				<view class="cost-item">
-					<text>
-						{{
+			<!-- <block v-for="(item, index) in orderPreferentials" :key="index"> -->
+			<view class="cost-item" v-if="orderdetails.floFree">
+				<text>
+					优惠活动
+					<!-- {{
 							item.content == 'promotions'
 								? subview && item.sub != 'undefined'
 									? item.sub
@@ -121,15 +118,15 @@
 								: item.content == '3'
 								? '买N送M券'
 								: '活动折扣'
-						}}
-					</text>
-					<text>-¥ {{ -item.price }}</text>
-				</view>
-			</block>
+						}} -->
+				</text>
+				<text>-¥ {{ orderdetails.floFree }}</text>
+			</view>
+			<!-- </block> -->
 			<view class="summary">
 				实付：
 				<text class="black-text">
-					￥{{ orderdetails.floTotal ? orderdetails.floTotal : 0 }}
+					￥{{ orderdetails.floPricePay ? orderdetails.floPricePay : 0 }}
 				</text>
 			</view>
 		</view>
@@ -160,7 +157,7 @@ import api from '../../WXapi/api.js';
 import { TimeDown } from '../../utils/utils.js'; //时间倒计时
 import { wxPayment } from '../../utils/publicApi.js';
 import { mapGetters } from 'vuex';
-import appConfig from '../../config/index.js'
+import appConfig from '../../config/index.js';
 import { wxuuid } from '../../WXapi/paramsMethod.js';
 
 const app = getApp();
@@ -170,7 +167,7 @@ export default {
 			orderdetails: {}, //订单详情数据
 			orderPreferentials: [],
 			subview: false,
-			member:false
+			member: false
 		};
 	},
 	onLoad(options) {
@@ -187,7 +184,7 @@ export default {
 	},
 	onShow() {},
 	computed: {
-		...mapGetters(['memberinfo', 'businessType', 'paymentMode','openidinfo','plusinfo'])
+		...mapGetters(['memberinfo', 'businessType', 'paymentMode', 'openidinfo', 'plusinfo'])
 	},
 	methods: {
 		async getOrderDetail() {
@@ -195,7 +192,7 @@ export default {
 			let data = {
 				HQCode: appConfig.hqcode,
 				MemberCode: that.plusinfo.strMemberCode,
-				Mobile: that.memberinfo.mobile,
+				Mobile: that.memberinfo ? that.memberinfo.mobile : '',
 				WXOpenID: that.openidinfo.openid,
 				GetDetail: true,
 				interFaces: 'OrderRecord'
@@ -243,10 +240,13 @@ export default {
 		async getPayParams() {
 			let that = this;
 			let timestamp = Date.now();
+			console.log(that.orderdetails);
 			let params = {
+				Total: that.orderdetails.floTotal,
+				Free: that.orderdetails.floFree,
 				HQCode: appConfig.hqcode,
 				ShopCode: that.orderdetails.strShopCode,
-				total_fee:1,
+				total_fee: that.orderdetails.floPricePay * 100,
 				MemberCode: that.plusinfo.strMemberCode,
 				// MemberCode: that.plusinfo.strMemberCode,
 				sub_openid: that.openidinfo.openid,
@@ -254,23 +254,23 @@ export default {
 				timestamp: timestamp,
 				SaleOrderNum: that.orderNo, //订单号
 				noncestr: wxuuid().replace(/-/g, ''), //随机字符串
-				Mobile: that.memberinfo.mobile, //手机号
+				Mobile: that.memberinfo ? that.memberinfo.mobile : '', //手机号
 				Memo: '', //备注
 				SaleMode: that.businessType, //售卖模式
 				PayMentMode: that.orderdetails.intPayType,
 				TakeMode: that.businessType,
 				TakeTime: that.orderdetails.takeTime,
 				OrderType: 'online', //支付订单的类型online普通订单 groupbuy拼团订单
-				PayTotal: that.orderdetails.Detail[0].floPricePay,
+				PayTotal: that.orderdetails.floPricePay, // 原本取的是that.orderdetails.Detail[0].floPricePay 不清楚之前的逻辑
 				interFaces: 'Prepay',
-				OrderCreate: true,
+				OrderCreate: true
 			};
-			
+			console.log(params);
 			let data = {
 				...params,
 				PaymentContent: params
 			};
-			if(that.member){
+			if (that.member) {
 				let VkaJson = that.orderdetails.VkaJson;
 				VkaJson = JSON.parse(VkaJson);
 				data.VkaJson = VkaJson;
@@ -281,31 +281,29 @@ export default {
 				app.globalData.orderSuccess = true;
 				app.globalData.orderRefresh = true;
 				params.interFaces = 'OrderPayMent';
-				if(res.Message.Payed == true){
-					that.checkOutPay(params);  //结账动作
-				}else{
+				if (res.Message.Payed == true) {
+					that.checkOutPay(params); //结账动作
+				} else {
 					wxPayment(res.Message)
 						.then(res => {
 							that.$msg.showToast('支付成功');
-							that.checkOutPay(params);  //结账动作
+							that.checkOutPay(params); //结账动作
 							//生成订单记录
 						})
-						.catch(ret => {
-						});
+						.catch(ret => {});
 				}
-			} catch (err) {
-			}
+			} catch (err) {}
 		},
 		//发起结账动作
-		async checkOutPay(params){
-			try{
+		async checkOutPay(params) {
+			try {
+				console.log(params)
 				let payRes = await api.shopCarControl(params);
-				if(payRes.Message[0].strSaleOrderNum){ 
-					this.getOrderDetail();  //刷新订单
+				if (payRes.Message[0].strSaleOrderNum) {
+					this.getOrderDetail(); //刷新订单
 				}
-			}catch(err){
-			}
-		},
+			} catch (err) {}
+		}
 	}
 };
 </script>
@@ -431,12 +429,19 @@ $line-color: rgba(0, 0, 0, 0.14);
 		@extend %flex-alcent;
 		justify-content: space-between;
 		border-bottom: 1upx $line-color solid;
+		
 
 		text {
 			font-size: 32upx;
 
 			&:last-child {
 				color: #a3a3a3;
+			}
+		}
+		&:last-child{
+			border: none;
+			text:last-child {
+				color: #333333;
 			}
 		}
 	}

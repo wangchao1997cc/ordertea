@@ -61,22 +61,32 @@ export default {
 				try {
 					let result = await api.decryptPhoneNumber(data, true); //获取手机号
 					let phone = result.Message.phoneNumber;
+					// let params = {
+					// 	HQCode: config.hqcode,
+					// 	WXOpenID: that.openidinfo.openid,
+					// 	Mobile: phone,
+					// 	interFaces: 'MemberInfoRegister'
+					// };
+					// let plusInfo =  await api.getUserInfo(params); //plus 注册会员
+					// that.SET_PLUSINFO(plusInfo.Message);  //存储会员code
+					// if (that.member) {
+					let userdata = {
+						mobile: phone,
+						openId: that.openidinfo.openid
+					};
+					await userRegister(userdata);  //vka 注册会员
 					let params = {
 						HQCode: config.hqcode,
 						WXOpenID: that.openidinfo.openid,
+						Operation: 'updatemobile',
 						Mobile: phone,
-						interFaces: 'MemberInfoRegister'
+						interFaces: 'MemberInfoUpdate'
 					};
-					let plusInfo =  await api.getUserInfo(params); //plus 注册会员
-					that.SET_PLUSINFO(plusInfo.Message);  //存储会员code
-					if (that.member) {
-						let userdata = {
-							mobile: phone,
-							openId: that.openidinfo.openid
-						};
-						await userRegister(userdata);  //vka 注册会员
-						that.$emit('loginSuccess',true);
-					}
+					let res = await api.MemberInfoUpdate(params) // plus注册会员
+					console.log(res)
+					await refreshUserInfo()
+					that.$emit('loginSuccess',true);
+					// }
 				} catch (err) {
 				}
 			}

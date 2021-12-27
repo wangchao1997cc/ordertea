@@ -17,8 +17,9 @@
 					<text>钱包</text>
 				</view>
 			</view>
-			<view class="qr-code"><canvas canvas-id="qrcode" /></view>
-			<view class="bar-code"><canvas canvas-id="barcode" /></view>
+			<view class="qr-code"><canvas id="qrcode" canvas-id="qrcode" /></view>
+			<view class="bar-code"><canvas id="barcode" canvas-id="barcode" /></view>
+			<view class="tips">会员码每60秒自动刷新一次</view>
 		</view>
 	</view>
 </template>
@@ -141,5 +142,11 @@ export default {
 	#barcode {
 		@include rect(286upx, 135upx);
 	}
+}
+.tips {
+	font-size: 24upx;
+	color: #a3a3a3;
+	text-align: center;
+	margin-top: 40upx;
 }
 </style>
