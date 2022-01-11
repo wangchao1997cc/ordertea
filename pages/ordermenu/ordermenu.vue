@@ -217,6 +217,20 @@
 							v-if="chooseGoods.intMultiple != 1 || chooseGoods.blnSet == 'True'"
 						>
 							<template>
+								<view class="arrt-item" v-if="chooseGoods.standard.length > 1">
+									<view class="arrt_name">规格</view>
+									<view class="arrt_Iitem-cont">
+										<view
+											class="arrt_Iitem"
+											v-for="(aitem, idx) in chooseGoods.standard"
+											:class="{ choose_item: aitem.Checked }"
+											:key="idx"
+											@click="chooseStandard(idx, aitem)"
+										>
+											{{ aitem.StandardName }}
+										</view>
+									</view>
+								</view>
 								<view
 									class="arrt-item"
 									v-for="(item, index) in specarr"
@@ -594,8 +608,8 @@ export default {
 				productPrice = 0;
 			if (chooseGoods.activePrice) {
 				productPrice = chooseGoods.activePrice;
-			} else {
-				productPrice = chooseGoods.floPrice;
+			} else if (chooseGoods.Standard) {
+				productPrice = chooseGoods.Standard[0].Price;
 			}
 			if (specarr.length) {
 				specarr.forEach(item => {
@@ -1160,6 +1174,10 @@ export default {
 						strDescription: res.Message.product[0].strDescription,
 						standard: res.Message.standard
 					};
+					goods.Standard = res.Message.standard.filter(item => {
+						return item.Checked
+					})
+					console.log(newObj, goods)
 					let chooseGoods = Object.assign(newObj, goods); //第一层深拷贝，防止价格变动影响
 					that.handleData(res.Message); //处理规格属性
 					that.nums = 1;
@@ -1181,6 +1199,30 @@ export default {
 			} catch (err) {}
 		},
 		//选择规格
+		chooseStandard(index, aitem) {
+			let that = this;
+			if (!aitem.Checked) {
+				for (let i in that.chooseGoods.standard) {
+					if (that.chooseGoods.standard[i].Checked) {
+						that.chooseGoods.standard[i].Checked = false;
+						break;
+					}
+				}
+				aitem.Checked = true;
+				let chooseGoods = that.chooseGoods,
+					goods = that.chooseGoods.standard[index];
+				chooseGoods.floPrice = goods.Price
+				chooseGoods.strProductBarCode = goods.ProductBarCode
+				chooseGoods.strProductName = goods.ProductName
+				chooseGoods.strStandardCode = goods.StandardCode
+				chooseGoods.strStandardName = goods.StandardName
+				chooseGoods.intUnitID = goods.UnitID
+				chooseGoods.strUnitName = goods.UnitName
+				chooseGoods.Standard = [goods]
+				that.chooseGoods = chooseGoods
+			}
+		},
+		//选择属性
 		chooseAttr(index, aitem) {
 			if (aitem.Checked) {
 				//如果选中状态则取消选中
@@ -1212,20 +1254,6 @@ export default {
 		handleData(data) {
 			let specarr = [], //规格数组
 				params = ['addoption', 'temp', 'sweet', 'flavor', 'noodle'];
-			if (data['standard'].length) {
-				let details = data['standard']
-				details.forEach(item => {
-					item.strFlavorName = item.StandardName + item.UnitName;
-					item.Checked = false;
-				})
-				let arrts = {
-					details: details,
-					strFlavorGroupName: '规格', //分组名称
-					MaxSelect: 1, //最多可选
-					attrName: data['standard']
-				};
-				specarr.push(arrts);
-			}
 			for (let i in params) {
 				if (data[params[i]].length) {
 					data[params[i]].forEach(item => {
