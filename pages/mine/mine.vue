@@ -165,7 +165,8 @@
 			let that = this,
 				member = app.globalData.member;
 			if(member){
-				let memberinfo = that.memberinfo;
+				let memberinfo = getMemberInfo(that.memberinfo.mobile);
+				// let memberinfo = that.memberinfo;
 				console.log('会员信息',memberinfo)
 				that.getGradeInfo(); //获取当前等级信息
 				if (!memberinfo || !memberinfo.name) {

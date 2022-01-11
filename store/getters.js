@@ -3,6 +3,7 @@ const getters = {
 	configure: state => state.user.configure,
 	memberinfo: state => state.user.memberinfo,
 	plusinfo : state => state.user.plusinfo,
+	goods : state => state.user.goods,
 	
 	businessType: state => state.control.businessType,
 	storeId: state => state.control.storeId,

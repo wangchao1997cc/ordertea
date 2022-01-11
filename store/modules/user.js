@@ -11,6 +11,7 @@ const state = {
 	configure: {  //小程序配置信息
 	},
 	plusinfo: null,
+	goods: null, // 首页弹窗商品详情信息
 };
 
 const mutations = {
@@ -25,6 +26,9 @@ const mutations = {
 	},
 	SET_CONFIGURE: (state, configure) => {
 		state.configure = configure;
+	},
+	SET_GOODS: (state, configure) => {
+		state.goods = configure;
 	}
 };
 const actions = {

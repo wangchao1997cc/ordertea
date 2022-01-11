@@ -124,6 +124,17 @@
 				</view>
 			</view>
 		</view>
+		<!-- 弹窗图片 -->
+		<view class="mask" v-if="advertData">
+			<view class="advert-box">
+				<view class="advert-info" @click="receiveAdvert">
+					<image :src="advertData[0].strImageUrl" mode="widthFix"></image>
+				</view>
+				<view class="close-advert" @click="closeAdvert">
+					<image src="../../static/POP_close01.png"></image>
+				</view>
+			</view>
+		</view>
 		<!-- 集点卡活动 -->
 		<view class="mask" v-if="maskShow" @catchtouchmove="true">
 			<view class="order-info" :animation="animationData">
@@ -184,6 +195,7 @@ export default {
 			// "https://fnb-merchants.oss-cn-shanghai.aliyuncs.com/7622/product/6aaae7ad6a9a47d0db03372bbe972f70.jpg",
 			// "https://fnb-merchants.oss-cn-shanghai.aliyuncs.com/7622/banner20201118151452.png"
 			bannerData: {}, //轮播图数据
+			advertData: null, // 弹窗图片广告
 			shareCoupons: null, //分享的优惠券
 			// config: {
 			// 	slideHeight: 400,
@@ -282,6 +294,7 @@ export default {
 			that.getNewsList(); //新鲜事
 			that.judgeLogin(); //判断是否登录
 			that.getBannerList(); //轮播图
+			that.getAdvertList(); //弹窗图
 		},
 		async judgeLogin() {
 			let that = this
@@ -415,6 +428,24 @@ export default {
 				that.$msg.showToast(res.message);
 			}
 		},
+		// 跳转商品
+		receiveAdvert() {
+			if (this.advertData[0].intJumpType == 2) {
+				const that = this
+				this.$store.commit('user/SET_GOODS', that.advertData[0])
+				app.globalData.shopCode = that.advertData[0].Product[0].strItemBarCode
+				uni.switchTab({
+					url: '/pages/ordermenu/ordermenu',
+					success: (res) => {
+						that.advertData = null;
+					}
+				});
+			}
+		},
+		// 关闭弹窗图
+		closeAdvert() {
+			this.advertData = null;
+		},
 		//跳转我的会员码
 		jumpMembercode() {
 			if (!this.memberinfo) {
@@ -545,6 +576,18 @@ export default {
 				this.bannerData = res.Message;
 			}
 		},
+		//获取弹窗图
+		async getAdvertList() {
+			let data = {
+				Type: 'IndexAD',
+				PlatForm: 'XCX',
+				interFaces: 'getIndexAD'
+			};
+			let res = await api.getRotation(data);
+			if (res.Message && res.Message.length) {
+				this.advertData = res.Message;
+			}
+		},
 		async getLocation() {
 			let location = await getLocation();
 		},
@@ -558,8 +601,9 @@ export default {
 			// 		url = 'https://mp.weixin.qq.com/s/zc3Gb3zEeWtHzm1-DHMNwQ';
 			// 		break;
 			// }
+			console.log(item.url)
 			uni.navigateTo({
-				url: '../webview/webview?url=' + item.url
+				url: '../webview/webview?url=' + encodeURIComponent(item.url)
 			});
 		},
 		jumpAdvertise(item, index) {
@@ -704,6 +748,37 @@ export default {
 			color: $text-white;
 			border-radius: 44upx;
 			margin: 20upx auto;
+		}
+	}
+}
+
+.advert-box {
+	position: absolute;
+	top: 20%;
+	left: 75upx;
+	width: 600upx;
+	background-color: $bg-white;
+	border-radius: $radius-md;
+	z-index: 30;
+	
+	.advert-info {
+		@include rect(100%, 100%);
+		border-radius: $radius-md;
+		overflow: hidden;
+		image {
+			display: block;
+			width: 100%;
+		}
+	}
+	
+	.close-advert {
+		position: absolute;
+		top: -52upx;
+		right: -25upx;
+		@include rect(36upx, 36upx);
+		
+		image {
+			@include rect(100%, 100%);
 		}
 	}
 }

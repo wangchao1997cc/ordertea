@@ -27,7 +27,7 @@
 </template>
 
 <script>
-	import api from '../../WXapi/api.js'
+	import api from '../../WXapi/api.js';
 	export default {
 		data() {
 			return {
@@ -58,8 +58,9 @@
 				if(that.currtab==1){
 					type = 1
 				}
+				console.log(that.$store.getters.memberinfo)
 				let data = {
-					cardNo: that.$store.state.cardNo,
+					cardNo: that.$store.getters.memberinfo.cardNo,
 					type: type,
 				}
 				let res = await api.checkRecord(data)

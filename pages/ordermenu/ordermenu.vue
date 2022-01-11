@@ -490,7 +490,8 @@ export default {
 			'storeId',
 			'businessType',
 			'paymentMode',
-			'plusinfo'
+			'plusinfo',
+			'goods',
 		]),
 		headerInfo() {
 			let that = this,
@@ -635,7 +636,7 @@ export default {
 		this.init();
 	},
 
-	onShow: function onShow() {
+	onShow: async function onShow() {
 		let that = this,
 			storeInfo = app.globalData.storeInfo,
 			member = app.globalData.member;
@@ -652,6 +653,12 @@ export default {
 			//下单成功
 			that.toUpdateShopCar();
 			app.globalData.orderSuccess = false;
+		}
+		console.log(that.goods)
+		if (that.goods) {
+			console.log(that.goods)
+			that.jumpAdver(that.goods, 0, true)
+			that.$store.commit('user/SET_GOODS', null)
 		}
 		// let that = this;
 		// if (that.storeId) {
@@ -840,9 +847,9 @@ export default {
 		// 	this.showdetail = true;
 		// },
 		//跳转广告
-		jumpAdver(item, index) {
+		jumpAdver(item, index, type) {
 			if (item.intJumpType == 2) {
-				this.openOrderMask(item.Product[0])
+				this.openOrderMask(item.Product[0], 0, 0, type)
 			}
 			// if (index == 0) {
 			// 	uni.switchTab({
@@ -1132,7 +1139,7 @@ export default {
 			// that.getActive(store.);
 		},
 		//点击商品打开幕布
-		async openOrderMask(goods, index, idx) {
+		async openOrderMask(goods, index, idx, type) {
 			let that = this;
 			if (goods.intSell < 0 || goods.intSell == 0) {
 				//售罄和不在售时间内
@@ -1158,7 +1165,13 @@ export default {
 					that.nums = 1;
 					that.chooseGoods = chooseGoods;
 					that.maskarr.shopCarShow = false;
-					that.openAnimation(1);
+					if (type) {
+						setTimeout(()=>{
+							that.openAnimation(1);
+						}, 500)
+					} else {
+						that.openAnimation(1);
+					}
 				} catch (err) {}
 
 				// chooseGoods.indexarr = {
@@ -1199,6 +1212,20 @@ export default {
 		handleData(data) {
 			let specarr = [], //规格数组
 				params = ['addoption', 'temp', 'sweet', 'flavor', 'noodle'];
+			if (data['standard'].length) {
+				let details = data['standard']
+				details.forEach(item => {
+					item.strFlavorName = item.StandardName + item.UnitName;
+					item.Checked = false;
+				})
+				let arrts = {
+					details: details,
+					strFlavorGroupName: '规格', //分组名称
+					MaxSelect: 1, //最多可选
+					attrName: data['standard']
+				};
+				specarr.push(arrts);
+			}
 			for (let i in params) {
 				if (data[params[i]].length) {
 					data[params[i]].forEach(item => {
@@ -1329,8 +1356,8 @@ export default {
 				location = that.location,
 				data = {
 					interFaces: 'getShopList',
-					latitude: location.longitude,
-					longitude: location.latitude,
+					latitude: location.latitude,
+					longitude: location.longitude,
 					GetType: 'onlyList',
 					Top: 10
 				};
@@ -1511,6 +1538,7 @@ export default {
 				}
 			}
 			that.products = products;
+			console.log(products)
 			that.currentId = products[0].strItemBarCode;
 			that.loadingState = true;
 			that.$nextTick(async () => {

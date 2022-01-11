@@ -15,7 +15,8 @@
 			}
 		},
 		onLoad(options) {
-			this.url = options.url;
+			console.log(options.url)
+			this.url = decodeURIComponent(options.url);
 		},
 
 		//页面分享
