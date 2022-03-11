@@ -17,27 +17,26 @@ export const appshare = () => {
 TimeDown.js
 */
 export const TimeDown = (endDate) => {
-	endDate = new Date(endDate);
+	endDate = new Date(endDate).getTime() + 15 * 60 * 1000;
 
 	//当前时间
-	var nowDate = new Date();
+	var nowDate = new Date().getTime();
 	//相差的总秒数
 	var totalSeconds = parseInt((endDate - nowDate) / 1000);
 	if (totalSeconds < 0 || totalSeconds == 0) {
 		return false;
-
 	}
 	//天数
 	var days = Math.floor(totalSeconds / (60 * 60 * 24));
 	//取模（余数）
 	var modulo = totalSeconds % (60 * 60 * 24);
 	//小时数
-	var hours = Math.floor(modulo / (60 * 60));
+	var hours = getTen(Math.floor(modulo / (60 * 60)));
 	modulo = modulo % (60 * 60);
 	//分钟
-	var minutes = Math.floor(modulo / 60);
+	var minutes = getTen(Math.floor(modulo / 60));
 	//秒
-	var seconds = modulo % 60;
+	var seconds = getTen(modulo % 60);
 	let timearr = [days, hours, minutes, seconds];
 	return timearr;
 }
@@ -86,16 +85,28 @@ function checkPhone(phone) {
 	return true
 }
 
+/**
+ * 判断是否大于10
+ * 否：前面加0
+ */
+function getTen(data) {
+	if (data < 10) {
+		return '0' + data
+	} else {
+		return data
+	}
+}
+
 //时间格式转换
 
 function formatDate(now) {
 	now = new Date(now);
 	var year = now.getFullYear(); //取得4位数的年份
-	var month = now.getMonth() + 1; //取得日期中的月份，其中0表示1月，11表示12月
-	var date = now.getDate(); //返回日期月份中的天数（1到31）
-	var hour = now.getHours(); //返回日期中的小时数（0到23）
-	var minute = now.getMinutes(); //返回日期中的分钟数（0到59）
-	var second = now.getSeconds(); //返回日期中的秒数（0到59）
+	var month = getTen(now.getMonth() + 1); //取得日期中的月份，其中0表示1月，11表示12月
+	var date = getTen(now.getDate()); //返回日期月份中的天数（1到31）
+	var hour = getTen(now.getHours()); //返回日期中的小时数（0到23）
+	var minute = getTen(now.getMinutes()); //返回日期中的分钟数（0到59）
+	var second = getTen(now.getSeconds()); //返回日期中的秒数（0到59）
 	return year + "-" + month + "-" + date + " " + hour + ":" + minute + ":" + second;
 }
 //加法函数  
@@ -158,7 +169,6 @@ export const subtr = (arg1, arg2) => {
 	return ((arg1 * m - arg2 * m) / m).toFixed(n);
 }
 
-
 //乘法函数  
 export const accMul = (arg1, arg2) => {
 	var m = 0,
@@ -172,8 +182,6 @@ export const accMul = (arg1, arg2) => {
 	} catch (e) {}
 	return Number(s1.replace(".", "")) * Number(s2.replace(".", "")) / Math.pow(10, m);
 }
-
-
 
 //除法函数  
 export const accDiv = (arg1, arg2) => {
@@ -192,7 +200,6 @@ export const accDiv = (arg1, arg2) => {
 	return (r1 / r2) * pow(10, t2 - t1);
 	// }
 }
-
 
 
 function datasort(arr) {
@@ -230,6 +237,7 @@ export const showModal = (callback, content, tit, showCancel, cancelText, confir
 		},
 	});
 };
+
 /**
  * 弹出提对话框
  */
@@ -276,6 +284,7 @@ export const clickDateDiff = function(value) {
 	}
 	return result;
 };
+
 /**
  * 时间戳转换为想要的时间格式
  */

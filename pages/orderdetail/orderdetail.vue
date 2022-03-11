@@ -8,11 +8,11 @@
 				</view> -->
 			<view class="status-cont" @click="callTel">
 				<!-- {{ orderdetails.progress[0].clientTips || '请耐心等待' }} -->
-				{{ !orderdetails.blnPayed ? '请尽快支付哦～' : '请耐心等待' }}
+				{{ setBlnPayed(orderdetails.blnPayed, orderdetails.datOrderTime) ? '请尽快支付哦～' : '请耐心等待' }}
 			</view>
-			<view class="order-bt-box" v-if="!orderdetails.blnPayed">
+			<view class="order-bt-box" v-if="setBlnPayed(orderdetails.blnPayed, orderdetails.datOrderTime) && dateEnd">
 				<!-- <view class="order-btn" @click="cancelOrder">取消订单</view> -->
-				<view class="order-btn" @click="getPayParams">去支付</view>
+				<view class="order-btn" @click="getPayParams">去支付{{ dateEnd ? '  ' + dateEnd[2] + ':' + dateEnd[3] : '' }}</view>
 			</view>
 			<!-- </view>
 			<view class="status-cont" v-else>
@@ -72,8 +72,8 @@
 		<view class="goods-info">
 			<view class="goods-item" v-for="(item, index) in orderdetails.Detail" :key="index">
 				<view class="goods-info-t">
-					<text>{{ item.strProductName }}</text>
-					<text>￥{{ item.floPricePay }}</text>
+					<text>{{ item.strProductName + (item.strStandardName ? '-' + item.strStandardName : '') }}</text>
+					<text>￥{{ item.floPrice }}</text>
 				</view>
 				<view class="goods-info-t">
 					<text>{{ item.FlavorName ? item.FlavorName : '常规' }}</text>
@@ -87,7 +87,7 @@
 				<text>{{orderdetails.floTotal}}</text>
 			</view>
 		</view>
-		<view class="cost-price">
+		<!-- <view class="cost-price"> -->
 			<!-- <view class="cost-item">
 				<text>餐饮费</text>
 				<text>￥{{ orderdetails.productPrice ? orderdetails.productPrice : 0 }}</text>
@@ -97,7 +97,7 @@
 				<text>¥{{ orderdetails.mealFee ? orderdetails.mealFee : 0 }}</text>
 			</view> -->
 			<!-- <block v-for="(item, index) in orderPreferentials" :key="index"> -->
-			<view class="cost-item" v-if="orderdetails.floFree">
+			<!-- <view class="cost-item" v-if="orderdetails.floFree">
 				<text>
 					优惠活动
 					<!-- {{
@@ -118,17 +118,59 @@
 								: item.content == '3'
 								? '买N送M券'
 								: '活动折扣'
-						}} -->
+						}} - ->
 				</text>
 				<text>-¥ {{ orderdetails.floFree }}</text>
 			</view>
-			<!-- </block> -->
-			<view class="summary">
-				实付：
-				<text class="black-text">
-					￥{{ orderdetails.floPricePay ? orderdetails.floPricePay : 0 }}
-				</text>
+		</view>	-->
+		<view class="cost-price" v-if="orderdetails.VkaJson.coupons.length > 0 || orderdetails.VkaJson.promotions.length > 0">
+			<view class="cost-title">
+				<text>折扣明细</text>
 			</view>
+			<block v-for="(item, index) in orderdetails.VkaJson.coupons" :key="index">
+				<view class="cost-item1">
+					<text>{{ item.name }}</text>
+					<text>-¥{{ item.discount ? item.discount : 0 }}</text>
+				</view>
+			</block>
+			<!-- 活动优惠 -->
+			<block v-for="(item, index) in orderdetails.VkaJson.promotions" :key="index">
+				<view class="cost-item1">
+					<text>{{ item.name }}</text>
+					<text>-¥{{ item.discount ? item.discount : 0 }}</text>
+				</view>
+			</block>
+		</view>
+		<view class="cost-price">
+			<view class="cost-title">
+				<text>支付明细</text>
+			</view>
+			<block v-for="(item, index) in orderdetails.VkaJson.payments" :key="index">
+				<view class="cost-item1" v-if="item.type == 'weixinpay'">
+					<text>微信支付</text>
+					<text>¥{{ item.amount ? item.amount : 0 }}</text>
+				</view>
+				<view class="cost-item1" v-if="item.type == 'card'">
+					<text>会员余额支付</text>
+					<text>¥{{ item.amount ? item.amount : 0 }}</text>
+				</view>
+			</block>
+			<!-- <view class="summary">
+				<block v-for="(item, index) in orderdetails.VkaJson.payments" :key="index">
+					<text class="black-title" v-if="item.type == 'weixinpay'">
+						微信支付：
+						<text class="black-text">
+							¥{{ item.amount ? item.amount : 0 }}
+						</text>
+					</text>
+					<text class="black-title" v-else-if="item.type == 'card'">
+						会员余额支付：
+						<text class="black-text">
+							¥{{ item.amount ? item.amount : 0 }}
+						</text>
+					</text>
+				</block>
+			</view> -->
 		</view>
 
 		<view class="otherinfo">
@@ -161,13 +203,15 @@ import appConfig from '../../config/index.js';
 import { wxuuid } from '../../WXapi/paramsMethod.js';
 
 const app = getApp();
+let timer = '';
 export default {
 	data() {
 		return {
 			orderdetails: {}, //订单详情数据
 			orderPreferentials: [],
 			subview: false,
-			member: false
+			member: false,
+			dateEnd: []
 		};
 	},
 	onLoad(options) {
@@ -176,15 +220,36 @@ export default {
 		that.orderNo = options.orderId;
 		let orderDetail = app.globalData.orderDetail;
 		if (orderDetail) {
+			try{
+				orderDetail.VkaJson = JSON.parse(orderDetail.VkaJson)
+			}catch(e){
+			}
 			that.orderdetails = orderDetail;
 			app.globalData.orderDetail = null;
+			that.timeOut()
 			return;
 		}
 		that.getOrderDetail(); //获取订单详情
 	},
 	onShow() {},
 	computed: {
-		...mapGetters(['memberinfo', 'businessType', 'paymentMode', 'openidinfo', 'plusinfo'])
+		...mapGetters(['memberinfo', 'businessType', 'paymentMode', 'openidinfo', 'plusinfo']),
+		setBlnPayed() {
+			return function(data, time) {
+				if (!data) {
+					let time1 = new Date().getTime()
+					let time2 = new Date(time).getTime() + 15 * 60 * 1000
+					// console.log(time1, time2)
+					if (time1 < time2) {
+						return true
+					} else {
+						return false
+					}
+				} else {
+					return false
+				}
+			}
+		}
 	},
 	methods: {
 		async getOrderDetail() {
@@ -200,19 +265,24 @@ export default {
 			try {
 				let res = await api.shopCarControl(data, true);
 				let orderdetails = res.Message.filter(item => item.strSaleOrderNum == that.orderNo);
+				try{
+					orderdetails[0].VkaJson = JSON.parse(orderdetails[0].VkaJson)
+				}catch(e){
+				}
 				that.orderdetails = orderdetails[0];
+				that.timeOut()
 			} catch (err) {}
 		},
 		timeOut(date) {
 			let that = this;
-			let dateEnd = TimeDown(date);
-			// that.timer = setInterval(() => {
-			// 	dateEnd = TimeDown(date);
-			// 	if (!dateEnd) {
-			// 		clearInterval(that.timer)
-			// 		return;
-			// 	}
-			// }, 1000);
+			that.dateEnd = TimeDown(that.orderdetails.datOrderTime);
+			timer = setInterval(() => {
+				that.dateEnd = TimeDown(that.orderdetails.datOrderTime);
+				if (!that.dateEnd) {
+					clearInterval(timer)
+					return;
+				}
+			}, 1000);
 		},
 		//拨打电话
 		callTel() {
@@ -272,7 +342,11 @@ export default {
 			};
 			if (that.member) {
 				let VkaJson = that.orderdetails.VkaJson;
-				VkaJson = JSON.parse(VkaJson);
+				try{
+					VkaJson = JSON.parse(VkaJson);
+				}catch(e){
+					//TODO handle the exception
+				}
 				data.VkaJson = VkaJson;
 			}
 			try {
@@ -341,12 +415,13 @@ $line-color: rgba(0, 0, 0, 0.14);
 	}
 
 	.order-btn {
-		@include rect(160upx, 60upx);
+		// @include rect(160upx, 60upx);
 		border: 2upx #999999 solid;
 		border-radius: 8upx;
 		@include text-allcenter(60upx);
 		color: #999999;
 		margin: 0 40upx;
+		padding: 0 10upx;
 
 		&:last-child {
 			background-color: $main-color;
@@ -423,13 +498,22 @@ $line-color: rgba(0, 0, 0, 0.14);
 	width: 698upx;
 	margin-top: 25upx;
 	@extend %box-style;
+	
+	.cost-title {
+		@include rect(100%, 108upx);
+		line-height: 108upx;
+		font-size: 28upx;
+		color: #333333;
+		font-weight: bold;
+		border-bottom: 1upx $line-color solid;
+		margin-bottom: 20upx;
+	}
 
 	.cost-item {
 		@include rect(100%, 108upx);
 		@extend %flex-alcent;
 		justify-content: space-between;
 		border-bottom: 1upx $line-color solid;
-		
 
 		text {
 			font-size: 32upx;
@@ -443,6 +527,25 @@ $line-color: rgba(0, 0, 0, 0.14);
 			text:last-child {
 				color: #333333;
 			}
+		}
+	}
+	
+	.cost-item1 {
+		@include rect(100%, 50upx);
+		@extend %flex-alcent;
+		justify-content: space-between;
+		
+		text {
+			font-size: 28upx;
+			color: #a3a3a3;
+		
+			&:last-child {
+				color: #333333;
+			}
+		}
+		
+		&:last-child {
+			margin-bottom: 20upx;
 		}
 	}
 
@@ -461,10 +564,13 @@ $line-color: rgba(0, 0, 0, 0.14);
 		// 		margin-right: 12upx;
 		// 	}
 		// }
-
-		.black-text {
-			font-size: 32upx;
-			color: #000000;
+		.black-title {
+			padding-left: 10upx;
+			
+			.black-text {
+				font-size: 32upx;
+				color: #000000;
+			}
 		}
 	}
 }

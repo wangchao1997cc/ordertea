@@ -13,9 +13,9 @@
 			<view class="order-cont" v-for="(aitem,idx) in item.Detail" :key="idx">
 				<view class="order-cont-l" >
 					<view class="good-pic">
-						<image :src="aitem.strPicUrl"></image>
+						<image :src="aitem.strPicUrl" mode="aspectFill"></image>
 					</view>
-					<text>{{aitem.strProductName}}</text>
+					<text>{{aitem.strProductName + (aitem.strStandardName ? '-' + aitem.strStandardName : '')}}</text>
 				</view>
 				<!-- <view class="cont-r">
 					x1
@@ -23,11 +23,12 @@
 			</view>
 			<view class="time-price">
 				<text>{{item.datOrderTime}}</text>
-				<text>实付：￥{{item.floPricePay}}</text>
+				<!-- <text>实付：￥{{item.floPricePay}}</text> -->
+				<text>实付：￥{{setPricePay(item.VkaJson)}}</text>
 			</view>
 			<view class="order-num-box">
 				<view class="order-num">
-					{{!item.blnPayed?'待支付':(item.strSelfCode?'取餐号：'+item.strSelfCode:item.strTakeMode)}}
+					{{!item.blnPayed ? (setBlnPayed(item.blnPayed, item.datOrderTime) ? '待支付' : '已取消') :(item.strSelfCode?'取餐号：'+item.strSelfCode:item.strTakeMode)}}
 				</view>
 			</view>
 		</view>
@@ -71,6 +72,42 @@
 					pageType: 'order'
 				}
 			},
+			setPricePay() {
+				return function (data) {
+					// console.log(data)
+					try{
+						data = JSON.parse(data)
+					}catch(e){
+					}
+					try{
+						let price = 0
+						data.payments.forEach(item => {
+							if (item.type == 'card' || item.type == 'weixinpay') {
+								price += item.amount
+							}
+						})
+						return price
+					}catch(e){
+						return 0
+					}
+				}
+			},
+			setBlnPayed() {
+				return function(data, time) {
+					if (!data) {
+						let time1 = new Date().getTime()
+						let time2 = new Date(time).getTime() + 15 * 60 * 1000
+						// console.log(time1, time2)
+						if (time1 < time2) {
+							return true
+						} else {
+							return false
+						}
+					} else {
+						return false
+					}
+				}
+			}
 		},
 		// //页面触底加载分页
 		// onReachBottom: function() {

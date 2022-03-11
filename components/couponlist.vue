@@ -74,7 +74,9 @@
 		flex-direction: column;
 		align-items: center;
 		box-sizing: border-box;
-		
+		margin-bottom: constant(safe-area-inset-bottom); /* 兼容 iOS < 11.2 */
+		margin-bottom: env(safe-area-inset-bottom); /* 兼容 iOS >= 11.2 */
+		padding-bottom: 128upx;
 	}
 
 	.coupons {

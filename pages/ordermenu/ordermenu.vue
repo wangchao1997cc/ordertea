@@ -135,24 +135,25 @@
 						>
 							<view class="good-pic">
 								<image :src="titem.strPicUrl ? titem.strPicUrl : '../../static/menu/logo.png'" mode="aspectFill"></image>
+								<view class="mask" v-if="titem.intSell <= 0" />
 							</view>
 							<view class="goods-info">
-								<view class="goods-name">{{ titem.strProductName }}</view>
-								<view class="goods-desc">{{ titem.desc }}</view>
+								<view class="goods-name" :class="{'sell-out': titem.intSell <= 0}">{{ titem.strProductName }}</view>
+								<view class="goods-desc" :class="{'sell-out': titem.intSell <= 0}">{{ titem.desc }}</view>
 								<view class="goods-footer">
-									<view class="goods-price">
+									<view class="goods-price" :class="{'sell-out': titem.intSell <= 0}">
 										¥{{ titem.activePrice ? titem.activePrice : titem.floPrice }}
 										<!-- <text>/{{titem.strUnitName}} {{titem.strStartRate || ''}}</text> -->
-										<text class="oldprice" v-if="titem.activePrice">
+										<text class="oldprice" :class="{'sell-out': titem.intSell <= 0}" v-if="titem.activePrice">
 											¥{{ titem.floPrice }}
 										</text>
 									</view>
 									<view class="btn-r">
 										<view
 											class="jstrItemBarCodee-text"
-											v-if="titem.intSell < 0"
+											v-if="titem.intSell <= 0 || titem.blnSell == 'True'"
 										>
-											商品已售罄
+											已售罄
 										</view>
 										<view v-else>
 											<view
@@ -217,6 +218,21 @@
 							v-if="chooseGoods.intMultiple != 1 || chooseGoods.blnSet == 'True'"
 						>
 							<template>
+								<view class="arrt-item" v-if="chooseGoods.standard.length > 1">
+									<view class="arrt_name">规格</view>
+									<view class="arrt_Iitem-cont">
+										<view
+											class="arrt_Iitem"
+											v-for="(aitem, idx) in chooseGoods.standard"
+											:class="{ choose_item: aitem.Checked }"
+											:key="idx"
+											@click="chooseStandard(idx, aitem)"
+										>
+											{{ aitem.StandardName }}
+											<text class="sell-out" v-if="aitem.intSell <= 0">已售罄</text>
+										</view>
+									</view>
+								</view>
 								<view
 									class="arrt-item"
 									v-for="(item, index) in specarr"
@@ -290,10 +306,10 @@
 							:key="index"
 						>
 							<view class="shopcar-item-pic">
-								<image :src="item.strPicUrl"></image>
+								<image :src="item.strPicUrl" mode="aspectFill"></image>
 							</view>
 							<view class="shop-item-cont">
-								<view class="item-name">{{ item.strProductName }}</view>
+								<view class="item-name">{{ item.strProductName + '-' + item.strStandardName }}</view>
 								<view class="item-desc">
 									<text>{{ item.strFlavorName || '' }}</text>
 								</view>
@@ -594,8 +610,8 @@ export default {
 				productPrice = 0;
 			if (chooseGoods.activePrice) {
 				productPrice = chooseGoods.activePrice;
-			} else {
-				productPrice = chooseGoods.floPrice;
+			} else if (chooseGoods.Standard) {
+				productPrice = chooseGoods.Standard[0].Price;
 			}
 			if (specarr.length) {
 				specarr.forEach(item => {
@@ -642,11 +658,13 @@ export default {
 			member = app.globalData.member;
 		console.log(member, that.member)
 		if (member !== that.member) {
-			that.getShopControlInfo();
 			that.member = member
-		}
-		if (storeInfo && that.storeInfo.strShopCode != storeInfo.strShopCode) {
+			that.getShopControlInfo();
+		// } else if (storeInfo && that.storeInfo.strShopCode != storeInfo.strShopCode) {
+		} else if (storeInfo && that.storeInfo.strShopCode != storeInfo.strShopCode) {
 			that.storeInfo = storeInfo;
+			that.getShopControlInfo();
+		} else if (that.storeInfo.strShopCode) {
 			that.getShopControlInfo();
 		}
 		if (app.globalData.orderSuccess) {
@@ -1164,6 +1182,12 @@ export default {
 					that.handleData(res.Message); //处理规格属性
 					that.nums = 1;
 					that.chooseGoods = chooseGoods;
+					res.Message.standard.forEach((item, index) => {
+						if(item.Checked) {
+							return that.chooseStandard(index, item, true) // 重新计算价格
+						}
+					})
+					
 					that.maskarr.shopCarShow = false;
 					if (type) {
 						setTimeout(()=>{
@@ -1181,6 +1205,68 @@ export default {
 			} catch (err) {}
 		},
 		//选择规格
+		chooseStandard(index, aitem, type) {
+			console.log(index, aitem)
+			let that = this;
+			if (aitem.intSell < 0 || aitem.intSell == 0) {
+				//售罄和不在售时间内
+				return;
+			}
+			if (!aitem.Checked || type) {
+				for (let i in that.chooseGoods.standard) {
+					if (that.chooseGoods.standard[i].Checked) {
+						that.chooseGoods.standard[i].Checked = false;
+						break;
+					}
+				}
+				aitem.Checked = true;
+				let chooseGoods = that.chooseGoods,
+					goods = that.chooseGoods.standard[index],
+					chacked = false;
+				that.activelist.forEach(item => {
+					if (item.type == 5) {
+						item.productsBonus.bonusProducts.forEach(aitem => {
+							//计算商品的折扣价格
+							if (goods.ProductBarCode == aitem.productPosId) {
+								chacked = true
+								switch (aitem.discountType) {
+									case 0:
+										chooseGoods.activePrice = accMul(
+											goods.Price,
+											aitem.value / 10
+										).toFixed(2);
+										break;
+									case 1:
+										chooseGoods.activePrice = subtr(
+											goods.floPrice,
+											aitem.value
+										);
+										break;
+									case 2:
+										chooseGoods.activePrice = aitem.value;
+										break;
+									default:
+										delete chooseGoods.activePrice;
+								}
+							}
+						});
+					}
+				});
+				if (!chacked) {
+					chooseGoods.activePrice = 0;
+				}
+				chooseGoods.floPrice = goods.Price
+				chooseGoods.strProductBarCode = goods.ProductBarCode
+				chooseGoods.strProductName = goods.ProductName
+				chooseGoods.strStandardCode = goods.StandardCode
+				chooseGoods.strStandardName = goods.StandardName
+				chooseGoods.intUnitID = goods.UnitID
+				chooseGoods.strUnitName = goods.UnitName
+				chooseGoods.Standard = [goods]
+				that.chooseGoods = chooseGoods
+			}
+		},
+		//选择属性
 		chooseAttr(index, aitem) {
 			if (aitem.Checked) {
 				//如果选中状态则取消选中
@@ -1212,20 +1298,6 @@ export default {
 		handleData(data) {
 			let specarr = [], //规格数组
 				params = ['addoption', 'temp', 'sweet', 'flavor', 'noodle'];
-			if (data['standard'].length) {
-				let details = data['standard']
-				details.forEach(item => {
-					item.strFlavorName = item.StandardName + item.UnitName;
-					item.Checked = false;
-				})
-				let arrts = {
-					details: details,
-					strFlavorGroupName: '规格', //分组名称
-					MaxSelect: 1, //最多可选
-					attrName: data['standard']
-				};
-				specarr.push(arrts);
-			}
 			for (let i in params) {
 				if (data[params[i]].length) {
 					data[params[i]].forEach(item => {
@@ -1446,12 +1518,14 @@ export default {
 				let products = {
 					qty: item.floQuantity,
 					product_no: item.strProductBarCode,
-					name: item.strProductName,
+					name: item.strProductName + '-' + item.strStandardName,
+					// strStandardName: item.strStandardName,
 					// price: accAdd(item.floPricePay, item.floFlavor),
 					price: accAdd(item.floPrice, item.floFlavor),
 					condiments: [],
 					discounted: item.VFlag == 'True' ? 1 : 0
 				};
+				console.log(products)
 
 				// if (item.orginalPrice) {
 				// 	products.price = item.orginalPrice;
@@ -1940,11 +2014,27 @@ export default {
 							margin-bottom: 15upx;
 							box-sizing: border-box;
 							line-height: 58upx;
+							position: relative;
+							border: 1px #f5f5f5 solid;
 
 							&.choose_item {
 								border: 1px $main-color solid;
 								background-color: $bg-white;
 								color: $main-color;
+							}
+							
+							.sell-out {
+								@include rect(70upx, 34upx);
+								line-height: 34rpx;
+								border-radius: 18rpx;
+								font-size: 18rpx;
+								color: #FFFFFF;
+								text-align: center;
+								background: #CACACA;
+								border: 2rpx solid #FFFFFF;
+								position: absolute;
+								top: -20rpx;
+								right: -28rpx;
 							}
 
 							/* &:nth-of-type(3) {
@@ -2331,9 +2421,20 @@ export default {
 		/* 			border: 1upx $main-color solid; */
 		border-radius: 4px;
 		overflow: hidden;
+		position: relative;
 
 		image {
 			@include rect(100%, 100%);
+		}
+		
+		.mask {
+			position: absolute;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			background: rgba(255, 255, 255, 0.6);
+			z-index: 1;
 		}
 	}
 
@@ -2388,7 +2489,7 @@ export default {
 
 			.btn-r {
 				.jstrItemBarCodee-text {
-					color: #666666;
+					color: #E5E5E5;
 					font-size: $font-sm;
 				}
 
@@ -2401,6 +2502,11 @@ export default {
 					@include box-padding(10px);
 				}
 			}
+		}
+		
+		.sell-out {
+			color: #E5E5E5 !important;
+			font-weight: 400 !important;
 		}
 	}
 

@@ -179,7 +179,7 @@ import { mapGetters } from 'vuex';
 import { wxuuid } from '../../WXapi/paramsMethod.js';
 const app = getApp();
 const date = new Date();
-const nowDay = date.getMonth() + '-' + date.getDate();
+const nowDay = (date.getMonth() + 1) + '-' + date.getDate();
 
 export default {
 	data() {
@@ -613,7 +613,8 @@ export default {
 				interest.promotions.forEach(item => {
 					promotions.push({
 						discount: item.amount,
-						promotionId: item.id
+						promotionId: item.id,
+						name: item.name
 					});
 					if(item.type == 8 ){
 						payments.push({
@@ -665,6 +666,7 @@ export default {
 				});
 				data.VkaJson = VkaJson;
 			}
+			console.log(data)
 
 			let tit = `是否前往【${storeInfo.strShopName}】自提`;
 			if (type == 1) {

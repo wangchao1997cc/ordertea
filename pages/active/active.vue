@@ -89,6 +89,7 @@
 <script>
 const app = getApp();
 import api from '../../WXapi/api.js';
+import config from '../../config/index.js'
 // import author from '../../components/author.vue'
 import jyfParser from '@/components/jyf-parser/jyf-parser'; //富文本组件
 import {
@@ -127,10 +128,12 @@ export default {
 			that.activityId = await that.getActiveInfo();
 		}
 		if (res.from === 'button') { // 来自页面内分享按钮
+			console.log(that.memberinfo.id, that.activityId)
 			data.path = '/pages/active/active?recommendedId=' + that.memberinfo.id + '&activityId=' + that.activityId;
 			data.title = '快来和我一起领取超多福利吧～';
 			data.imageUrl = that.activeDesc.imageUrl;
 			data.bgImgUrl = that.activeDesc.shareImageUrl;
+			// recommendedId24089336=&activityId=935
 		}
 		return data
 	},
@@ -272,26 +275,25 @@ export default {
 				try {
 					let result = await api.decryptPhoneNumber(data, true); //获取手机号
 					let phone = result.Message.phoneNumber;
+					let userdata = {
+						mobile: phone,
+						openId: that.openidinfo.openid
+					};
+					await userRegister(userdata);  //vka 注册会员
 					let params = {
 						HQCode: config.hqcode,
 						WXOpenID: that.openidinfo.openid,
+						Operation: 'updatemobile',
 						Mobile: phone,
-						interFaces: 'MemberInfoRegister'
+						interFaces: 'MemberInfoUpdate'
 					};
 					await api.getUserInfo(params); //plus 注册会员
-					if (that.member) {
-						let userdata = {
-							mobile: phone,
-							openId: that.openidinfo.openid
-						};
-						await userRegister(userdata);  //vka 注册会员
-					    that.notAuth = true;
-						that.$msg.showToast('登录成功');
-						that.cheackProfit(); //查看自己的收益
-						that.activeDescInfo(); //获取活动详情
-					}
+					that.notAuth = true;
+					that.$msg.showToast('登录成功');
+					that.cheackProfit(); //查看自己的收益
+					that.activeDescInfo(); //获取活动详情
 				} catch(err){
-					
+					console.log(err)
 				}
 				// else if (result.status == 2) {
 				// 	that.$store.commit('changeLogin', true);

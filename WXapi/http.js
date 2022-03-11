@@ -10,6 +10,7 @@ import {
 const key = 'axyljyomiiautxqgqpzuw';   //正式环境
 const base_url_m = 'https://apitest.fnb-tech.com/FNBOpenApi.asmx/';  //正式环境   plus
 const baseurl_v43 = 'https://crmapi.fnb-tech.com/openapi/'; //正式环境	会员
+// const baseurl_v43 = 'https://api.v-ka.com/openapi/'; //正式环境	会员
 // const baseurl_v43 = 'http://192.168.1.63:8090/openapi/' //内网环境	会员
 //测试环境key
 // const default_value_f = 'Action?' + 'key=93ba9db2f9f4f0e4'

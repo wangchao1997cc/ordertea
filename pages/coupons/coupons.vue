@@ -264,9 +264,11 @@
 			line-height: 88upx;
 			position: fixed;
 			left: 27upx;
-			bottom: 78upx;
+			bottom: 20upx;
 			border-radius: 44upx;
 			color: $text-white;
+			margin-bottom: constant(safe-area-inset-bottom); /* 兼容 iOS < 11.2 */
+			margin-bottom: env(safe-area-inset-bottom); /* 兼容 iOS >= 11.2 */
 		}
 	}
 
