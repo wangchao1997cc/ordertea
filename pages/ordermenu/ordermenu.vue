@@ -144,6 +144,7 @@
 									<view class="goods-price" :class="{'sell-out': titem.intSell <= 0}">
 										¥{{ titem.activePrice ? titem.activePrice : titem.floPrice }}
 										<!-- <text>/{{titem.strUnitName}} {{titem.strStartRate || ''}}</text> -->
+										<text class="oldprice" v-if="titem.activePrice"
 										<text class="oldprice" :class="{'sell-out': titem.intSell <= 0}" v-if="titem.activePrice">
 											¥{{ titem.floPrice }}
 										</text>
